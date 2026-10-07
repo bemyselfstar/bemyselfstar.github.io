@@ -248,6 +248,8 @@ section { margin: 72px 0 88px; }
 .grid.bento { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .grid.bento > :nth-child(1), .grid.bento > :nth-child(6) { grid-column: span 2; }
 .grid.bento > :nth-child(1) { background: var(--tag); }
+/* 剛好 8 格（玩法介紹「商店與收集」，v4.15.27 加了圖鑑、成就）：最後一排兩格各佔 2 欄，不留空 */
+.grid.bento > :nth-child(7):nth-last-child(2), .grid.bento > :nth-child(8):last-child { grid-column: span 2; }
 @media (max-width: 860px) { .grid.bento { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px) { .grid.bento { grid-template-columns: 1fr; } .grid.bento > * { grid-column: auto !important; } }
 
