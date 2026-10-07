@@ -4,7 +4,7 @@
   'use strict';
   const SP = window.DESKCAT_SPRITES;
   const SITE = {
-    version: 'v4.15.23',
+    version: 'v4.15.26',
     download: 'https://github.com/bemyselfstar/DeskCat-release/releases/latest',
     mail: 'bemyselfstar.studio@gmail.com',
   };
