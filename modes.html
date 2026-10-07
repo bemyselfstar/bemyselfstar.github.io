@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>陪伴模式｜DeskCat</title>
+<meta name="description" content="DeskCat 的五種陪伴模式：窗台、追滑鼠、拍桌、CPU 跑步、自動。每隻毛孩可以選不一樣的模式，在網頁上就能試玩。">
+<meta property="og:title" content="陪伴模式｜DeskCat">
+<meta property="og:description" content="DeskCat 的五種陪伴模式：窗台、追滑鼠、拍桌、CPU 跑步、自動。每隻毛孩可以選不一樣的模式，在網頁上就能試玩。">
+<meta property="og:image" content="assets/og.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#e0803a">
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<a class="skip" href="#main">跳到主要內容</a>
+<main id="main" class="wrap">
+  <div class="page-title">
+    <h1>陪伴模式</h1>
+    <p class="lead">每隻毛孩可以選不一樣的模式：在牠身上按右鍵 → 這隻毛孩的設定 → 模式。不管哪種模式都有重力，牠一定站在視窗上緣或工作列上。</p>
+    <p class="sim-note">下面的試玩是網頁模擬：動作是遊戲實際影格，速度、等待時間為了展示有縮短。</p>
+  </div>
+
+  <section id="sill">
+    <h2>窗台（預設）</h2>
+    <div class="grid c2">
+      <article class="scene px-box">
+        <div class="scene-head"><h3>拖曳視窗試試看</h3><span class="tag you">你來操作</span><button class="btn sm ghost" data-pause aria-label="暫停／播放"></button><button class="btn sm ghost" data-replay aria-label="重播">↻</button></div>
+        <div class="stage tall" data-scene="sill"></div>
+        <div class="scene-foot"><p>拖曳視窗，貓跟著走；把視窗關掉，牠就掉下來。</p></div>
+      </article>
+      <div class="card px-box">
+        <h3>走在視窗上緣</h3>
+        <ul>
+          <li>會跳到別的視窗上，也會跳下來；你移動視窗，牠跟著一起動。</li>
+          <li>視窗縮小或關掉，牠就掉下來。</li>
+          <li>心情跟著時間走：清晨和傍晚最活潑，中午最愛睡，凌晨偶爾暴衝。右鍵「活潑程度」可以調整。</li>
+          <li>對滑鼠好奇，有時走過來，有時不理你；滑鼠靠太近，會伸手撥你的游標。</li>
+          <li>多隻毛孩在同一個視窗時會追逐、蹭蹭、理毛、閒聊、靠在一起睡。</li>
+        </ul>
+        <p class="small muted">最大化的視窗上緣太靠近螢幕頂端時，貓站不上去；把視窗縮小一點就好。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="chase">
+    <h2>追滑鼠</h2>
+    <div class="grid c2">
+      <div class="card px-box">
+        <h3>一直跟著你的游標</h3>
+        <ul>
+          <li>找滑鼠正下方最近的那一層（視窗上緣或工作列），沿著它跑到滑鼠旁邊。</li>
+          <li>要換到別的視窗時，先蹲一下再跳；太遠跳不到，就先跳下去再繼續追。</li>
+          <li>滑鼠停在旁邊時坐著等，偶爾伸手撥游標；遊戲裡 30 秒沒動靜就睡著，一動滑鼠就醒來。</li>
+          <li>好幾隻一起追時會各自站開一點，不會疊在一起。</li>
+        </ul>
+      </div>
+      <article class="scene px-box">
+        <div class="scene-head"><h3>把滑鼠移進來</h3><span class="tag you">你來操作</span><button class="btn sm ghost" data-pause aria-label="暫停／播放"></button><button class="btn sm ghost" data-replay aria-label="重播">↻</button></div>
+        <div class="stage" data-scene="chase"></div>
+        <div class="scene-foot"><p>遠就跑、近就走，停下來會坐著等你；網頁裡等 6 秒就會睡著。</p></div>
+      </article>
+    </div>
+  </section>
+
+  <section id="bongo">
+    <h2>拍桌（打字陪伴）</h2>
+    <div class="grid c2">
+      <article class="scene px-box">
+        <div class="scene-head"><h3>在鍵盤上打字看看</h3><span class="tag you">你來操作</span><button class="btn sm ghost" data-pause aria-label="暫停／播放"></button><button class="btn sm ghost" data-replay aria-label="重播">↻</button></div>
+        <div class="stage tall" data-scene="bongo"></div>
+        <div class="scene-foot"><p>按鍵盤任一鍵，牠就拍一下；在畫面裡移動、點滑鼠，牠的手會搭在滑鼠上。</p><p class="sim-note">網頁只計算你在這頁按了幾下，不會記錄按了什麼鍵。</p></div>
+      </article>
+      <div class="card px-box">
+        <h3>你打一下，牠拍一下</h3>
+        <ul>
+          <li>桌上有電腦、鍵盤、滑鼠；上面顯示今天的按鍵和點擊次數，眼睛會跟著滑鼠轉。</li>
+          <li>你在用滑鼠時，牠右手搭在滑鼠上跟著動、你點牠也點；開始打字又換回拍鍵盤。</li>
+          <li>會看狀況說話：早安、打到幾千下、打很快、連續打太久叫你休息、半夜還在打…</li>
+          <li><b>會餓</b>：拍桌的毛孩離不開桌子，不會自己去吃飯。餓到沒力會變慢，到 0 就暈倒在鍵盤上；右鍵「🍚 餵食（放在牠桌上）」就會活過來。</li>
+          <li>每敲 100 下鍵盤或滑鼠得到 1 個罐罐（所有模式都會累積）。</li>
+        </ul>
+        <p class="small muted">不想要桌上的電腦：右鍵 → 這隻毛孩 → 取消「拍桌時擺上電腦、鍵盤、滑鼠」。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="cpu">
+    <h2>CPU 跑步</h2>
+    <div class="grid c2">
+      <div class="card px-box">
+        <h3>電腦越忙，跑得越快</h3>
+        <p>牠會照 CPU 使用率原地跑步：閒的時候坐著，忙起來越跑越快。跟拍桌一樣離不開位置，餓暈時會倒下來睡，餵法和拍桌一樣。</p>
+        <p>不管在哪個模式，工具列的小貓都會照 CPU 速度跑；滑鼠移上去可以看 CPU 和 RAM。</p>
+      </div>
+      <article class="scene px-box">
+        <div class="scene-head"><h3>拉一下 CPU</h3><span class="tag you">你來操作</span><button class="btn sm ghost" data-pause aria-label="暫停／播放"></button><button class="btn sm ghost" data-replay aria-label="重播">↻</button></div>
+        <div class="stage short" data-scene="cpu"></div>
+        <div class="scene-foot controls">
+          <label>CPU <input type="range" min="0" max="100" value="45" aria-label="模擬 CPU 使用率"></label>
+          <label><input type="checkbox" checked> 自動變化</label>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section id="auto">
+    <h2>自動</h2>
+    <div class="grid c2">
+      <div class="card px-box">
+        <h3>打字時拍桌，其他時候追滑鼠</h3>
+        <p>你開始打字，牠就地拍桌陪你；停下來用滑鼠時，牠變回追滑鼠模式跟著你跑（一樣有物理）。適合不想一直切換模式的人。</p>
+      </div>
+      <div class="card px-box">
+        <h3>怎麼選？</h3>
+        <table>
+          <tr><th>想要</th><th>建議模式</th></tr>
+          <tr><td>牠自己過日子、跟其他毛孩玩</td><td>窗台</td></tr>
+          <tr><td>一直待在游標旁邊</td><td>追滑鼠</td></tr>
+          <tr><td>打字、寫程式時有人陪</td><td>拍桌／自動</td></tr>
+          <tr><td>一眼看出電腦多忙</td><td>CPU 跑步</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+<script src="assets/sprites.js"></script>
+<script src="assets/site.js"></script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>貓狗圖鑑｜DeskCat</title>
+<meta name="description" content="DeskCat 貓狗圖鑑：一般貓 9 種花色、5 種品種貓、5 種狗 14 種毛色，各自的小習慣、個性和貓狗差異。">
+<meta property="og:title" content="貓狗圖鑑｜DeskCat">
+<meta property="og:description" content="DeskCat 貓狗圖鑑：一般貓 9 種花色、5 種品種貓、5 種狗 14 種毛色，各自的小習慣、個性和貓狗差異。">
+<meta property="og:image" content="assets/og.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#e0803a">
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<a class="skip" href="#main">跳到主要內容</a>
+<main id="main" class="wrap">
+  <div class="page-title">
+    <h1>貓狗圖鑑</h1>
+    <p class="lead">每個品種、花色都有自己的小習慣；同一個品種，個性不同也會很不一樣。圖上是遊戲裡真正的造型和動作（正面 → 側坐 → 走路 → 睡覺）。</p>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="cat">🐱 貓咪</button>
+    <button role="tab" aria-selected="false" data-tab="dog">🐶 狗狗</button>
+  </div>
+  <div id="breeds" class="grid c3"></div>
+  <p class="mt sim-note">圖鑑裡貓咪放大 3 倍、狗狗放大 2 倍，方便看清楚；遊戲裡狗比貓大（最大的阿拉斯加是貓的 1.7 倍）。</p>
+
+  <section>
+    <h2>品種之外：個性</h2>
+    <p>在毛孩管理裡選。新增的毛孩會依花色先選一個適合的個性，可以改。毛孩說的話也會照個性不一樣，例如被摸兩下：黏人「最喜歡你了」、高冷「……勉強可以」、貪吃「摸完給零食」。</p>
+    <div class="table-wrap">
+      <table>
+        <tr><th class="w-key">個性</th><th>特色</th></tr>
+        <tr><td>普通</td><td>什麼都做一點</td></tr>
+        <tr><td>黏人</td><td>很愛湊過來、常常慢眨眼、親密度漲比較快</td></tr>
+        <tr><td>高冷</td><td>不太理你，摸肚子常常是陷阱</td></tr>
+        <tr><td>貪吃</td><td>餓得快，一有飯碗就衝過去</td></tr>
+        <tr><td>好動</td><td>精神好、愛跳、愛玩、很常勾游標</td></tr>
+        <tr><td>膽小</td><td>容易被嚇到，最愛躲紙箱</td></tr>
+      </table>
+    </div>
+    <p class="small muted">毛孩管理右上角的個性雷達：活動力、食量、主動互動、好奇心、膽量、敏捷六項；數字由「花色的底子 × 個性 × 年齡」算出來，滑鼠移上去有說明。</p>
+  </section>
+
+  <section>
+    <h2>貓和狗哪裡不一樣</h2>
+    <div class="grid c2">
+      <div class="card px-box">
+        <h3>🐶 狗狗</h3>
+        <ul>
+          <li>不爬牆，只跳到比較低的視窗；不用貓抓板和貓砂盆。</li>
+          <li>會搖尾巴、吠叫、喘氣、趴下邀你玩，睡前轉兩圈。滑鼠停在牠身上，尾巴越搖越快。</li>
+          <li>你離開一陣子回來，狗一定衝過來迎接。小鳥、寶箱、客人來時會「汪！」（⚙ 設定 → 🐶 狗狗：不叫／偶爾／常常）。</li>
+          <li>會叼回你丟的球和飛盤；送你的禮物是骨頭。</li>
+        </ul>
+      </div>
+      <div class="card px-box">
+        <h3>🐱🐶 一起住</h3>
+        <ul>
+          <li>狗會走過去聞一聞貓，貓看個性：讓牠聞、一起玩、嚇跑或哈氣。</li>
+          <li>狗會搶球拔河、大狗讓貓搭便車；貓會搶狗的球、撲狗的尾巴。</li>
+          <li>冬天、晚上怕冷的貓，會靠著毛很厚的大狗（薩摩耶、阿拉斯加）睡。</li>
+          <li>邊境牧羊犬看到走散的貓，會把牠趕回大家旁邊（可以在設定關掉）。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>小劇場</h2>
+    <div class="grid c2">
+      <article class="scene px-box">
+        <div class="scene-head"><h3>邊牧趕走散的貓</h3><span class="tag">自然發生</span><button class="btn sm ghost" data-pause aria-label="暫停／播放"></button><button class="btn sm ghost" data-replay aria-label="重播">↻</button></div>
+        <div class="stage short" data-scene="herd"></div>
+        <div class="scene-foot"><p>貓走太遠，邊牧會壓低身體繞過去，把牠趕回大家旁邊。貓有時聽話，有時當成遊戲，也可能生氣。</p></div>
+      </article>
+      <article class="scene px-box">
+        <div class="scene-head"><h3>柴犬被拎起來</h3><span class="tag you">你來操作</span><button class="btn sm ghost" data-pause aria-label="暫停／播放"></button><button class="btn sm ghost" data-replay aria-label="重播">↻</button></div>
+        <div class="stage short" data-scene="lift"></div>
+        <div class="scene-foot"><p>把柴犬拎起來，牠會尖叫；放下後甩甩毛，假裝什麼都沒發生。布偶貓則是軟趴趴、一臉放鬆。</p></div>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <h2>年齡與季節</h2>
+    <div class="grid c3">
+      <div class="card px-box"><h3>會長大</h3><p>真實 1 天＝毛孩長 1 個月。幼年小小的、頭大大的；幼貓會挑一隻大貓當媽媽，跟在後面學。</p></div>
+      <div class="card px-box"><h3>會變老</h3><p>11 歲以上是熟齡：口鼻變灰白、走得慢、睡很多。</p></div>
+      <div class="card px-box"><h3>怕冷</h3><p>熟齡貓和斯芬克斯晚上、冬天會找貓窩、沙發、貓跳台或厚毛大狗取暖。</p></div>
+    </div>
+  </section>
+</main>
+<script src="assets/sprites.js"></script>
+<script src="assets/site.js"></script>
+<script>
+(function () {
+  const SP = window.DESKCAT_SPRITES;
+  // 說明依玩家版使用說明、發布說明；沒有專屬行為的花色只寫外型與共用日常，不虛構能力
+  const INFO = {
+    '橘虎斑': '有飯就一定來。橘色條紋、綠眼睛。',
+    '灰虎斑': '標準的貓：什麼都會做一點。',
+    '奶油貓': '淡奶油色的條紋貓，跟大家一起過著一般的貓日常。',
+    '黑貓': '最常來找你的貓，黃眼睛在暗處特別顯眼。',
+    '藍灰貓': '一身灰藍色的短毛，跟大家一起過著一般的貓日常。',
+    '白貓': '很容易被嚇到。藍眼睛的白色小貓。',
+    '賓士貓': '被摸完、吃完，常常突然暴衝。',
+    '三花': '每隻的斑都不一樣（色斑位置依每隻貓決定）。',
+    '玳瑁': '黑橘交錯的玳瑁花色，每隻的斑都不一樣。',
+    '暹羅貓': '很愛講話，頭上常常冒「喵！喵！」；太久沒理牠會叫得更兇、跑來找你。',
+    '布偶貓': '拎起來軟趴趴、一臉放鬆；摸牠親密度漲得特別快。',
+    '英國短毛貓': '常常趴著盯著你看，很少主動來找你。',
+    '斯芬克斯': '無毛貓，怕冷也怕熱，晚上、冬天會找溫暖的地方。',
+    '阿比西尼亞': '好動又好奇，最愛爬到最高的地方。',
+    '薩摩耶': '招牌笑臉。毛很厚，怕冷的貓會靠著牠睡。',
+    '阿拉斯加雪橇犬': '最大的狗（貓的 1.7 倍）。毛很厚、一次吃兩碗，夏天中午怕熱躺平。',
+    '哈士奇': '會突然暴衝、仰天狼嚎；也想接飛盤，但常常接不到，接著開始抱怨。',
+    '柴犬': '被邀玩常常「絕對拒否」，被拎起來會尖叫；唯一愛鑽紙箱的狗。',
+    '邊境牧羊犬': '會跳起來在空中接飛盤；看到走散的貓（或大狗）會把牠趕回大家旁邊。',
+  };
+  const groups = {};
+  for (const [key, p] of Object.entries(SP.pets)) {
+    const g = p.breed === '一般貓' ? key : p.breed;          // 一般貓的每種花色各一張卡
+    (groups[g] = groups[g] || { species: p.species, name: g, general: p.breed === '一般貓', coats: [] }).coats.push([key, p.coat]);
+  }
+  const box = document.getElementById('breeds');
+  const cards = [];
+  for (const g of Object.values(groups)) {
+    const card = document.createElement('article');
+    card.className = 'breed px-box'; card.dataset.species = g.species;
+    const coats = g.general ? '' : `<div class="coats" role="group" aria-label="毛色">${g.coats.map(([k, c], i) =>
+      `<button data-key="${k}" aria-pressed="${i === 0}">${c}</button>`).join('')}</div>`;
+    card.innerHTML = `<div class="show"><canvas aria-label="${g.name}的遊戲造型"></canvas></div>
+      <div class="body"><h3>${g.name}</h3>${g.general ? '<span class="tag">一般貓・花色</span>' : `<span class="tag">${g.species === 'dog' ? '狗' : '品種貓'}・${g.coats.length} 種毛色</span>`}
+      ${coats}<p>${INFO[g.name] || ''}</p></div>`;
+    box.appendChild(card);
+    const mini = window.DeskCatMini(card.querySelector('canvas'), g.coats[0][0], null, g.species === 'dog' ? 2 : 3);
+    card.querySelectorAll('.coats button').forEach(b => b.addEventListener('click', () => {
+      card.querySelectorAll('.coats button').forEach(x => x.setAttribute('aria-pressed', x === b));
+      mini.setKey(b.dataset.key);
+    }));
+    cards.push(card);
+  }
+  const tabs = document.querySelectorAll('[data-tab]');
+  function show(sp) {
+    tabs.forEach(t => t.setAttribute('aria-selected', t.dataset.tab === sp));
+    cards.forEach(c => { c.style.display = c.dataset.species === sp ? '' : 'none'; });
+  }
+  tabs.forEach(t => t.addEventListener('click', () => { show(t.dataset.tab); history.replaceState(null, '', '#' + t.dataset.tab); }));
+  show(location.hash === '#dog' ? 'dog' : 'cat');
+})();
+</script>
+</body>
+</html>

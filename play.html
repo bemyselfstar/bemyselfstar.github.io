@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>玩法介紹｜DeskCat</title>
+<meta name="description" content="DeskCat 玩法：餵食、逗貓、丟球給狗、家具、罐罐和寶箱、扭蛋與衣櫃、節日活動和生日。">
+<meta property="og:title" content="玩法介紹｜DeskCat">
+<meta property="og:description" content="DeskCat 玩法：餵食、逗貓、丟球給狗、家具、罐罐和寶箱、扭蛋與衣櫃、節日活動和生日。">
+<meta property="og:image" content="assets/og.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#e0803a">
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<a class="skip" href="#main">跳到主要內容</a>
+<main id="main" class="wrap">
+  <div class="page-title">
+    <h1>玩法介紹</h1>
+    <p class="lead">照顧牠、陪牠玩、幫牠布置桌面。打字和點滑鼠會存下罐罐，可以買家具、食物和飾品。</p>
+    <p class="tabs">
+      <a class="btn sm ghost" href="#care">互動與照顧</a><a class="btn sm ghost" href="#furniture">家具</a>
+      <a class="btn sm ghost" href="#shop">商店與收集</a><a class="btn sm ghost" href="#events">節日與生日</a>
+    </p>
+  </div>
+
+  <section id="care">
+    <h2>互動與照顧</h2>
+    <div class="grid c2">
+      <article class="scene px-box">
+        <div class="scene-head"><h3>丟球給狗</h3><span class="tag you">你來操作</span><button class="btn sm ghost" data-pause aria-label="暫停／播放"></button><button class="btn sm ghost" data-replay aria-label="重播">↻</button></div>
+        <div class="stage tall" data-scene="fetch"></div>
+        <div class="scene-foot"><p>按住球拖一下、放開就丟出去。狗會衝過去叼起來，放回你附近，坐著搖尾巴等你再丟。</p><p class="sim-note">網頁模擬：遊戲裡狗會把球放回游標下面；邊牧還會跳起來接飛盤，貓只會過去撥一撥。</p></div>
+      </article>
+      <div class="grid tight">
+        <div class="card px-box">
+          <h3>🍚 吃飯時間</h3>
+          <p>每天 12:00 和 18:00 毛孩會餓，右下角跳通知提醒你（你也記得去吃飯）。右鍵「餵食」放一碗飯，牠們會自己走過去吃。</p>
+          <p class="small muted">乾糧免費；罐頭吃了更親密、更久不餓。吃飯時間可以在 ⚙ 設定 → 🍚 吃飯時間 新增、刪除。</p>
+        </div>
+        <div class="card px-box">
+          <h3>🪶 逗貓</h3>
+          <p><b>逗貓棒</b>：游標下吊著羽毛，貓會蹲低、扭屁股、跳起來抓。<b>雷射筆</b>：游標變紅點，貓會狂追。按 <kbd>Esc</kbd> 收起來。</p>
+        </div>
+        <div class="card px-box">
+          <h3>🎁 牠也會送你東西</h3>
+          <p>跟你很親的貓，偶爾會叼玩具老鼠放到工作列上送你，狗送的是骨頭。點一下收下。
+            <img data-prop="mouse" data-scale="3" alt="玩具老鼠" class="inline-ico"> <img data-prop="bone" data-scale="3" alt="骨頭" class="inline-ico"></p>
+        </div>
+        <div class="card px-box">
+          <h3>💤 日常小事</h3>
+          <p>舔毛久了會吐毛球（點一下清掉）、把桌上的東西推下去（推之前先看你一眼）、盯著窗外的小鳥偷偷靠近再撲上去；你離開 10 分鐘，大家都會睡著，回來時醒來跟你打招呼。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="furniture">
+    <h2>家具與桌面布置</h2>
+    <p>右鍵「📦 放東西」會放在滑鼠的位置；關掉再打開還在原位。對家具按右鍵可以叫毛孩過來用、收回去；用左鍵拖曳可以搬家。剛放好的家具，最近一隻有空的毛孩會馬上過去試用。</p>
+    <article class="mb scene px-box">
+      <div class="scene-head"><h3>紙箱：貓一定要進去</h3><span class="tag">自然發生</span><button class="btn sm ghost" data-pause aria-label="暫停／播放"></button><button class="btn sm ghost" data-replay aria-label="重播">↻</button></div>
+      <div class="stage short" data-scene="box"></div>
+      <div class="scene-foot"><p>牠會坐在裡面探出上半身，有時還在裡面睡著。膽小的貓最愛躲紙箱；狗只有柴犬愛鑽。</p></div>
+    </article>
+    <div class="grid c4">
+      <div class="prop-card px-box"><div class="pic"><img data-prop="tree" data-scale="2" alt="貓跳台"></div><h3>貓跳台</h3><p>兩層平台，跟著底下的視窗一起移動；頂層是最愛睡的位置。</p></div>
+      <div class="prop-card px-box"><div class="pic"><img data-prop="sofa" data-scale="2" alt="沙發"></div><h3>沙發</h3><p>坐墊可以站、可以睡，很愛在上面睡午覺，也會疊著睡。</p></div>
+      <div class="prop-card px-box"><div class="pic"><img data-prop="water" data-scale="4" alt="水碗"></div><h3>水碗</h3><p>吃完飯會去喝水、伸手撥水；水會慢慢變少，點一下換水。</p></div>
+      <div class="prop-card px-box"><div class="pic"><img data-prop="roomba" data-scale="3" alt="掃地機器人"></div><h3>掃地機器人</h3><p>自己出門吸毛球；貓會跳上去搭便車，膽小的貓會被嚇到。</p></div>
+      <div class="prop-card px-box"><div class="pic"><img data-prop="ring" data-scale="4" alt="游泳圈"></div><h3>游泳圈</h3><p>貓會拍它，它滾到哪貓就追到哪，滾到邊邊會掉下去。</p></div>
+      <div class="prop-card px-box"><div class="pic"><img data-prop="litter" data-scale="3" alt="貓砂盆"></div><h3>貓砂盆</h3><p>吃完飯過一陣子會去上廁所、撥砂，然後神清氣爽。</p></div>
+      <div class="prop-card px-box"><div class="pic"><img data-prop="box" data-scale="4" alt="紙箱"></div><h3>紙箱</h3><p>免費一個，貓一定要進去。</p></div>
+      <div class="prop-card px-box"><div class="pic emoji-pic">🪵🛏️🥣</div><h3>貓抓板・貓窩・飯碗</h3><p>睡醒會去磨爪；想睡的貓會陷進窩裡睡；飯碗吃完不會消失。</p></div>
+    </div>
+    <p class="mt small muted">每種家具送 1 個，多的到商店用罐罐買；桌面上沒有貓抓板時，貓有時會去抓旁邊視窗的邊框（爪痕過一陣子會淡掉）。</p>
+  </section>
+
+  <section id="shop">
+    <h2>商店與收集</h2>
+    <div class="grid bento">
+      <div class="card px-box">
+        <h3>🥫 罐罐怎麼來</h3>
+        <p>每敲 <b>100 下</b>鍵盤或滑鼠，得到 1 個罐罐，所有模式都會累積。DeskCat 只算「按了幾下」，不記錄按了什麼。</p>
+      </div>
+      <div class="card px-box">
+        <h3><img data-prop="chest" data-scale="2" alt="" class="inline-ico"> 寶箱</h3>
+        <p>每 <b>30 分鐘</b>從天上掉下一個寶箱，點一下打開：可能是罐罐、零食，或一件飾品。</p>
+      </div>
+      <div class="card px-box">
+        <h3>🎰 扭蛋</h3>
+        <p><b>10 個罐罐</b>抽一件飾品。分成普通、稀有、史詩、傳說四種（框的顏色）；抽到重複的會自動換回罐罐。</p>
+      </div>
+      <div class="card px-box">
+        <h3>🛒 商店三頁</h3>
+        <p><b>食物</b>：罐頭、吐司、煎蛋、糰子、貓薄荷。<b>家具</b>：多買幾個、拿出來放或收起來。<b>衣服・飾品</b>：節日限定飾品和服裝平常也買得到。</p>
+        <p class="small muted">點格子看說明和價錢，可以排序、只看可購買、切換格子／清單。</p>
+      </div>
+      <div class="card px-box">
+        <h3>👒 衣櫃</h3>
+        <p>右鍵「幫○○換裝…」或在毛孩管理的「衣櫃」：頭、脖子、臉、服裝、手上，每個部位一次一件。飾品會跟著頭動。</p>
+      </div>
+      <div class="card px-box">
+        <h3>💛 友情點數</h3>
+        <p>登入後的好友互動獎勵，跟罐罐分開，存在伺服器上。<b>現在先累積，之後會開放兌換。</b></p>
+        <p><a href="friends.html">看好友功能 →</a></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="events">
+    <h2>節日活動與生日</h2>
+    <div class="grid c3">
+      <div class="card px-box">
+        <h3>🎃 萬聖節（10/24～10/31）</h3>
+        <p>第一天送南瓜燈；商店有限定飾品、節日扭蛋；活動期間打字＋點擊累計 3000 下送一件限定飾品。</p>
+        <p class="row-end"><img data-prop="pumpkin" data-scale="3" alt="南瓜燈"><img data-prop="cauldron" data-scale="2" alt="巫婆鍋"><img data-prop="tomb" data-scale="2" alt="墓碑"></p>
+      </div>
+      <div class="card px-box">
+        <h3>🎄 聖誕節（12/18～12/26）</h3>
+        <p>第一天送聖誕樹（小燈泡輪流閃）；限定聖誕帽，挑戰獎勵是麋鹿角。活動結束後裝飾可以留著。</p>
+        <p><img data-prop="xtree" data-scale="2" alt="聖誕樹"></p>
+      </div>
+      <div class="card px-box">
+        <h3>🎂 你的生日</h3>
+        <p>⚙ 設定 → 🎂 你的生日。那天毛孩們會準備蛋糕，一隻一隻說生日快樂；點蛋糕吹蠟燭，大家冒愛心，還送你罐罐。</p>
+        <p><img data-prop="cake" data-scale="3" alt="生日蛋糕"></p>
+      </div>
+    </div>
+    <div class="mt card px-box">
+      <h3>👻 萬聖節服裝和家具</h3>
+      <p>巫師帽、巫師斗篷、吸血鬼領結、南瓜提籃，還有木乃伊、幽靈、骷髏、南瓜、吸血鬼披風等全身服裝（每個動作都跟著變）。巫婆鍋、糖果碗、魔法書堆、蜘蛛網、南瓜串燈、墓碑、枯樹平常也在商店賣。</p>
+      <p class="row-end"><img data-prop="candybowl" data-scale="3" alt="糖果碗"><img data-prop="books" data-scale="3" alt="魔法書堆"><img data-prop="deadtree" data-scale="2" alt="枯樹"></p>
+    </div>
+  </section>
+</main>
+<script src="assets/sprites.js"></script>
+<script src="assets/site.js"></script>
+</body>
+</html>
