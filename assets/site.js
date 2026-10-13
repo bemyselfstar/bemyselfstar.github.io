@@ -4,14 +4,15 @@
   'use strict';
   const SP = window.DESKCAT_SPRITES;
   const SITE = {
-    version: 'v4.15.28',
-    download: 'https://github.com/bemyselfstar/DeskCat-release/releases/latest',
+    version: 'v4.15.29',
+    download: 'https://github.com/bemyselfstar/DeskCat-release/releases/latest/download/DeskCat.exe',   // 直接下載（檔名每版都一樣）
+    releases: 'https://github.com/bemyselfstar/DeskCat-release/releases',   // 所有版本
     mail: 'bemyselfstar.studio@gmail.com',
   };
   window.DESKCAT_SITE = SITE;
   const NAV = [
-    ['index.html', '首頁'], ['guide.html', '新手指南'], ['modes.html', '陪伴模式'],
-    ['pets.html', '貓狗圖鑑'], ['play.html', '玩法介紹'], ['friends.html', '好友與常見問題'],
+    ['index.html', '首頁'], ['updates.html', '更新日誌'], ['guide.html', '新手指南'], ['modes.html', '陪伴模式'],
+    ['pets.html', '貓狗圖鑑'], ['play.html', '玩法介紹'], ['events.html', '主題活動'], ['friends.html', '好友與常見問題'],
   ];
   const reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -47,7 +48,8 @@
       <div>DeskCat 桌面貓咪・Windows 免安裝・網站內容依 ${SITE.version} 玩家版說明整理<br>演出畫面以遊戲實際影格重現，非錄影；聯絡：${SITE.mail}</div>
       <nav class="foot-links" aria-label="頁尾連結"><a href="friends.html#privacy">隱私說明</a><a href="friends.html#faq">常見問題</a><a data-download href="${SITE.download}">下載</a></nav></div>`;
     document.body.append(foot);
-    document.querySelectorAll('[data-download]').forEach(a => { a.href = SITE.download; a.target = '_blank'; a.rel = 'noopener'; });
+    document.querySelectorAll('[data-download]').forEach(a => { a.href = SITE.download; a.rel = 'noopener'; });
+    document.querySelectorAll('[data-releases]').forEach(a => { a.href = SITE.releases; a.target = '_blank'; a.rel = 'noopener'; });
   }
 
   /* ---------------- 影格 ---------------- */
@@ -778,8 +780,35 @@
     });
   }
 
+  /* ---------------- 還沒發布的段落、活動日期 ----------------
+     data-since="4.15.29"：網站版本（SITE.version，更新官網時自動改）到這一版才顯示 → 先寫好、提早上傳也不會公開還沒發布的內容
+     data-period="10-24~10-31"：在標題後面加「🎉 進行中」或「還有 N 天」（每年重複的活動） */
+  function vnum(v) { return String(v).replace(/^v/, '').split('.').map(n => +n || 0); }
+  function vless(a, b) { a = vnum(a); b = vnum(b); for (let i = 0; i < 4; i++) { if ((a[i] || 0) !== (b[i] || 0)) return (a[i] || 0) < (b[i] || 0); } return false; }
+  function since() {
+    const ver = new URLSearchParams(location.search).get('preview') || SITE.version;   // ?preview=4.15.29：發布前先看
+    document.querySelectorAll('[data-since]').forEach(el => { if (vless(ver, el.dataset.since)) el.remove(); });
+  }
+  function periods() {
+    const now = new Date(), y = now.getFullYear(), day = 864e5;
+    const today = new Date(y, now.getMonth(), now.getDate());
+    document.querySelectorAll('[data-period]').forEach(el => {
+      const [a, b] = el.dataset.period.split('~').map(t => t.split('-').map(Number));
+      let start = new Date(y, a[0] - 1, a[1]), end = new Date(y, b[0] - 1, b[1]);
+      if (end < start) end = new Date(y + 1, b[0] - 1, b[1]);          // 跨年（例如 12/30～1/2）
+      if (today > end) { start = new Date(y + 1, a[0] - 1, a[1]); end = new Date(y + 1, b[0] - 1, b[1]); }
+      const tag = document.createElement('span');
+      tag.className = 'tag';
+      if (today >= start && today <= end) { tag.textContent = '🎉 進行中'; tag.classList.add('you'); }
+      else { tag.textContent = `還有 ${Math.round((start - today) / day)} 天`; }
+      (el.querySelector('h2, h3') || el).append(' ', tag);
+    });
+  }
+
   function boot() {
     layout();
+    since();
+    periods();
     reveal();
     document.querySelectorAll('[data-scene]').forEach(el => {
       const fn = SCENES[el.dataset.scene];

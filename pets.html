@@ -127,7 +127,9 @@
     '邊境牧羊犬': '會跳起來在空中接飛盤；看到走散的貓（或大狗）會把牠趕回大家旁邊。',
   };
   const groups = {};
+  const wears = {};                                   // 品種專屬飾品（v4.15.28）：穿著的那一份，掛在原本的花色下
   for (const [key, p] of Object.entries(SP.pets)) {
+    if (p.wear) { (wears[p.wear.of] = wears[p.wear.of] || []).push([key, p.wear.name]); continue; }
     const g = p.breed === '一般貓' ? key : p.breed;          // 一般貓的每種花色各一張卡
     (groups[g] = groups[g] || { species: p.species, name: g, general: p.breed === '一般貓', coats: [] }).coats.push([key, p.coat]);
   }
@@ -141,8 +143,17 @@
     card.innerHTML = `<div class="show"><canvas aria-label="${g.name}的遊戲造型"></canvas></div>
       <div class="body"><h3>${g.name}</h3>${g.general ? '<span class="tag">一般貓・花色</span>' : `<span class="tag">${g.species === 'dog' ? '狗' : '品種貓'}・${g.coats.length} 種毛色</span>`}
       ${coats}<p>${INFO[g.name] || ''}</p></div>`;
+    const ws = g.coats.flatMap(([k]) => wears[k] || []);
+    if (ws.length) {                                  // 另外一張：穿著專屬飾品的樣子
+      const div = document.createElement('div');
+      div.className = 'wear-show';
+      div.innerHTML = ws.map(([k, n]) => `<div class="show"><canvas data-k="${k}" aria-label="${g.name}穿著${n}"></canvas></div>`).join('') +
+        `<p class="small">🎀 專屬飾品：<b>${ws.map(w => w[1]).join('、')}</b>（只有${g.name}能戴，用友情點數買）</p>`;
+      card.querySelector('.body').before(div);
+    }
     box.appendChild(card);
     const mini = window.DeskCatMini(card.querySelector('canvas'), g.coats[0][0], null, g.species === 'dog' ? 2 : 3);
+    card.querySelectorAll('.wear-show canvas').forEach(cv => window.DeskCatMini(cv, cv.dataset.k, null, g.species === 'dog' ? 2 : 3));
     card.querySelectorAll('.coats button').forEach(b => b.addEventListener('click', () => {
       card.querySelectorAll('.coats button').forEach(x => x.setAttribute('aria-pressed', x === b));
       mini.setKey(b.dataset.key);
