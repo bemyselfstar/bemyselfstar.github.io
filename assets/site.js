@@ -4,7 +4,7 @@
   'use strict';
   const SP = window.DESKCAT_SPRITES;
   const SITE = {
-    version: 'v4.15.30',
+    version: 'v4.16.0',
     download: 'https://github.com/bemyselfstar/DeskCat-release/releases/latest/download/DeskCat.exe',   // 直接下載（檔名每版都一樣）
     releases: 'https://github.com/bemyselfstar/DeskCat-release/releases',   // 所有版本
     mail: 'bemyselfstar.studio@gmail.com',
