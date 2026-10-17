@@ -69,7 +69,7 @@ a { color: inherit; }
 .nav a[aria-current="page"] { background: var(--accent); color: var(--accent-ink); border-color: var(--line); }
 .nav-toggle { display: none; margin-left: auto; background: var(--paper); border: 2px solid var(--line); padding: 6px 10px; font: inherit; font-weight: 700; color: var(--ink); }
 .theme-btn { background: none; border: 2px solid var(--line); color: var(--ink); width: 36px; height: 36px; font-size: 16px; cursor: pointer; }
-@media (max-width: 860px) {
+@media (max-width: 1020px) {
   .nav-toggle { display: block; }
   .nav { display: none; position: absolute; left: 0; right: 0; top: 100%; background: var(--paper); border-bottom: 3px solid var(--line); padding: 8px 16px; flex-direction: column; }
   .nav.open { display: flex; }
@@ -290,3 +290,58 @@ section { margin: 72px 0 88px; }
   .js-reveal .reveal { opacity: 0; transform: translateY(14px); transition: opacity .5s ease, transform .5s var(--ease); }
   .js-reveal .reveal.in { opacity: 1; transform: none; }
 }
+
+/* ================= 2026-10-17 改版（redesign-skill 第二次審查）：風格不變，補字體、對比、層次 ================= */
+/* 字體：標題改用圓體「粉圓」（Huninn，Google Fonts 有繁中），圓潤感跟像素毛孩比較搭；內文維持思源黑體。
+   粉圓只有一種粗細，標題用 400（不讓瀏覽器假加粗），靠字級撐出份量 */
+:root { --font-display: "Huninn", "Noto Sans TC", "Microsoft JhengHei", sans-serif; --accent-text: #8f4412; }
+:root:not([data-theme="dark"]) { --accent-ink: #2b1c10; }   /* 白字在橘底對比不夠（約 2.9:1）→ 深字 */
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --accent-text: var(--accent); --accent-ink: #241b15; } }
+:root[data-theme="dark"] { --accent-text: var(--accent); --accent-ink: #241b15; }
+h1, h2, h3, .scene .scene-head h3 { font-family: var(--font-display); font-weight: 400; }
+h1 { font-size: clamp(32px, 5.4vw, 54px); line-height: 1.16; letter-spacing: -0.01em; }
+h2 { font-size: clamp(25px, 3.6vw, 34px); letter-spacing: 0; }
+h3 { font-size: 21px; letter-spacing: 0; }
+.scene .scene-head h3 { font-size: 19px; }
+.changelog .update h3 { font-size: 18px; }
+.feature .go, .breed .body a, main p a:not(.btn) { color: var(--accent-text); }
+.feature .go { font-weight: 700; }
+.ver { font-variant-numeric: tabular-nums; color: var(--ink); }
+
+/* 頁首：微透明＋模糊，捲動時內容在後面隱約可見 */
+.site-head { background: color-mix(in srgb, var(--paper) 90%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+@media (max-width: 1020px) { .nav { background: var(--paper); } .nav a { padding: 10px 12px; } }
+
+/* 首頁主畫面：不再上下各空一大塊；舞台後面一圈暖色燈光，不是死平的底 */
+section.hero { margin-top: 0; padding: 56px 0 24px; position: relative; }
+section.hero::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(48% 62% at 74% 46%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 72%),
+    radial-gradient(30% 40% at 12% 18%, color-mix(in srgb, var(--accent-2) 10%, transparent), transparent 70%);
+}
+.hero .stage { box-shadow: 8px 8px 0 var(--shadow); }
+.hero .lead { font-size: 19px; }
+@media (max-width: 560px) { section.hero { padding-top: 28px; } .hero .lead { font-size: 17px; } }
+
+/* 假桌面的視窗陰影跟著底色（原本是純黑半透明） */
+.stage .win { box-shadow: 4px 4px 0 color-mix(in srgb, var(--line) 22%, transparent); }
+
+/* 內頁標題：底下一條窗台，右邊坐一隻毛孩（site.js 放的 .title-pet） */
+.page-title { position: relative; }
+.page-title.has-pet { padding-bottom: 28px; margin-bottom: 8px; }
+.page-title.has-pet::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 12px; background: var(--win-bar); border: 3px solid var(--line); box-shadow: 0 4px 0 var(--shadow); }
+.page-title.has-pet { padding-right: 190px; }
+.page-title .title-pet { position: absolute; right: 6%; bottom: 12px; }
+@media (max-width: 720px) {
+  .page-title.has-pet { padding-right: 0; padding-bottom: calc(var(--pet-h, 102px) + 8px); }
+  .page-title .title-pet { right: 4px; }
+}
+
+/* 頁尾：一隻黑貓睡在頁尾上緣（site.js 放的 .foot-cat） */
+.site-foot { position: relative; margin-top: 40px; }
+.site-foot .foot-cat { position: absolute; right: max(24px, calc(50% - 500px)); bottom: calc(100% - 4px); }
+
+@media (prefers-reduced-motion: reduce) { .site-head { backdrop-filter: none; } }
+/* 首頁大標題：欄位比較窄，維持兩行（原本的 <br> 斷在「的」後面） */
+.hero h1 { font-size: clamp(32px, 4.4vw, 46px); text-wrap: wrap; }

@@ -50,6 +50,31 @@
     document.body.append(foot);
     document.querySelectorAll('[data-download]').forEach(a => { a.href = SITE.download; a.rel = 'noopener'; });
     document.querySelectorAll('[data-releases]').forEach(a => { a.href = SITE.releases; a.target = '_blank'; a.rel = 'noopener'; });
+    document.querySelectorAll('[data-version]').forEach(el => { el.textContent = SITE.version; });
+    // 2026-10-17 改版：內頁標題坐一隻毛孩、頁尾上緣睡一隻黑貓（有載入 sprites.js 的頁面才有；boot() 的 Mini 會讓牠們動）
+    const TITLE_PET = {
+      'guide.html': ['橘虎斑', [['sit', 2200], ['sit_blink', 300], ['groom', 1800]]],
+      'modes.html': ['白貓', [['loaf', 2600], ['yawn', 900], ['loaf', 2000]]],
+      'pets.html': ['柴犬', [['sit_wag', 2200], ['sit', 1600]], 2],
+      'play.html': ['三花', [['washface', 1800], ['sit', 1800]]],
+      'events.html': ['黑貓', [['sit', 2200], ['tail_flick', 900], ['sit_blink', 300]]],
+      'friends.html': ['賓士貓', [['stretch', 1200], ['sit', 2200]]],
+    };
+    const pt = document.querySelector('.page-title'), tp = TITLE_PET[here];
+    if (SP && pt && tp && SP.pets[tp[0]]) {
+      pt.classList.add('has-pet');
+      pt.style.setProperty('--pet-h', SP.pets[tp[0]].h * (tp[2] || 3) + 'px');   // 手機版標題底下留這麼高給牠坐
+      pt.append(petCanvas('title-pet', tp[0], tp[1], tp[2] || 3));
+    }
+    if (SP && SP.pets['黑貓'] && !document.querySelector('[data-scene="lost"]')) {
+      foot.append(petCanvas('foot-cat', '黑貓', [['sleep', 4200, 1.2], ['tail_flick', 900, 3]], 2));
+    }
+  }
+  function petCanvas(cls, key, seq, scale) {
+    const cv = document.createElement('canvas');
+    cv.className = cls; cv.setAttribute('aria-hidden', 'true');
+    cv.dataset.mini = key; cv.dataset.seq = JSON.stringify(seq); cv.dataset.scale = scale;
+    return cv;
   }
 
   /* ---------------- 影格 ---------------- */
@@ -772,7 +797,8 @@
       const el = e.target; el.classList.add('in'); io.unobserve(el);
       el.addEventListener('transitionend', () => { el.classList.remove('reveal', 'in'); el.style.transitionDelay = ''; }, { once: true });
     }), { rootMargin: '0px 0px -8% 0px' });
-    document.querySelectorAll('main section .px-box, main section .scene').forEach(el => {
+    // 首頁主畫面一打開就要看得到，不做淡入
+    document.querySelectorAll('main section:not(.hero) .px-box, main section:not(.hero) .scene').forEach(el => {
       el.classList.add('reveal');
       const sib = [...el.parentElement.children].indexOf(el);       // 同一排依序出現
       el.style.transitionDelay = Math.min(sib, 5) * 60 + 'ms';
