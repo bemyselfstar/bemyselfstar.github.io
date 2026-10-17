@@ -1,7 +1,7 @@
 // DeskCat 手機網頁：把「那一刻」畫成一張像素小圖（信箱的明信片、旅行日記、動態照片牆共用）。
 // 2026-10-14 使用者：動態、明信片、旅行日記「不能作成流水帳」→ 每一封＝一張畫＋一件最精彩的事。
 // 伺服器只存「哪一種事＋數字、名字」，畫面在這裡照種類擺出來：毛孩用遊戲影格（某個動作的第一格），背景、小道具用程式畫。
-(window.DC_BUILD = window.DC_BUILD || {})['scenes.js'] = 28;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['scenes.js'] = 30;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const SPR = window.FAKE_SPRITES;

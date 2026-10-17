@@ -5,7 +5,7 @@
 //   讀：dc_pets_mine、dc_actions_mine、dc_friend_sprites；寫：dc_action_add、dc_pet_move
 //   信箱（server/016，2026-10-16 晚上）：dc_mail_mine（一次讀完）、dc_mail_claim（打開禮物）、dc_mail_gift（送禮）、dc_mail_like（按 🐾）
 //   毛孩圖：Storage pet-sprites/<帳號>/<sprite>.png／.json（檔名帶指紋：外觀變了檔名就變 → 下載過的存在瀏覽器，不再下載）
-(window.DC_BUILD = window.DC_BUILD || {})['server.js'] = 28;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['server.js'] = 30;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const SERVERS = {
@@ -28,7 +28,11 @@
   const saveSession = s => { session = s; sessions[which] = s || undefined; store(SESSION_KEY, sessions); };
 
   // 模式：fake＝假資料（範例、開發預覽）、live＝登入了讀伺服器、login＝還沒登入
-  let mode = params.get('fake') === '1' ? 'fake' : session ? 'live' : load(MODE_KEY, '') === 'fake' ? 'fake' : 'login';
+  // 正式網址一律要登入，沒有範例（2026-10-17 使用者：「不要塞假資料 這邊一律要求登入 因為目前還沒有串接 在網頁 手機製作寵物」）：
+  //   ?fake=1、之前選過〔先看範例〕都不算，記著的也清掉（加到主畫面的那一份也是）。範例只留給本機／家裡 Wi-Fi 的開發預覽
+  const canFake = local;
+  if (!canFake && load(MODE_KEY, '') === 'fake') store(MODE_KEY, null);
+  let mode = canFake && params.get('fake') === '1' ? 'fake' : session ? 'live' : canFake && load(MODE_KEY, '') === 'fake' ? 'fake' : 'login';
   if (params.get('fake') === '0' && mode === 'fake') mode = session ? 'live' : 'login';
 
   class ServerError extends Error {
@@ -116,7 +120,7 @@
     saveSession(null); mode = 'login';
     if (t) try { await http('POST', '/auth/v1/logout?scope=local', {}, t); } catch (_) { /* 伺服器那邊失敗也沒關係：這台已經忘了 */ }
   }
-  function chooseFake(on) { store(MODE_KEY, on ? 'fake' : null); }
+  function chooseFake(on) { store(MODE_KEY, on && canFake ? 'fake' : null); }
 
   // ---------- Google 登入（2026-10-16；跟電腦版 online.google_login 同一套：PKCE 一次性鑰匙對） ----------
   // 按〔用 Google 登入〕→ 整頁跳到 Supabase → Google 選帳號 → 跳回這一頁（網址帶 ?code=）→ 用 code＋鑰匙換登入資料。
@@ -208,7 +212,7 @@
   }
 
   window.DCServer = {
-    which, name: S.name, url: S.url, key: S.key, isLocal: local,
+    which, name: S.name, url: S.url, key: S.key, isLocal: local, canFake,   // canFake：可以看範例（只有開發預覽）
     get mode() { return mode; },
     get user() { return session ? { uid: session.uid, email: session.email } : null; },
     sendCode, verify, logout, chooseFake, rpc, sprite, pruneSprites, ServerError, googleStart,

@@ -9,7 +9,7 @@
 //   「讀過沒」伺服器不記 → 存在這台手機（deskcat_mail_read_v1）。
 // 伺服器只存「哪一種事＋數字」，句子在這裡照固定句型組（動態跟 social.py 的 MOMENT_TEXT 一樣，改的話兩邊一起改）。
 // 版面：電腦橫版＝信件、動態兩欄並排；手機直拿＝上面兩個分頁切換（body.vertical）。
-(window.DC_BUILD = window.DC_BUILD || {})['mail.js'] = 28;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['mail.js'] = 30;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const D = window.DC, S = window.DCScene, SV = window.DCServer, $ = id => document.getElementById(id);
@@ -251,19 +251,27 @@
     saving = { url, file, title };
     const canShare = !!(navigator.canShare && navigator.canShare({ files: [file] }));
     // 手機：按下去就直接存，不先跳預覽畫面（2026-10-15 使用者：「點下載就直接跳出儲存照片了 不需要再轉跳畫面」）
-    // https 叫分享選單（→「儲存影像」）；家裡 Wi-Fi 的 http 沒有分享選單 → 直接下載，iPhone 會自己跳出存照片
+    // https 叫分享選單：選「儲存影像」＝存進「照片」App（不帶文字，「儲存影像」才會在最前面）。
+    // 不能用下載：iPhone 會存進「檔案」App，照片裡找不到（2026-10-17 使用者：「想要打開存到 iPhone 的相片中」）
+    // 沒有分享選單（家裡 Wi-Fi 的 http）、分享失敗 → 打開圖，請他長按 →「加入照片」
     if (D.isPhone) {
-      if (canShare) navigator.share({ files: [file], title }).catch(e => { if (e && e.name !== 'AbortError') download(); });
-      else download();
+      if (canShare) {
+        D.toast('選「儲存影像」存進照片');
+        navigator.share({ files: [file] }).catch(e => { if (e && e.name !== 'AbortError') preview(url, title, false, true); });
+      } else preview(url, title, false, true);
       return;
     }
+    preview(url, title, canShare, false);       // 電腦：先看合成好的圖再存
+  }
+  function preview(url, title, canShare, phone) {
     $('pcSaveImg').src = url; $('pcSaveImg').alt = title;
     $('pcSave').setAttribute('aria-label', `${title}存成照片`);
     $('pcShare').hidden = !canShare;
-    $('pcSaveTip').textContent = '按〔存到電腦〕下載這張圖';     // 電腦才會走到這裡：先看合成好的圖再存
-    D.setLabel($('pcDown'), 'save', '存到電腦');
+    $('pcDown').hidden = phone;
+    $('pcSaveTip').textContent = phone ? '長按圖片 →「加入照片」' : '按〔存到電腦〕下載這張圖';
+    if (!phone) D.setLabel($('pcDown'), 'save', '存到電腦');
     $('pcSave').hidden = false;
-    (canShare ? $('pcShare') : $('pcDown')).focus();
+    (canShare ? $('pcShare') : phone ? $('pcDone') : $('pcDown')).focus();
   }
   $('pcShare').onclick = async () => {
     if (!saving) return;

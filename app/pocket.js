@@ -1,7 +1,7 @@
 // DeskCat 手機網頁「🎒 口袋」：毛孩跟你出門（只有手機有）。P66 新設計第 6 節：口袋、合照、順毛。
 // 口袋＝毛孩跟你出門、在戶外（不是真的口袋）：直式滿版的戶外場景（城市、公園、步道；照時間換天空、天氣先手動選，不要求位置權限），功能是右下的懸浮按鈕。
 // 合照：相機畫面疊上像素毛孩（可拖、放大、換姿勢、翻面），拍下來存到手機或分享；照片只留在手機、不上傳。
-(window.DC_BUILD = window.DC_BUILD || {})['pocket.js'] = 28;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['pocket.js'] = 30;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const D = window.DC, $ = id => document.getElementById(id);
@@ -383,17 +383,27 @@
       D.petPet(pet);
     }, 'image/jpeg', .92);
   };
-  $('psave').onclick = () => {
+  // 存到照片（2026-10-17 使用者：「想要打開存到 iPhone 的相片中」）：網頁不能直接寫進「照片」App；
+  // 以前用下載（a.download）→ iPhone 存進「檔案」App 的下載項目、照片裡找不到。改成叫分享選單，選「儲存影像」＝存進照片；
+  // 沒有分享選單（家裡 Wi-Fi 的 http）就請他長按上面的照片 →「加入照片」。分享選單不帶文字，「儲存影像」才會在最前面
+  let tipTimer = null;
+  function tip(msg) {                      // 提示寫在按鈕上面（剛剛按的地方，製作規則第 2 節）
+    $('ptip').textContent = msg; $('ptip').hidden = false;
+    clearTimeout(tipTimer); tipTimer = setTimeout(() => { $('ptip').hidden = true; }, 6000);
+  }
+  $('psave').onclick = async () => {
     if (!lastBlob) return;
-    const a = document.createElement('a'); a.href = URL.createObjectURL(lastBlob);
-    a.download = `DeskCat_${pet.p.name}_${new Date().toISOString().slice(0, 10)}.jpg`; a.click();
+    const file = new File([lastBlob], `DeskCat_${pet.p.name}_${new Date().toISOString().slice(0, 10)}.jpg`, { type: 'image/jpeg' });
+    if (!(navigator.canShare && navigator.canShare({ files: [file] }))) { tip('長按照片 →「加入照片」'); return; }
+    tip('選「儲存影像」存進照片');
+    try { await navigator.share({ files: [file] }); } catch (e) { if (e && e.name !== 'AbortError') tip('長按照片 →「加入照片」'); }
   };
   $('pshare').onclick = async () => {
     if (!lastBlob) return;
     const file = new File([lastBlob], 'DeskCat合照.jpg', { type: 'image/jpeg' });
     try { await navigator.share({ files: [file], title: `${pet.p.name}的合照` }); } catch (_) { /* 使用者取消 */ }
   };
-  $('pagain').onclick = () => { $('presult').hidden = true; $('pcontrols').hidden = false; };
+  $('pagain').onclick = () => { $('presult').hidden = true; $('pcontrols').hidden = false; $('ptip').hidden = true; };
   $('pdone').onclick = closePhoto;
   function toastIn(msg) { D.toast(msg); }
 

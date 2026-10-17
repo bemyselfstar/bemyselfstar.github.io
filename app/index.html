@@ -13,8 +13,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="DeskCat">
-<link rel="stylesheet" href="app.css?v=28">
-<script>window.DC_BUILD = { 'index.html': 28 };</script>
+<link rel="stylesheet" href="app.css?v=30">
+<script>window.DC_BUILD = { 'index.html': 30 };</script>
 <!-- 每個檔的網址都帶 ?v=版本（mobile/tools/bump.py 一起改）：手機上舊的快取不會被拿來用（mobile/裝置規格.md 第 3 節） -->
 </head>
 <body>
@@ -152,9 +152,10 @@
     </div>
     <div id="presult" class="presult" hidden>
       <img id="pout" alt="合照">
+      <p id="ptip" class="pc-save-tip" role="status" aria-live="polite" hidden></p>
       <div class="presult-btns">
         <button id="pshare" class="btn main"><img class="ico" src="art/icons/share.png" alt="">分享</button>
-        <button id="psave" class="btn"><img class="ico" src="art/icons/save.png" alt="">存到手機</button>
+        <button id="psave" class="btn"><img class="ico" src="art/icons/save.png" alt="">存到照片</button>
         <button id="pagain" class="btn">再拍一張</button>
         <button id="pdone" class="btn">完成</button>
       </div>
@@ -198,17 +199,17 @@
     </div>
   </section>
 </div>
-<script src="lines.js?v=28"></script>
-<script src="fake/sprites.js?v=28"></script>
-<script src="fake/fake_data.js?v=28"></script>
-<script src="fake/fake_mail.js?v=28"></script>
-<script src="server.js?v=28"></script>
+<script src="lines.js?v=30"></script>
+<script src="fake/sprites.js?v=30"></script>
+<script src="fake/fake_data.js?v=30"></script>
+<script src="fake/fake_mail.js?v=30"></script>
+<script src="server.js?v=30"></script>
 <script>   // 開發用：假的伺服器（只在本機加 ?mock=1；mobile/tools/mock_server.js）
   if (/[?&]mock=1/.test(location.search) && /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) document.write('<script src="tools/mock_server.js"><\/script>');
 </script>
-<script src="app.js?v=28"></script>
-<script src="pocket.js?v=28"></script>
-<script src="scenes.js?v=28"></script>
-<script src="mail.js?v=28"></script>
+<script src="app.js?v=30"></script>
+<script src="pocket.js?v=30"></script>
+<script src="scenes.js?v=30"></script>
+<script src="mail.js?v=30"></script>
 </body>
 </html>

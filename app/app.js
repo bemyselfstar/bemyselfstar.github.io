@@ -2,7 +2,7 @@
 // 斜上往下看的房間（W×H 像素，比螢幕大），整數倍放大（不糊）；拖曳移動鏡頭、兩指縮放。
 // 電腦網頁＝橫版（分頁列在左邊）、手機網頁＝直版（分頁列在下面）（2026-10-14 使用者）。
 // 家具先用程式畫的簡單版（之後換成正式美術）；毛孩用遊戲的側面影格，前後只靠遮擋表現、不縮放。
-(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 28;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 30;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   // 資料：範例（假資料）或伺服器（server.js；登入後 dc_pets_mine 每 10 秒讀一次，見下面「伺服器同步」）。
@@ -1079,7 +1079,8 @@
     }
   }
   // ---------- 登入、帳號 ----------
-  // 沒登入：整個畫面是登入卡（這時候沒有毛孩，不會蓋住誰）。信箱 →〔寄驗證碼〕→ 驗證碼 →〔登入〕；也可以〔先看範例〕（假資料）。
+  // 沒登入：整個畫面是登入卡（這時候沒有毛孩，不會蓋住誰）。信箱 →〔寄驗證碼〕→ 驗證碼 →〔登入〕；
+  // 〔先看範例〕（假資料）只有開發預覽有（SV.canFake），正式網址一律登入。
   // 「全家」頁上方一張帳號卡：登入的信箱、電腦多久前連過、〔登出〕；範例模式是〔登入〕。
   const reload = fake => {                   // 換模式一律重新整理（假資料、伺服器兩套資料不混在一起）
     SV.chooseFake(fake);
@@ -1149,6 +1150,7 @@
       } catch (err) { say(err.message, true); } finally { btn.disabled = false; }
     };
     $('loginBack').onclick = () => { step(false); say(''); };
+    $('loginFake').hidden = !SV.canFake;       // 正式網址沒有〔先看範例〕：一律登入（2026-10-17 使用者）
     $('loginFake').onclick = () => reload(true);
     $('loginGoogle').onclick = () => {        // 整頁跳去 Google，選好帳號會跳回這一頁（server.js googleStart／googleDone）
       $('loginGoogle').disabled = true; say('打開 Google 中…');
