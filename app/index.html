@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#2a2018">
+<title>DeskCat 毛孩的家</title>
+<!-- 加到主畫面（PWA）：圖示、名稱、全螢幕 -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DeskCat">
+<link rel="stylesheet" href="app.css?v=28">
+<script>window.DC_BUILD = { 'index.html': 28 };</script>
+<!-- 每個檔的網址都帶 ?v=版本（mobile/tools/bump.py 一起改）：手機上舊的快取不會被拿來用（mobile/裝置規格.md 第 3 節） -->
+</head>
+<body>
+<div id="app">
+  <nav class="tabs">
+    <button data-tab="home" class="on"><img class="ico" src="art/icons/home.png" alt=""><span>家</span></button>
+    <button data-tab="family"><img class="ico" src="art/icons/family.png" alt=""><span>全家</span></button>
+    <button data-tab="pocket" class="phone-only"><img class="ico" src="art/icons/pocket.png" alt=""><span>口袋</span></button>
+    <button data-tab="mail"><img class="ico" src="art/icons/mail.png" alt=""><span>信箱</span></button>
+  </nav>
+
+  <div class="pages">
+    <!-- 家：上面是全家名單、中間是房間、下面是工具列；介面一律放在房間外面，不蓋住毛孩（2026-10-14 使用者） -->
+    <main id="view-home" class="view home">
+      <div class="hud-top">
+        <div id="strip" class="strip" aria-label="全家總覽"></div>
+        <span id="clock" class="clock"></span>
+      </div>
+      <div id="stage" class="stage">
+        <canvas id="cv"></canvas>
+        <div id="bubbles"></div>
+      </div>
+      <div id="homebar" class="homebar">
+        <div id="dev" class="dev min" hidden>
+          <b>🧪</b>
+          <div class="dev-menu">
+            <button data-time="morning">早上</button><button data-time="day">白天</button>
+            <button data-time="evening">傍晚</button><button data-time="night">晚上</button><button data-time="">現在</button>
+            <button id="devArrive">桌面送一隻回家</button>
+            <button id="devMode">改看範例</button>
+            <button id="devPhone">切換 手機／電腦</button>
+            <button id="devInfo2">裝置資訊</button>
+          </div>
+        </div>
+        <div id="hint" class="hint" role="status" aria-live="polite">拖曳移動・兩指縮放・點毛孩摸摸・在牠身上滑動順毛・按住拎起來</div>
+        <button id="zoomOut" class="tool" aria-label="縮小">－</button>
+        <button id="zoomIn" class="tool" aria-label="放大">＋</button>
+        <button id="editBtn" class="tool wide" title="佈置家具"><img class="ico" src="art/icons/edit.png" alt="">佈置</button>
+      </div>
+      <div id="editBar" class="edit-bar" hidden>
+        <b><img class="ico" src="art/icons/edit.png" alt="">佈置模式</b><span>拖家具到喜歡的地方</span>
+        <button id="editReset" class="btn">還原</button><button id="editDone" class="btn main">完成</button>
+      </div>
+      <section id="sheet" class="sheet" hidden>
+        <div class="sheet-head">
+          <canvas id="sheetAvatar" width="48" height="48"></canvas>
+          <div>
+            <div id="sheetName" class="sheet-name"></div>
+            <div id="sheetInfo" class="sheet-info"></div>
+          </div>
+          <button id="sheetClose" class="x" aria-label="關閉">✕</button>
+        </div>
+        <div id="sheetTip" class="sheet-tip" hidden>✋ 照箭頭方向滑動，幫牠順毛</div>
+        <div id="sheetMsg" class="sheet-msg" role="status" aria-live="polite" hidden></div>
+        <div id="sheetBtns" class="sheet-btns"></div>
+      </section>
+    </main>
+
+    <main id="view-family" class="view page" hidden>
+      <div id="installCard" class="install-card" hidden>
+        <div class="install-head"><img src="icons/apple-touch-icon.png" alt=""><div><b>把 DeskCat 加到主畫面</b><span>打開就像一個 App：全螢幕、從主畫面一點就到</span></div>
+          <button id="installClose" class="x" aria-label="不用了">✕</button></div>
+        <ol id="installIos" class="install-steps" hidden>
+          <li>按 Safari 下面的「分享」<b>⬆︎</b></li>
+          <li>往下滑，點「<b>加入主畫面</b>」</li>
+          <li>右上角按「<b>新增</b>」</li>
+        </ol>
+        <button id="installBtn" class="btn main" hidden><img class="ico" src="art/icons/install.png" alt="">加到主畫面</button>
+      </div>
+      <!-- 帳號卡（app.js renderAccount）：登入的信箱、電腦多久前連過、〔登出〕；範例模式是〔登入〕 -->
+      <div id="acct" class="acct"></div>
+      <h2>全家在哪</h2>
+      <ul id="familyList" class="family"></ul>
+    </main>
+
+    <main id="view-pocket" class="view pocket" hidden>
+      <div id="pocketEmpty" class="page">
+        <h2><img class="ico" src="art/icons/pocket.png" alt="">口袋</h2>
+        <p class="note">還沒有毛孩跟你出門。選一隻帶出門（一次一隻）：</p>
+        <div id="pocketPick" class="pick-row"></div>
+        <div id="pocketDex" class="dex"></div>
+      </div>
+      <div id="pocketFull" class="pocket-full" hidden>
+        <div id="pocketStage" class="pocket-stage">
+          <canvas id="pocketCv"></canvas>
+          <div id="pocketBubbles" class="bubble-layer"></div>
+        </div>
+        <div id="pocketInfo" class="pocket-pill"></div>
+        <div class="pocket-fabs">
+          <button id="pocketWeather" class="fab" title="換天氣"><b><img class="ico" src="art/icons/sun.png" alt=""></b><span>天氣</span></button>
+          <button id="pocketHome" class="fab" title="放回家"><b><img class="ico" src="art/icons/home.png" alt=""></b><span>放回家</span></button>
+          <button id="pocketPhoto" class="fab main" title="跟牠合照"><b><img class="ico" src="art/icons/camera.png" alt=""></b><span>合照</span></button>
+        </div>
+      </div>
+    </main>
+
+    <!-- 信箱（mail.js）：電腦橫版兩欄並排；手機直拿用上面兩個分頁切換 -->
+    <main id="view-mail" class="view page mail" data-seg="letters" hidden>
+      <div class="mail-head">
+        <h2><img class="ico" src="art/icons/mail.png" alt="">信箱</h2>
+        <p id="mailNote" class="note demo-note" role="status" aria-live="polite" hidden></p>
+        <div class="seg" role="tablist" aria-label="信件或動態">
+          <button id="segLetters" role="tab" class="on" aria-selected="true"><img class="ico" src="art/icons/mail.png" alt="">信件</button>
+          <button id="segFeed" role="tab" aria-selected="false"><img class="ico" src="art/icons/paw.png" alt="">動態</button>
+        </div>
+      </div>
+      <div class="mail-cols">
+        <section id="mailLetters" class="mail-col letters-col" aria-label="信件"></section>
+        <section id="mailFeed" class="mail-col feed-col" aria-label="好友動態"></section>
+      </div>
+    </main>
+  </div>
+
+  <section id="photo" class="photo" hidden>
+    <div id="pview" class="pview">
+      <video id="pvideo" playsinline muted autoplay></video>
+      <img id="pstill" alt="" hidden>
+      <div id="pnocam" class="pnocam" hidden>
+        <p id="pnocamWhy"></p>
+        <button id="pnocamPick" class="btn main big"><img class="ico" src="art/icons/camera.png" alt="">拍照或選一張照片</button>
+        <p class="note">照片只留在你的手機，不會上傳。</p>
+      </div>
+      <canvas id="ppet"></canvas>
+      <div id="pposes" class="pposes" aria-label="選動作"></div>
+      <div id="pcontrols" class="pcontrols">
+        <button id="pclose" aria-label="關閉">✕</button>
+        <button id="pflip">↔ 翻面</button>
+        <button id="psmall" aria-label="縮小">－</button>
+        <button id="pbig" aria-label="放大">＋</button>
+        <button id="pshoot" class="shutter" aria-label="拍照"></button>
+        <button id="pswitch"><img class="ico" src="art/icons/switch.png" alt="">鏡頭</button>
+        <button id="ppick"><img class="ico" src="art/icons/picture.png" alt="">選照片</button>
+      </div>
+      <input id="pfile" type="file" accept="image/*" hidden>
+    </div>
+    <div id="presult" class="presult" hidden>
+      <img id="pout" alt="合照">
+      <div class="presult-btns">
+        <button id="pshare" class="btn main"><img class="ico" src="art/icons/share.png" alt="">分享</button>
+        <button id="psave" class="btn"><img class="ico" src="art/icons/save.png" alt="">存到手機</button>
+        <button id="pagain" class="btn">再拍一張</button>
+        <button id="pdone" class="btn">完成</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 明信片存成照片（mail.js）：先給你看合成好的圖，再分享／存到手機 -->
+  <section id="pcSave" class="pc-save" role="dialog" aria-label="明信片存成照片" hidden>
+    <img id="pcSaveImg" alt="明信片">
+    <p id="pcSaveTip" class="pc-save-tip"></p>
+    <div class="presult-btns">
+      <button id="pcShare" class="btn main"><img class="ico" src="art/icons/share.png" alt="">分享</button>
+      <button id="pcDown" class="btn"><img class="ico" src="art/icons/save.png" alt="">存到手機</button>
+      <button id="pcDone" class="btn">完成</button>
+    </div>
+  </section>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <!-- 登入（server.js、app.js showLogin）：還沒登入時蓋住整個畫面（這時候沒有毛孩）。信箱驗證碼，跟電腦版同一個帳號 -->
+  <section id="login" class="login" aria-label="登入" hidden>
+    <div class="login-card">
+      <img class="login-logo" src="icons/apple-touch-icon.png" alt="">
+      <h2>登入 DeskCat</h2>
+      <p class="note">用電腦版 DeskCat 的同一個帳號</p>
+      <button id="loginGoogle" class="btn big google-btn" type="button">用 Google 登入</button>
+      <p class="login-or">或用信箱收驗證碼</p>
+      <form id="loginEmailForm" class="login-form" novalidate>
+        <input id="loginEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="你的信箱" aria-label="信箱">
+        <button id="loginSend" class="btn main big" type="submit"><img class="ico" src="art/icons/letter.png" alt="">寄驗證碼</button>
+      </form>
+      <form id="loginCodeForm" class="login-form" novalidate hidden>
+        <p id="loginSentTo" class="note"></p>
+        <input id="loginCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="驗證碼" aria-label="驗證碼">
+        <button id="loginGo" class="btn main big" type="submit">登入</button>
+        <button id="loginBack" class="btn" type="button">換信箱／重寄</button>
+      </form>
+      <p id="loginMsg" class="login-msg" role="status" aria-live="polite"></p>
+      <button id="loginFake" class="btn" type="button">先看範例</button>
+      <p id="loginServer" class="note small"></p>
+    </div>
+  </section>
+</div>
+<script src="lines.js?v=28"></script>
+<script src="fake/sprites.js?v=28"></script>
+<script src="fake/fake_data.js?v=28"></script>
+<script src="fake/fake_mail.js?v=28"></script>
+<script src="server.js?v=28"></script>
+<script>   // 開發用：假的伺服器（只在本機加 ?mock=1；mobile/tools/mock_server.js）
+  if (/[?&]mock=1/.test(location.search) && /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) document.write('<script src="tools/mock_server.js"><\/script>');
+</script>
+<script src="app.js?v=28"></script>
+<script src="pocket.js?v=28"></script>
+<script src="scenes.js?v=28"></script>
+<script src="mail.js?v=28"></script>
+</body>
+</html>

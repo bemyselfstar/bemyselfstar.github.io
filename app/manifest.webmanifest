@@ -1,0 +1,17 @@
+{
+  "name": "DeskCat 毛孩的家",
+  "short_name": "DeskCat",
+  "description": "你的 DeskCat 毛孩：看看家裡的牠、帶牠出門、跟牠合照",
+  "lang": "zh-Hant",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#2a2018",
+  "theme_color": "#2a2018",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
