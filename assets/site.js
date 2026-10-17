@@ -22,7 +22,7 @@
     const head = document.createElement('header');
     head.className = 'site-head';
     head.innerHTML = `<div class="wrap">
-      <a class="logo" href="index.html" aria-label="DeskCat 首頁"><img src="assets/favicon.png" alt=""><span>DeskCat</span></a>
+      <a class="logo" href="index.html" aria-label="DeskCat 首頁"><img src="assets/logo.png" alt=""><span>DeskCat</span></a>
       <button class="nav-toggle" aria-expanded="false" aria-controls="site-nav">選單</button>
       <nav class="nav" id="site-nav">${NAV.map(([h, t]) =>
         `<a href="${h}"${h === here ? ' aria-current="page"' : ''}>${t}</a>`).join('')}</nav>

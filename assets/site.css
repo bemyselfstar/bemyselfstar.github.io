@@ -345,3 +345,5 @@ section.hero::before {
 @media (prefers-reduced-motion: reduce) { .site-head { backdrop-filter: none; } }
 /* 首頁大標題：欄位比較窄，維持兩行（原本的 <br> 斷在「的」後面） */
 .hero h1 { font-size: clamp(32px, 4.4vw, 46px); text-wrap: wrap; }
+/* 頁首 logo＝程式圖示（橘貓＋黑白狗趴在視窗上，2026-10-17）：72px 圖縮成 36px 顯示，用平滑縮放不用像素化 */
+.logo img { image-rendering: auto; }
