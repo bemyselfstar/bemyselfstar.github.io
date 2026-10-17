@@ -2,7 +2,7 @@
 // 斜上往下看的房間（W×H 像素，比螢幕大），整數倍放大（不糊）；拖曳移動鏡頭、兩指縮放。
 // 電腦網頁＝橫版（分頁列在左邊）、手機網頁＝直版（分頁列在下面）（2026-10-14 使用者）。
 // 家具先用程式畫的簡單版（之後換成正式美術）；毛孩用遊戲的側面影格，前後只靠遮擋表現、不縮放。
-(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 30;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 31;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   // 資料：範例（假資料）或伺服器（server.js；登入後 dc_pets_mine 每 10 秒讀一次，見下面「伺服器同步」）。
@@ -1118,6 +1118,15 @@
     const box = $('login');
     box.hidden = false; document.body.classList.add('login-open');
     $('loginServer').textContent = SV.which === 'release' && !dev ? '' : `伺服器：${SV.name}`;
+    // 從主畫面的網頁 App 打開：iPhone 跟 Safari 分開記登入 → 要再登入一次（2026-10-17 使用者：加到主畫面又要跳去網頁打 Gmail）。
+    // 這時候信箱驗證碼放最上面（不用跳去 Google 網頁、一直在這個畫面裡），Google 放下面。iOS 26 加到主畫面預設就是網頁 App，網頁改不了預設
+    const inApp = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+    $('loginApp').hidden = !inApp;
+    if (inApp && !box.dataset.appOrder) {
+      box.dataset.appOrder = '1';
+      $('loginGoogle').before($('loginEmailForm'), $('loginCodeForm'), document.querySelector('.login-or'));
+      document.querySelector('.login-or').textContent = '或用 Google 登入';
+    }
     const say = (t, bad) => { $('loginMsg').textContent = t; $('loginMsg').classList.toggle('bad', !!bad); };
     say(msg, !!msg);
     let email = '';
