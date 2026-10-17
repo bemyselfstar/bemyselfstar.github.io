@@ -5,7 +5,7 @@
 //   讀：dc_pets_mine、dc_actions_mine、dc_friend_sprites；寫：dc_action_add、dc_pet_move
 //   信箱（server/016，2026-10-16 晚上）：dc_mail_mine（一次讀完）、dc_mail_claim（打開禮物）、dc_mail_gift（送禮）、dc_mail_like（按 🐾）
 //   毛孩圖：Storage pet-sprites/<帳號>/<sprite>.png／.json（檔名帶指紋：外觀變了檔名就變 → 下載過的存在瀏覽器，不再下載）
-(window.DC_BUILD = window.DC_BUILD || {})['server.js'] = 31;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['server.js'] = 32;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const SERVERS = {
