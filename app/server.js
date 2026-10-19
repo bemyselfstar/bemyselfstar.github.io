@@ -4,8 +4,11 @@
 // 網頁、手機用的函式都不檢查「現在的裝置」→ 手機登入不會把電腦踢下線（跨線需求 2026-10-14）。
 //   讀：dc_pets_mine、dc_actions_mine、dc_friend_sprites；寫：dc_action_add、dc_pet_move
 //   信箱（server/016，2026-10-16 晚上）：dc_mail_mine（一次讀完）、dc_mail_claim（打開禮物）、dc_mail_gift（送禮）、dc_mail_like（按 🐾）
+//   紀念品（server/017，2026-10-17）：dc_souvenirs_mine、dc_souvenirs_add（〔放回家〕）、dc_souvenirs_merge（手機裡以前存的合併上去）
 //   毛孩圖：Storage pet-sprites/<帳號>/<sprite>.png／.json（檔名帶指紋：外觀變了檔名就變 → 下載過的存在瀏覽器，不再下載）
-(window.DC_BUILD = window.DC_BUILD || {})['server.js'] = 32;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+//   口袋 AI 旅行照（2026-10-17，伺服器那一半遊戲線做；規格在 docs/跨線需求.md 2026-10-17「手機要叫的函式」）：
+//     Edge Function trip-photo（產圖 15～45 秒；遊戲線 server/functions/trip-photo）、dc_trip_photos_mine（server/018：相簿＋今天還能不能拍）、Storage trip-photos/<file>（圖）
+(window.DC_BUILD = window.DC_BUILD || {})['server.js'] = 36;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const SERVERS = {
@@ -64,7 +67,8 @@
     }
     if (!r.ok) {
       let j = null; try { j = await r.json(); } catch (_) { /* 不是 JSON */ }
-      throw friendly(r.status, j, path);
+      const err = friendly(r.status, j, path); err.body = j;   // 旅行照的函式不是 200 時也帶 {status, reason}（tripMake 拿來用）
+      throw err;
     }
     if (accept === 'blob') return r.blob();
     const txt = await r.text();
@@ -187,6 +191,28 @@
       } catch (_) { res(null); }
     });
   }
+  // 旅行照的圖（trip.js）：照 path 存在同一個 IndexedDB（鍵用「trip:」開頭，pruneSprites 不會刪到）。同一個 path 內容不會變
+  const tripMemo = {};
+  function tripImage(path) {
+    const id = `trip:${which}/${path}`;
+    if (!tripMemo[id]) tripMemo[id] = (async () => {
+      const got = await dbDo('get', id);
+      if (got instanceof Blob) return got;
+      const png = await authed('GET', '/storage/v1/object/authenticated/trip-photos/' + path, undefined, 'blob');
+      await dbDo('put', png, id);
+      return png;
+    })().catch(e => { delete tripMemo[id]; throw e; });
+    return tripMemo[id];
+  }
+  // 產圖：等最久 ms 毫秒（太久＝timeout，畫面用同一個 key 再送；伺服器那邊同一個 key 不會再產、不會再扣）
+  function tripMake(cid, city, scene, key, ms = 90000) {
+    let timer = 0;
+    const late = new Promise((_, rej) => { timer = setTimeout(() => rej(new ServerError('等太久了，再試一次', 'timeout', 0)), ms); });
+    const go = authed('POST', '/functions/v1/trip-photo', { cid, city, scene, key })
+      .catch(e => { if (e.code !== 'auth' && e.body && e.body.status) return e.body; throw e; });   // 不是 200 但有說原因：照原因處理
+    return Promise.race([go, late]).finally(() => clearTimeout(timer));
+  }
+
   const memo = {};                         // 這次開著已經準備好的：檔名 → Promise<圖的說明＋網址>
   // 一張圖表＝{species, breed, coat, w, h, anims: {動作: [第幾列, 幾格]}, ticks, file（給 <img> 用的網址）}；跟 fake/sprites.js 的一隻一樣
   function sprite(owner, file) {
@@ -229,5 +255,13 @@
     mailClaim: id => rpc('dc_mail_claim', { p_id: id }),     // {points, already}
     mailGift: to => rpc('dc_mail_gift', { p_to: to }),       // 'sent'／'already'／'not_friend'／'self'
     mailLike: id => rpc('dc_mail_like', { p_id: id }),       // 'liked'／'unliked'／'gone'／'not_friend'
+    // 紀念品跟著帳號（server/017，2026-10-17；用法見 docs/跨線需求.md 10-17「紀念品要跟著帳號走」）
+    souvMine: () => rpc('dc_souvenirs_mine'),                // {種類: 次數}
+    souvAdd: (kinds, key) => rpc('dc_souvenirs_add', { p_kinds: kinds, p_key: key }),   // {ok, again, souvenirs}；同一個 key 重送不會加兩次
+    souvMerge: counts => rpc('dc_souvenirs_merge', { p_counts: counts }),              // {ok, souvenirs}；每種取大的、不相加
+    // 口袋 AI 旅行照（2026-10-17；trip.js）
+    tripMake,                                                // {ok, status: done／making／no, id, file, reused, reason, wait_min?, next_at?}（trip.js normMake）
+    tripMine: () => rpc('dc_trip_photos_mine'),              // {photos: [{id, cid, name, city, scene, tod, status, file, reused, created_at}], today_left, next_at, min_out_min}
+    tripImage,                                               // path → Blob（下載過的存在瀏覽器）
   };
 })();

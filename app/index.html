@@ -13,8 +13,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="DeskCat">
-<link rel="stylesheet" href="app.css?v=32">
-<script>window.DC_BUILD = { 'index.html': 32 };</script>
+<link rel="stylesheet" href="app.css?v=36">
+<script>window.DC_BUILD = { 'index.html': 36 };</script>
 <!-- 每個檔的網址都帶 ?v=版本（mobile/tools/bump.py 一起改）：手機上舊的快取不會被拿來用（mobile/裝置規格.md 第 3 節） -->
 </head>
 <body>
@@ -97,6 +97,7 @@
         <p class="note">還沒有毛孩跟你出門。選一隻帶出門（一次一隻）：</p>
         <div id="pocketPick" class="pick-row"></div>
         <div id="pocketDex" class="dex"></div>
+        <div id="pocketAlbum" class="dex" hidden></div>
       </div>
       <div id="pocketFull" class="pocket-full" hidden>
         <div id="pocketStage" class="pocket-stage">
@@ -106,6 +107,7 @@
         <div id="pocketInfo" class="pocket-pill"></div>
         <div class="pocket-fabs">
           <button id="pocketWeather" class="fab" title="換天氣"><b><img class="ico" src="art/icons/sun.png" alt=""></b><span>天氣</span></button>
+          <button id="pocketTrip" class="fab" title="AI 旅行照" hidden><b><img class="ico" src="art/icons/trip.png" alt=""></b><span>旅行照</span></button>
           <button id="pocketHome" class="fab" title="放回家"><b><img class="ico" src="art/icons/home.png" alt=""></b><span>放回家</span></button>
           <button id="pocketPhoto" class="fab main" title="跟牠合照"><b><img class="ico" src="art/icons/camera.png" alt=""></b><span>合照</span></button>
         </div>
@@ -163,6 +165,46 @@
     </div>
   </section>
 
+  <!-- 口袋 AI 旅行照（trip.js）：選城市＋做什麼 → 等 AI 畫 → 看照片、存到照片；下面是旅行相簿 -->
+  <section id="trip" class="trip" role="dialog" aria-label="旅行照" hidden>
+    <header class="trip-top">
+      <h2><img class="ico" src="art/icons/trip.png" alt="">旅行照</h2>
+      <button id="tripClose" class="btn" type="button" aria-label="關閉">✕</button>
+    </header>
+    <div id="tripPick" class="trip-body">
+      <div class="trip-who"><canvas id="tripAvatar"></canvas><p id="tripAsk"></p></div>
+      <h3>去哪個城市</h3>
+      <div id="tripCities" class="trip-cities"></div>
+      <h3>做什麼</h3>
+      <div id="tripScenes" class="trip-scenes"></div>
+      <p id="tripRule" class="note trip-rule" role="status" aria-live="polite"></p>
+      <button id="tripGo" class="btn main big trip-go" type="button">拍旅行照</button>
+      <div id="tripAlbum" class="dex trip-album" hidden></div>
+    </div>
+    <div id="tripWait" class="trip-body trip-wait" hidden>
+      <canvas id="tripWalk" class="trip-walk"></canvas>
+      <p id="tripWaitText" class="trip-wait-text"></p>
+      <p id="tripWaitSec" class="note"></p>
+      <p id="tripWaitErr" class="trip-err" role="status" aria-live="polite" hidden></p>
+      <div class="presult-btns">
+        <button id="tripRetry" class="btn main" type="button" hidden>再試一次</button>
+        <button id="tripLeave" class="btn" type="button">先離開</button>
+      </div>
+      <p class="note">可以先離開，畫好會放進旅行相簿</p>
+    </div>
+    <div id="tripView" class="trip-body trip-view" hidden>
+      <img id="tripImg" class="trip-img" alt="旅行照">
+      <p id="tripCap" class="trip-cap"></p>
+      <p id="tripNote" class="note" hidden></p>
+      <p id="tripTip" class="pc-save-tip trip-tip" role="status" aria-live="polite" hidden></p>
+      <div class="presult-btns">
+        <button id="tripSave" class="btn main" type="button"><img class="ico" src="art/icons/save.png" alt="">存到照片</button>
+        <button id="tripShare" class="btn" type="button" hidden><img class="ico" src="art/icons/share.png" alt="">分享</button>
+        <button id="tripDone" class="btn" type="button">完成</button>
+      </div>
+    </div>
+  </section>
+
   <!-- 明信片存成照片（mail.js）：先給你看合成好的圖，再分享／存到手機 -->
   <section id="pcSave" class="pc-save" role="dialog" aria-label="明信片存成照片" hidden>
     <img id="pcSaveImg" alt="明信片">
@@ -202,17 +244,18 @@
     </div>
   </section>
 </div>
-<script src="lines.js?v=32"></script>
-<script src="fake/sprites.js?v=32"></script>
-<script src="fake/fake_data.js?v=32"></script>
-<script src="fake/fake_mail.js?v=32"></script>
-<script src="server.js?v=32"></script>
+<script src="lines.js?v=36"></script>
+<script src="fake/sprites.js?v=36"></script>
+<script src="fake/fake_data.js?v=36"></script>
+<script src="fake/fake_mail.js?v=36"></script>
+<script src="server.js?v=36"></script>
 <script>   // 開發用：假的伺服器（只在本機加 ?mock=1；mobile/tools/mock_server.js）
   if (/[?&]mock=1/.test(location.search) && /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) document.write('<script src="tools/mock_server.js"><\/script>');
 </script>
-<script src="app.js?v=32"></script>
-<script src="pocket.js?v=32"></script>
-<script src="scenes.js?v=32"></script>
-<script src="mail.js?v=32"></script>
+<script src="app.js?v=36"></script>
+<script src="pocket.js?v=36"></script>
+<script src="trip.js?v=36"></script>
+<script src="scenes.js?v=36"></script>
+<script src="mail.js?v=36"></script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 // DeskCat 手機網頁「🎒 口袋」：毛孩跟你出門（只有手機有）。P66 新設計第 6 節：口袋、合照、順毛。
 // 口袋＝毛孩跟你出門、在戶外（不是真的口袋）：直式滿版的戶外場景（城市、公園、步道；照時間換天空、天氣先手動選，不要求位置權限），功能是右下的懸浮按鈕。
 // 合照：相機畫面疊上像素毛孩（可拖、放大、換姿勢、翻面），拍下來存到手機或分享；照片只留在手機、不上傳。
-(window.DC_BUILD = window.DC_BUILD || {})['pocket.js'] = 32;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['pocket.js'] = 36;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const D = window.DC, $ = id => document.getElementById(id);
@@ -14,9 +14,24 @@
   const pocketPet = () => HOME.pets.find(p => p.where === 'pocket');
   // 紀念品（2026-10-14 使用者選「口袋帶回紀念品」）：出門每 20 分鐘撿到一樣、一趟最多 3 樣；撿到什麼看天氣、時間（scenes.js 的 ITEMS）。
   // 撿到的時候東西出現在步道上（閃閃發亮），點一下收進包包（p.found）；〔放回家〕時帶回家擺上紀念品架（app.js bringSouvenirs）。
+  // 撿過的（D.souvenirs()）跟著帳號存在伺服器（server/017，2026-10-17；app.js souvSync），這支手機只當暫存。
   const FIND_EVERY = 20, FIND_MAX = 3;
   let item = null, nextAt = 0;
-  const minsOut = () => (Date.now() - since) / 60000;
+  const outAt = () => pet.p.placeAt || since;   // 伺服器的 place_at 每次讀回來都會更新（剛帶出門時是這支手機的時間）
+  const minsOut = () => (Date.now() - outAt()) / 60000;
+  // 這一趟撿過的也記在這台（2026-10-18 BUG「口袋版一直撿到紀念品」，手機 36 版）：p.found 只在記憶體，iPhone 關掉 App 重開就變空的，
+  // 出門時間照伺服器算還是很久 → 馬上又撿 3 樣（之前撿的沒帶回家就不見了）。同一隻、放進口袋的時間一樣（差 5 分鐘內）＝同一趟，拿回來。
+  // 撿到東西至少要出門 20 分鐘，所以下一趟的時間一定差超過 5 分鐘，不會拿到上一趟（已經帶回家的）。
+  const FOUND_KEY = 'deskcat_pocket_found_v1';
+  function loadFound() {
+    try {
+      const s = JSON.parse(localStorage.getItem(FOUND_KEY) || 'null');
+      return s && typeof s.cid === 'string' && Number.isFinite(s.at) && Array.isArray(s.found) ? s : null;
+    } catch (_) { return null; }
+  }
+  function saveFound() {
+    try { localStorage.setItem(FOUND_KEY, JSON.stringify({ cid: pet.p.id, at: outAt(), found: pet.p.found })); } catch (_) { /* 存不了：這次開著還是對的 */ }
+  }
   const waiting = () => pet ? Math.min(FIND_MAX, Math.floor(minsOut() / FIND_EVERY)) - pet.p.found.length - (item ? 1 : 0) : 0;
 
   function sync() {                       // 口袋裡現在是哪一隻
@@ -36,8 +51,12 @@
     pet.bubbleBox = $('pocketBubbles');
     pet.scr = (wy = pet.headY() - 3, wx = pet.x) => { const r = pcv.getBoundingClientRect(), b = $('pocketStage').getBoundingClientRect();
       return [r.left - b.left + wx * scale, r.top - b.top + wy * scale]; };
-    since = p.placeAt || Date.now() - 72 * 60000;   // 伺服器：放進口袋的時間（place_at）；假資料：出門 1 小時 12 分（＝已經可以撿 3 樣）
+    const s = loadFound();
+    // 伺服器：放進口袋的時間（place_at）；範例：出門 1 小時 12 分（＝已經可以撿 3 樣），重新整理還是同一趟
+    since = p.placeAt || (s && s.cid === p.id && Date.now() - s.at < 6 * 3600000 ? s.at : Date.now() - 72 * 60000);
     p.found = p.found || []; item = null; nextAt = performance.now() + 1800;
+    if (s && s.cid === p.id && Math.abs(s.at - (p.placeAt || since)) < 5 * 60000 && s.found.length > p.found.length)
+      p.found = s.found.filter(k => typeof k === 'string' && (!window.DCScene || window.DCScene.ITEMS[k])).slice(0, FIND_MAX);
   }
   function fit() {                        // 滿版：放大倍數照毛孩大小挑（大約佔畫面寬的一半），畫布蓋滿整個畫面
     const box = $('pocketStage'), w = box.clientWidth, h = box.clientHeight;
@@ -138,7 +157,7 @@
   }
   function pickUp() {                      // 點一下：收進包包
     const k = item.k, it = window.DCScene.ITEMS[k], had = D.souvenirs()[k] || pet.p.found.includes(k);
-    pet.p.found.push(k); item = null; nextAt = performance.now() + 3500;
+    pet.p.found.push(k); item = null; nextAt = performance.now() + 3500; saveFound();
     D.addHearts(pet, 2); D.say(pet, had ? D.line(pet, 'pocket_got', { other: it.name }) : D.line(pet, 'souvenir_new'), 2200);
     render();
     const pill = $('pocketInfo'); pill.classList.remove('bump'); void pill.offsetWidth; pill.classList.add('bump');
@@ -164,9 +183,10 @@
         b.append(c, n); b.onclick = () => takeOut(p); box.appendChild(b);
       }
       renderDex();
+      if (window.DCTrip) window.DCTrip.renderAlbum($('pocketAlbum'));   // 旅行相簿（trip.js）
       return;
     }
-    const m = Math.round((Date.now() - since) / 60000);
+    const m = Math.round(minsOut());
     const n = pet.p.found.length;
     D.setLabel($('pocketInfo'), 'pocket', `${pet.p.name}・出門 ${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}${n ? `・撿到 ${n} 樣` : ''}`);
   }
@@ -195,7 +215,7 @@
     show();
     if (pet) D.say(pet, D.line(pet, 'pocket_go'));
   }
-  function show() { render(); requestAnimationFrame(fit); }
+  function show() { render(); requestAnimationFrame(fit); if (window.DCTrip) window.DCTrip.pocketShown(); }
 
   // 摸摸、順毛（手指從頭往尾巴滑＝順毛）
   const g = { on: false };
@@ -232,6 +252,7 @@
   };
   $('pocketHome').onclick = () => { if (pet) D.act(pet.p, 'callhome'); };
   $('pocketPhoto').onclick = () => openPhoto();
+  $('pocketTrip').onclick = () => { if (window.DCTrip) window.DCTrip.open(); };   // AI 旅行照（trip.js）
 
   // ---------- 合照 ----------
   const ph = { stream: null, facing: 'environment', s: 6, x: 0, y: 0, pose: 0, flip: false, still: null };

@@ -2,7 +2,7 @@
 // 斜上往下看的房間（W×H 像素，比螢幕大），整數倍放大（不糊）；拖曳移動鏡頭、兩指縮放。
 // 電腦網頁＝橫版（分頁列在左邊）、手機網頁＝直版（分頁列在下面）（2026-10-14 使用者）。
 // 家具先用程式畫的簡單版（之後換成正式美術）；毛孩用遊戲的側面影格，前後只靠遮擋表現、不縮放。
-(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 32;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 36;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   // 資料：範例（假資料）或伺服器（server.js；登入後 dc_pets_mine 每 10 秒讀一次，見下面「伺服器同步」）。
@@ -193,11 +193,94 @@
       rect(cx + 2, cy + 10, 8, 1, '#b3a493'); rect(cx + 7, cy - 2, 2, 2, '#e8504a');
     });
   }
-  // 紀念品架：口袋撿回來的東西（每種一個位置，像圖鑑一樣慢慢擺滿）。先記在這台裝置的瀏覽器，之後改存伺服器
+  // 紀念品架：口袋撿回來的東西（每種一個位置，像圖鑑一樣慢慢擺滿）。
+  // 跟著帳號存在伺服器（server/017；2026-10-17 使用者：「要跟著帳號資料」），瀏覽器只當暫存＋記還沒送出去的：
+  //   deskcat_souvenirs_v2＝{'伺服器/帳號': {got: 伺服器上的 {種類: 次數}, wait: [{key, kinds}] 還沒送成功的〔放回家〕}, fake: 範例用的}
+  //   舊的 deskcat_souvenirs_v1（{種類: 次數}，以前只存在這支手機）：登入後合併到那個帳號（每種取大的、不相加），成功就刪掉
+  // 〔放回家〕先放上架（不等網路），再 dc_souvenirs_add(這趟的, 代號)；沒網路就留在 wait，下次讀伺服器成功時用同一個代號再送（不會加兩次）
   const SHELF = { x: 430, y: WALL_Y - 104, w: 64, h: 32 };   // 掛畫（394～424）和門（497～）中間
-  const SOUV_KEY = 'deskcat_souvenirs_v1';
+  const SOUV_KEY = 'deskcat_souvenirs_v2', SOUV_OLD = 'deskcat_souvenirs_v1';
+  const souvClean = o => {                  // 只留 {種類: 正整數}（種類格式跟伺服器一樣）
+    const r = {};
+    if (o && typeof o === 'object' && !Array.isArray(o)) {
+      for (const [k, v] of Object.entries(o)) { const n = Math.floor(+v); if (/^[a-z_]{1,24}$/.test(k) && n > 0) r[k] = Math.min(n, 99999); }
+    }
+    return r;
+  };
+  const souvAcct = () => !LIVE ? 'fake' : SV.user && SV.user.uid ? `${SV.which}/${SV.user.uid}` : null;   // 換帳號＝換一份
+  function souvAll() {
+    try { const a = JSON.parse(localStorage.getItem(SOUV_KEY) || '{}'); return a && typeof a === 'object' && !Array.isArray(a) ? a : {}; } catch (_) { return {}; }
+  }
+  function souvSlot() {
+    const s = souvAll()[souvAcct()] || {};
+    return { got: souvClean(s.got), wait: Array.isArray(s.wait) ? s.wait.filter(w => w && typeof w.key === 'string' && Array.isArray(w.kinds)) : [] };
+  }
+  function souvSave(slot) {
+    const id = souvAcct();
+    if (!id) return;
+    const a = souvAll(); a[id] = slot;
+    try { localStorage.setItem(SOUV_KEY, JSON.stringify(a)); } catch (_) { /* 存不了：這次開著還是看得到 */ }
+  }
+  function souvOld() {
+    if (!LIVE) return {};
+    try { return souvClean(JSON.parse(localStorage.getItem(SOUV_OLD) || 'null')); } catch (_) { return {}; }
+  }
   let souv = {};
-  try { souv = JSON.parse(localStorage.getItem(SOUV_KEY) || '{}') || {}; } catch (_) { souv = {}; }
+  function souvView() {                     // 架上看到的＝伺服器的（還沒合併的舊資料取大的）＋還沒送出去的
+    const v = {};
+    if (souvAcct()) {
+      const { got, wait } = souvSlot();
+      Object.assign(v, got);
+      for (const [k, n] of Object.entries(souvOld())) v[k] = Math.max(v[k] || 0, n);
+      for (const w of wait) for (const k of w.kinds) v[k] = (v[k] || 0) + 1;
+    }
+    souv = v;
+  }
+  souvView();
+  const souvCode = () => 'sv' + Date.now().toString(36) + Array.from(crypto.getRandomValues(new Uint8Array(8)), b => b.toString(16).padStart(2, '0')).join('');
+  function souvKeep(items) {                // 〔放回家〕擺上架：記下來、送伺服器（範例只記在這台）
+    const slot = souvSlot();
+    if (!LIVE) items.forEach(k => { slot.got[k] = (slot.got[k] || 0) + 1; });
+    else for (let i = 0; i < items.length; i += 10) slot.wait.push({ key: souvCode(), kinds: items.slice(i, i + 10) });   // 伺服器一次最多 10 個
+    souvSave(slot); souvView();
+    if (LIVE) souvSync();
+  }
+  let souvBusy = null, souvReady = false;   // souvReady：這次打開已經跟伺服器對過了（回到畫面再對一次）
+  const souvWaiting = () => LIVE && !!souvAcct() && (souvSlot().wait.length > 0 || Object.keys(souvOld()).length > 0);
+  function souvSync() {
+    if (!LIVE || SV.mode !== 'live' || !souvAcct()) return Promise.resolve();
+    if (!souvBusy) souvBusy = (async () => {
+      const id = souvAcct();
+      let got = null;
+      souvView();                            // 剛登入：先擺這個帳號暫存的（沒網路也看得到）
+      try {
+        const old = souvOld();               // 先合併以前存在手機的（再加這次的才不會被「取大的」吃掉）
+        if (Object.keys(old).length) {
+          const r = await SV.souvMerge(old);
+          try { localStorage.removeItem(SOUV_OLD); } catch (_) { /* 下次再合併一次也不會灌水（取大的） */ }
+          if (r && r.ok) got = r.souvenirs;
+        }
+        for (let w; (w = souvSlot().wait[0]);) {   // 還沒送出去的：一趟一趟、用原本的代號送
+          const r = await SV.souvAdd(w.kinds, w.key);
+          if (souvAcct() !== id) return;
+          const slot = souvSlot();
+          slot.wait = slot.wait.filter(x => x.key !== w.key);   // 送好了；格式不對的再送也不會對，一樣拿掉
+          if (r && r.ok) { slot.got = souvClean(r.souvenirs); got = null; }
+          souvSave(slot); souvView();
+        }
+        if (!got && !souvReady) got = await SV.souvMine();
+        if (got && souvAcct() === id) { const slot = souvSlot(); slot.got = souvClean(got); souvSave(slot); souvView(); }
+        souvReady = true;
+      } catch (_) {
+        /* 沒網路、伺服器有狀況：記著的留著，下次讀伺服器成功時再送 */
+      } finally {
+        souvBusy = null; render();
+        if (window.DCPocket && !$('view-pocket').hidden) window.DCPocket.render();   // 口袋頁的圖鑑也跟著換
+      }
+    })();
+    return souvBusy;
+  }
+  addEventListener('online', () => souvSync());
   const souvCount = () => Object.keys(souv).filter(k => souv[k] > 0).length;
   function drawShelf() {
     const S = window.DCScene, { x, y, w } = SHELF;
@@ -215,8 +298,7 @@
     pet.busy = true;
     pet.walkTo(SHELF.x + SHELF.w / 2, FLOOR.y0 + 2, () => {
       const fresh = items.filter(k => !souv[k]);
-      items.forEach(k => { souv[k] = (souv[k] || 0) + 1; });
-      try { localStorage.setItem(SOUV_KEY, JSON.stringify(souv)); } catch (_) { /* 存不了就算了 */ }
+      souvKeep(items);
       pet.busy = false; pet.flip = false; pet.set('sit', 1); pet.until = now + 3500; addHearts(pet, 2);
       say(pet, fresh.length ? line(pet, 'souvenir_new') : line(pet, 'souvenir'));
       const names = [...new Set(items)].map(k => S.ITEMS[k].name);
@@ -965,6 +1047,7 @@
     pulling = true;
     try {
       merge(await SV.petsMine()); netError = '';
+      if (!souvReady || souvWaiting()) souvSync();   // 紀念品：剛登入／剛打開先對一次；有還沒送出去的就補送
     } catch (e) {
       if (!netError && !booted) toast(e.message || '連不上伺服器');
       netError = e.message || '連不上伺服器'; renderAccount();
@@ -973,7 +1056,7 @@
       schedulePull(fast() ? 3000 : 10000);
     }
   }
-  document.addEventListener('visibilitychange', () => { if (!document.hidden && SV.mode === 'live') { pull(); watchActions(); } });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && SV.mode === 'live') { souvReady = false; pull(); watchActions(); } });   // 回到畫面：紀念品也再讀一次（別支手機可能加了）
 
   // 伺服器 0～100 → 畫面的 0～3（MOOD 表情、foodBar）
   const lvl = v => v == null ? 2 : v >= 75 ? 3 : v >= 50 ? 2 : v >= 25 ? 1 : 0;
@@ -1346,7 +1429,7 @@
     b['app.css'] = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--build'), 10) || null;
     return b;
   }
-  const BUILD_FILES = ['index.html', 'app.css', 'lines.js', 'server.js', 'app.js', 'pocket.js', 'scenes.js', 'mail.js', 'fake/fake_data.js', 'fake/fake_mail.js'];
+  const BUILD_FILES = ['index.html', 'app.css', 'lines.js', 'server.js', 'app.js', 'pocket.js', 'trip.js', 'scenes.js', 'mail.js', 'fake/fake_data.js', 'fake/fake_mail.js'];
   function staleFiles() {                 // 跟 index.html 不一樣、或根本沒有戳記的＝手機拿到舊檔（地毯飛起來那次：fake_data.js 是舊的）
     const b = builds(), want = b['index.html'];
     return BUILD_FILES.filter(k => b[k] !== want);
