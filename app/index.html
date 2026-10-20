@@ -13,8 +13,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="DeskCat">
-<link rel="stylesheet" href="app.css?v=36">
-<script>window.DC_BUILD = { 'index.html': 36 };</script>
+<link rel="stylesheet" href="app.css?v=54">
+<script>window.DC_BUILD = { 'index.html': 54 };</script>
 <!-- 每個檔的網址都帶 ?v=版本（mobile/tools/bump.py 一起改）：手機上舊的快取不會被拿來用（mobile/裝置規格.md 第 3 節） -->
 </head>
 <body>
@@ -87,6 +87,13 @@
       </div>
       <!-- 帳號卡（app.js renderAccount）：登入的信箱、電腦多久前連過、〔登出〕；範例模式是〔登入〕 -->
       <div id="acct" class="acct"></div>
+      <!-- 刪除帳號（P74 M1；Apple 5.1.1(v)：能開帳號就要能在 App 裡刪）：按了先在這裡問一次，不跳視窗 -->
+      <div id="acctDel" class="acct-del" hidden>
+        <p><b>刪除帳號？</b>毛孩、好友、信、紀念品都會刪掉，電腦版的同一個帳號也一樣，不能復原。</p>
+        <div class="b"><button id="acctDelNo" class="btn" type="button">不刪了</button><button id="acctDelYes" class="btn danger" type="button">確定刪除</button></div>
+      </div>
+      <!-- 通知（notify.js，P74 M4）：開通知、要哪幾種、關掉（只有手機） -->
+      <div id="notifyCard" class="notify-card" role="group" aria-label="通知" hidden></div>
       <h2>全家在哪</h2>
       <ul id="familyList" class="family"></ul>
     </main>
@@ -238,24 +245,55 @@
         <button id="loginGo" class="btn main big" type="submit">登入</button>
         <button id="loginBack" class="btn" type="button">換信箱／重寄</button>
       </form>
+      <!-- 這個信箱還沒有帳號（P74 M1）：問過才開新帳號（打錯字不會多開一個） -->
+      <button id="loginNew" class="btn main big" type="button" hidden>用這個信箱開新帳號</button>
       <p id="loginMsg" class="login-msg" role="status" aria-live="polite"></p>
       <button id="loginFake" class="btn" type="button">先看範例</button>
       <p id="loginServer" class="note small"></p>
     </div>
   </section>
+
+  <!-- 在手機建立毛孩（adopt.js，P74 M2）：新帳號還沒有毛孩時蓋住整個畫面（這時候家裡沒有毛孩，不會蓋住誰） -->
+  <section id="adopt" class="login adopt" aria-label="建立毛孩" hidden>
+    <div class="login-card adopt-card">
+      <div class="ad-head"><h2>領養你的毛孩</h2><button id="adClose" class="x" type="button" aria-label="關閉" hidden>✕</button></div>
+      <div id="adStage" class="ad-stage"><canvas id="adPreview" width="1" height="1"></canvas></div>
+      <div id="adSpecies" class="ad-row" role="group" aria-label="貓或狗"></div>
+      <div id="adBreed" class="ad-row ad-scroll" role="group" aria-label="品種"></div>
+      <div class="ad-row"><div id="adCoat" class="ad-scroll" role="group" aria-label="花色"></div><button id="adSeed" class="chip" type="button" hidden>換斑紋</button></div>
+      <div class="ad-colors">
+        <label>毛色<input id="adC_fur" type="color"></label>
+        <label id="adStripeColor">條紋<input id="adC_stripe" type="color"></label>
+        <label>肚子<input id="adC_belly" type="color"></label>
+        <label>眼睛<input id="adC_eye" type="color"></label>
+        <label id="adStripeRow" class="ad-chk"><input id="adStripes" type="checkbox">條紋</label>
+        <button id="adReset" class="chip" type="button" hidden>原本的顏色</button>
+      </div>
+      <div class="ad-names">
+        <label id="adNickRow">你的暱稱<input id="adNick" maxlength="20" autocomplete="nickname" placeholder="好友看得到"></label>
+        <label>牠的名字<input id="adName" maxlength="12" placeholder="例如：小橘"></label>
+      </div>
+      <p id="adMsg" class="login-msg" role="status" aria-live="polite"></p>
+      <button id="adGo" class="btn main big" type="button">就是牠了</button>
+    </div>
+  </section>
 </div>
-<script src="lines.js?v=36"></script>
-<script src="fake/sprites.js?v=36"></script>
-<script src="fake/fake_data.js?v=36"></script>
-<script src="fake/fake_mail.js?v=36"></script>
-<script src="server.js?v=36"></script>
-<script>   // 開發用：假的伺服器（只在本機加 ?mock=1；mobile/tools/mock_server.js）
-  if (/[?&]mock=1/.test(location.search) && /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) document.write('<script src="tools/mock_server.js"><\/script>');
+<script src="lines.js?v=54"></script>
+<script src="fake/sprites.js?v=54"></script>
+<script src="fake/fake_data.js?v=54"></script>
+<script src="fake/fake_mail.js?v=54"></script>
+<script src="server.js?v=54"></script>
+<script>   // 開發用：假的伺服器（只在本機、家裡 Wi-Fi 加 ?mock=1；mobile/tools/mock_server.js；2026-10-20 起 iPhone 也能用來試 P74）
+  if (/[?&]mock=1/.test(location.search) && /^(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+)$/.test(location.hostname)) document.write('<script src="tools/mock_server.js"><\/script>');
 </script>
-<script src="app.js?v=36"></script>
-<script src="pocket.js?v=36"></script>
-<script src="trip.js?v=36"></script>
-<script src="scenes.js?v=36"></script>
-<script src="mail.js?v=36"></script>
+<script src="app.js?v=54"></script>
+<script src="outdoor.js?v=54"></script>   <!-- 口袋的戶外場景、散步（2026-10-20） -->
+<script src="pocket.js?v=54"></script>
+<script src="trip.js?v=54"></script>
+<script src="scenes.js?v=54"></script>
+<script src="mail.js?v=54"></script>
+<script src="parts.js?v=54"></script>   <!-- 零件包換色組圖（P75） -->
+<script src="adopt.js?v=54"></script>   <!-- 在手機建立毛孩（P74 M2） -->
+<script src="notify.js?v=54"></script>   <!-- 通知（P74 M4） -->
 </body>
 </html>

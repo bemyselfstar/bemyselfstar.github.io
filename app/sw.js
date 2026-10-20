@@ -1,8 +1,8 @@
 // 離線快取（加到主畫面後打開更快、沒網路也開得起來）。
 // 只在 https 正式網址註冊（localhost、家裡 Wi-Fi 的 http 不註冊，開發時才不會看到舊檔案）。
 // 做法：程式先拿網路上的新檔（沒網路才用快取）、圖片快取優先。改了 mobile/ 的檔案跑 python -X utf8 mobile/tools/bump.py（版本號一起加 1）。
-const VERSION = 'deskcat-app-v36';
-const SHELL = ['./', 'index.html', 'app.css', 'lines.js', 'server.js', 'app.js', 'pocket.js', 'trip.js', 'scenes.js', 'mail.js', 'manifest.webmanifest',
+const VERSION = 'deskcat-app-v54';
+const SHELL = ['./', 'index.html', 'app.css', 'lines.js', 'server.js', 'app.js', 'pocket.js', 'trip.js', 'scenes.js', 'mail.js', 'parts.js', 'adopt.js', 'notify.js', 'outdoor.js', 'manifest.webmanifest',
   'icons/apple-touch-icon.png', 'icons/icon-192.png', 'icons/icon-512.png', 'fake/sprites.js', 'fake/fake_data.js', 'fake/fake_mail.js'];
 
 self.addEventListener('install', e => {
@@ -23,5 +23,24 @@ self.addEventListener('fetch', e => {
     const fresh = fetch(req).then(res => { if (res.ok) cache.put(req, res.clone()); return res; });
     if (code) return fresh.catch(() => hit);
     return hit || fresh.catch(() => hit);
+  }));
+});
+
+// 通知（P74 M4，notify.js 訂閱；伺服器送的內容 {title, body, tag, url}）：iPhone 規定每一則推播都要顯示出來
+self.addEventListener('push', e => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (_) { d = { body: e.data ? e.data.text() : '' }; }
+  e.waitUntil(self.registration.showNotification(d.title || 'DeskCat', {
+    body: d.body || '', tag: d.tag || 'deskcat', icon: 'icons/icon-192.png', badge: 'icons/icon-192.png', data: { url: d.url || './' },
+  }));
+});
+// 點通知：已經開著就換到那一頁，沒開就打開（網址 ?tab=…，app.js 照它打開分頁）
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const url = new URL((e.notification.data && e.notification.data.url) || './', self.registration.scope).href;
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(async list => {
+    const c = list.find(w => w.url.startsWith(self.registration.scope));
+    if (c) { try { await c.navigate(url); } catch (_) { /* 換不了就只叫到前面 */ } return c.focus(); }
+    return self.clients.openWindow(url);
   }));
 });

@@ -9,7 +9,7 @@
 //   「讀過沒」伺服器不記 → 存在這台手機（deskcat_mail_read_v1）。
 // 伺服器只存「哪一種事＋數字」，句子在這裡照固定句型組（動態跟 social.py 的 MOMENT_TEXT 一樣，改的話兩邊一起改）。
 // 版面：電腦橫版＝信件、動態兩欄並排；手機直拿＝上面兩個分頁切換（body.vertical）。
-(window.DC_BUILD = window.DC_BUILD || {})['mail.js'] = 36;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['mail.js'] = 54;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const D = window.DC, S = window.DCScene, SV = window.DCServer, $ = id => document.getElementById(id);
@@ -499,6 +499,7 @@
       if (!card) return;
       card.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
       card.classList.remove('flash'); void card.offsetWidth; card.classList.add('flash');
+      D.toast('軟木板上的明信片在這裡', ['返回', () => D.switchTab('home')]);   // 2026-10-20 使用者點軟木板後找不到返回：附〔返回〕（使用者：「直接寫返回就好了」）
     });
   }
   // 你的動態被好友按了 🐾：家裡那隻冒愛心、說是誰按的（打開網頁、在家的時候）

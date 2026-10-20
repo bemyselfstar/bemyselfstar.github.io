@@ -1,7 +1,7 @@
 // DeskCat 手機網頁「🎒 口袋」：毛孩跟你出門（只有手機有）。P66 新設計第 6 節：口袋、合照、順毛。
 // 口袋＝毛孩跟你出門、在戶外（不是真的口袋）：直式滿版的戶外場景（城市、公園、步道；照時間換天空、天氣先手動選，不要求位置權限），功能是右下的懸浮按鈕。
 // 合照：相機畫面疊上像素毛孩（可拖、放大、換姿勢、翻面），拍下來存到手機或分享；照片只留在手機、不上傳。
-(window.DC_BUILD = window.DC_BUILD || {})['pocket.js'] = 36;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['pocket.js'] = 54;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const D = window.DC, $ = id => document.getElementById(id);
@@ -42,11 +42,15 @@
     pet = new D.Pet(p, PW / 2, Math.round(PH * .8));
     pet.placed = false;                   // 圖載入後照實際畫到的範圍再放一次（placeInPocket）
     pet.flip = false; pet.set('sit', 1); pet.until = performance.now() + 3000;
-    pet.think = function () {             // 口袋裡只會坐著、眨眼、張望，不會走掉
-      const a = this.dog() ? [['sit', 1], ['sit_blink', 2], ['sit_wag', 5], ['pant', 4]] : [['sit', 1], ['sit_blink', 2], ['tail_flick', 3], ['yawn', 2]];
+    pet.walking = false;
+    pet.think = function () {             // 散步（2026-10-20）：走一陣子 → 停下來聞聞、坐一下 → 再走；撿到東西、被摸的時候坐著
+      const now = performance.now();
+      if (item || g.on) { this.walking = false; this.set('sit', 1); this.until = now + 2000; return; }
+      if (!this.walking) { this.walking = true; this.flip = false; this.set('walk', this.dog() ? 8 : 7); this.until = now + D.rnd(7000, 15000); return; }
+      this.walking = false;
+      const a = this.dog() ? [['sniff', 3], ['sit_wag', 5], ['pant', 4], ['sit', 1]] : [['sit', 1], ['groom', 3], ['tail_flick', 3], ['sit_blink', 2]];
       const [n, f] = a[Math.floor(Math.random() * a.length)];
-      this.set(n, f); this.until = performance.now() + D.rnd(2500, 5000);
-      if (Math.random() < .3 && !g.on) this.flip = !this.flip;   // 手指摸著的時候不轉身
+      this.set(n, f); this.until = now + D.rnd(2500, 5000);
     };
     pet.bubbleBox = $('pocketBubbles');
     pet.scr = (wy = pet.headY() - 3, wx = pet.x) => { const r = pcv.getBoundingClientRect(), b = $('pocketStage').getBoundingClientRect();
@@ -67,72 +71,53 @@
     const fabs = document.querySelector('.pocket-fabs').getBoundingClientRect();   // 毛孩站在懸浮按鈕左邊的空間，不跟按鈕重疊
     const free = fabs.width ? fabs.left - box.getBoundingClientRect().left - 8 : w;
     pet.x = Math.round(Math.min(w, free) / 2 / scale); pet.placed = false;
-    pcv.width = PW; pcv.height = PH;
+    pcv.width = PW; pcv.height = PH; pet.fitted = true;
     pcv.style.width = PW * scale + 'px'; pcv.style.height = PH * scale + 'px';
     pctx.imageSmoothingEnabled = false;
   }
   addEventListener('resize', () => { if (!$('view-pocket').hidden) fit(); });
 
-  // 戶外：口袋＝毛孩跟你出門（2026-10-14 使用者「口袋版的意思是戶外，不是真的口袋」）。
-  // 遠處城市＋天空，近處公園：樹、草地、步道、路燈；毛孩整隻坐在步道上，不被任何東西擋住。
-  const HORIZON = .42, PATH_TOP = .62, PATH_BOT = .88, FEET = .8;
-  const GRASS = { morning: '#8fbf7a', day: '#7fb36a', evening: '#7e8c66', night: '#2f4a3c' };
-  const GRASS2 = { morning: '#7aad66', day: '#6aa057', evening: '#6c7a56', night: '#273f33' };
-  const PATH = { morning: '#ddd3c2', day: '#d8cdb9', evening: '#b9a48f', night: '#4c4b5e' };
-  const TREE = { morning: '#4f9450', day: '#46894a', evening: '#4f6a45', night: '#1f3a2c' };
+  // 戶外（outdoor.js）：口袋＝毛孩跟你出門（2026-10-14 使用者「口袋版的意思是戶外，不是真的口袋」）。
+  // 2026-10-20 使用者「感覺可以多種樣式，另外可以讓寵物有出門散步的感覺」：13 個場景（outdoor.js ORDER）每次出門隨機一個，
+  // 散步＝毛孩在畫面左邊走、背景一層一層往後捲（遠的慢、近的快）；走一陣子會停下來聞聞、坐一下，摸牠、撿到東西也會停。
+  const PATH_BOT = .88, FEET = .8;
+  const WALK_V = 14;                       // 散步時步道每秒捲幾格（遊戲的像素）
+  let scene = null, sceneKey = '', scroll = 0;
+  let forceScene = new URLSearchParams(location.search).get('scene');   // 預覽、測試用：網址 &scene=beach…；window.__pocketScene('snow') 不用重新整理
+  window.__pocketScene = n => { forceScene = n; };
+  function sceneName() {                   // 這一趟在哪：照「哪一隻＋放進口袋的時間」挑（重新整理、關掉再開還是同一個）
+    const s = `${pet.p.id}|${Math.round(outAt() / 60000)}`, O = window.DCOutdoor.ORDER;
+    if (forceScene && O.includes(forceScene)) return forceScene;
+    let h = 2166136261;
+    for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619) >>> 0;
+    return O[h % O.length];
+  }
   function drawScene(dt, t) {
-    const tod = D.timeOfDay(), sky = weather === 'sun' ? D.SKY[tod] : weather === 'cloud'
-      ? { morning: ['#c9d3d8', '#d9e0e2', '#e6e2d6'], day: ['#aebcc6', '#c2ccd3', '#d4dadd'], evening: ['#6e6680', '#a8848a', '#c79f88'], night: ['#1b1f33', '#232843', '#2b3150'] }[tod]
-      : { morning: ['#8e9aa6', '#a3adb6', '#b6bec4'], day: ['#7d8a96', '#909ca6', '#a3adb6'], evening: ['#4c4660', '#6b5c70', '#82707c'], night: ['#12152a', '#191d36', '#202542'] }[tod];
-    const gy = Math.round(PH * HORIZON), p0 = Math.round(PH * PATH_TOP), p1 = Math.round(PH * PATH_BOT), band = Math.ceil(gy / 3);
-    const wet = weather === 'rain', night = tod === 'night', lit = night || tod === 'evening';
-    sky.forEach((c, i) => D.rect(0, i * band, PW, band, c));
-    if (weather === 'sun' && !night) D.ellipse(PW * .78, gy * .25, 7, 7, tod === 'evening' ? '#ffb36b' : '#ffe58a');
-    if (night) { D.ellipse(PW * .78, gy * .22, 5, 5, '#f6f0c4'); for (let i = 0; i < 18; i++) D.rect((i * 29) % PW, (i * 13) % Math.round(gy * .6), 1, 1, '#fff6c8'); }
-    if (weather === 'cloud') [[.2, .2], [.6, .35], [.85, .14]].forEach(([x, y]) => { D.ellipse(PW * x, gy * y, 12, 4, '#eef1f3'); D.ellipse(PW * x + 6, gy * y - 3, 7, 3, '#eef1f3'); });
-    // 遠處的城市
-    for (let x = 0, i = 0; x < PW; i++) {
-      const w = 8 + (i * 7) % 9, h = 10 + (i * 13) % 18;
-      D.rect(x, gy - h, w - 1, h, lit ? '#3b3f5c' : '#7f8fa3');
-      if (lit) for (let yy = gy - h + 3; yy < gy - 2; yy += 4) for (let xx = x + 2; xx < x + w - 2; xx += 3) if ((xx + yy + i) % 3) D.rect(xx, yy, 1, 1, '#ffd77a');
-      x += w;
-    }
-    // 公園：後面一排樹、草地
-    D.rect(0, gy, PW, p0 - gy, GRASS[tod]);
-    for (let x = 6, i = 0; x < PW + 10; x += 22, i++) {
-      const h = 10 + (i * 5) % 6, ty = gy + 6 + (i % 2) * 3;
-      D.rect(x - 1, ty - 2, 3, 8, night ? '#2a2018' : '#6b4a33');
-      D.ellipse(x, ty - h / 2 - 2, 8, h / 2 + 2, TREE[tod]); D.ellipse(x - 2, ty - h / 2 - 4, 4, 3, 'rgba(255,255,255,.08)');
-    }
-    for (let i = 0; i < 40; i++) D.rect((i * 37) % PW, gy + 14 + (i * 11) % Math.max(1, p0 - gy - 16), 2, 1, GRASS2[tod]);
-    // 步道（雨天比較深、有積水）
-    D.rect(0, p0, PW, p1 - p0, PATH[tod]);
-    if (wet) D.rect(0, p0, PW, p1 - p0, 'rgba(40,60,90,.18)');
-    D.rect(0, p0, PW, 1, 'rgba(0,0,0,.18)'); D.rect(0, p1 - 1, PW, 1, 'rgba(0,0,0,.18)');
-    for (let y = p0 + 6; y < p1; y += 7) D.rect(0, y, PW, 1, 'rgba(0,0,0,.07)');
-    for (let r = 0, y = p0; y < p1; r++, y += 7) for (let x = (r % 2) * 9; x < PW; x += 18) D.rect(x, y, 1, 7, 'rgba(0,0,0,.07)');
-    if (wet) { D.ellipse(PW * .25, p1 - 6, 10, 2, 'rgba(160,190,230,.5)'); D.ellipse(PW * .7, p0 + 8, 8, 2, 'rgba(160,190,230,.45)'); }
-    // 前面的草地、小花
-    D.rect(0, p1, PW, PH - p1, GRASS[tod]);
-    for (let i = 0; i < 30; i++) { const x = (i * 29) % PW, y = p1 + 3 + (i * 7) % Math.max(1, PH - p1 - 4); D.rect(x, y, 2, 1, GRASS2[tod]); if (i % 5 === 0 && !night) D.rect(x + 1, y - 1, 1, 1, i % 10 ? '#f4d35e' : '#f28fb0'); }
-    // 路燈（左邊）
-    const lx = Math.round(PW * .12);
-    D.rect(lx - 1, p0 - 30, 2, 32, '#3b3f4a'); D.rect(lx - 3, p0 - 34, 6, 4, night || tod === 'evening' ? '#ffe39a' : '#cfd6dd'); D.rect(lx - 2, p0, 4, 2, '#3b3f4a');
+    const tod = D.timeOfDay(), c = D.ctx(), wet = weather === 'rain', night = tod === 'night', lit = night || tod === 'evening';
+    const name = sceneName(), key = [name, tod, weather, PW, PH].join('|');
+    if (key !== sceneKey) { scene = window.DCOutdoor.build(name, PW, PH, tod, weather); sceneKey = key; }
+    if (pet.walking && !item && !g.on) scroll += WALK_V * dt;
+    const glow = window.DCOutdoor.draw(c, scene, scroll, t);
     // 毛孩（整隻在步道上）
-    if (pet) { pet.step(dt); pet.draw(); D.drawHearts(pet, dt); }
+    pet.step(dt); pet.draw(); D.drawHearts(pet, dt);
     // 撿到的東西：毛孩前面、比牠的腳更靠近你的步道上（畫在毛孩前面，不會被擋住），一閃一閃
     if (item && window.DCScene) {
-      const c = D.ctx(); window.DCScene.ITEMS[item.k].draw(c, item.x, item.y);
+      window.DCScene.ITEMS[item.k].draw(c, item.x, item.y);
       const on = Math.floor(t / 350) % 2;
       [[-6, -11], [6, -9], [0, -14]].forEach(([dx, dy], i) => { if ((i + on) % 2) { D.rect(item.x + dx, item.y + dy - 1, 1, 3, '#fff6c8'); D.rect(item.x + dx - 1, item.y + dy, 3, 1, '#fff6c8'); } });
     }
-    if (lit) {                               // 晚上：暗一點，路燈的光
-      const c = D.ctx(); c.save(); c.globalCompositeOperation = 'multiply'; c.fillStyle = night ? '#7c7ab0' : '#e2c6b5'; c.fillRect(0, 0, PW, PH);
+    if (lit) {                               // 晚上：暗一點，路燈、燈籠、螢火蟲的光
+      c.save(); c.globalCompositeOperation = 'multiply'; c.fillStyle = night ? '#7c7ab0' : '#e2c6b5'; c.fillRect(0, 0, PW, PH);
       c.globalCompositeOperation = 'lighter';
-      const g = c.createRadialGradient(lx, p0 - 32, 2, lx, p0, 60); g.addColorStop(0, night ? 'rgba(255,214,140,.5)' : 'rgba(255,214,140,.2)'); g.addColorStop(1, 'rgba(255,214,140,0)');
-      c.fillStyle = g; c.fillRect(lx - 70, p0 - 90, 140, 150); c.restore();
+      for (const L of window.DCOutdoor.lightsOnScreen(scene, scroll)) {
+        const gr = c.createRadialGradient(L.sx, L.y, 2, L.sx, L.y + (L.warm || L.col ? 0 : 32), L.r), col = L.col || (L.warm ? '255,150,110' : '255,214,140');
+        gr.addColorStop(0, `rgba(${col},${night ? .5 : .2})`); gr.addColorStop(1, `rgba(${col},0)`);
+        c.fillStyle = gr; c.fillRect(L.sx - L.r, L.y - L.r, L.r * 2, L.r * 2 + 40);
+      }
+      for (const [x, y, r] of glow) { const gr = c.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(220,255,140,.45)'); gr.addColorStop(1, 'rgba(220,255,140,0)'); c.fillStyle = gr; c.fillRect(x - r, y - r, r * 2, r * 2); }
+      c.restore();
     }
-    if (wet) {
+    if (wet && !scene.snowy) {             // 雪地下雨＝下大雪（outdoor.js 的 fx），不畫雨
       const off = (t / 6) % PH;
       for (const [x, y] of drops) D.rect((x + off * .3) % PW, (y + off) % PH, 1, 3, 'rgba(200,220,255,.7)');
     }
@@ -152,7 +137,7 @@
   function spawnItem() {                   // 輪到撿下一樣：出現在毛孩前面（左邊）的步道上
     const d = D.petInfo(pet.p);
     item = { k: window.DCScene.pickItem(weather, D.timeOfDay()), x: Math.max(8, Math.round(pet.x - d.w * .5)), y: Math.round(PH * (PATH_BOT - .02)) };
-    pet.flip = true; pet.set('sit', 1); pet.until = performance.now() + 3000;
+    pet.walking = false; pet.flip = true; pet.set('sit', 1); pet.until = performance.now() + 3000;   // 停下來、轉頭看那個東西
     D.say(pet, D.line(pet, 'pocket_find'));
   }
   function pickUp() {                      // 點一下：收進包包
@@ -164,6 +149,7 @@
   }
   function frame(dt, t) {
     if (!pet) return;
+    if (!pet.fitted) { fit(); if (!pet.fitted) return; }   // 一打開就是口袋（?tab=pocket）時毛孩還沒讀到：讀到了再排一次
     if (!pet.placed) placeInPocket();
     if (!item && window.DCScene && performance.now() > nextAt && waiting() > 0) spawnItem();
     D.useCtx(pctx); pctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -188,7 +174,8 @@
     }
     const m = Math.round(minsOut());
     const n = pet.p.found.length;
-    D.setLabel($('pocketInfo'), 'pocket', `${pet.p.name}・出門 ${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}${n ? `・撿到 ${n} 樣` : ''}`);
+    const where = window.DCOutdoor ? window.DCOutdoor.label(sceneName()) + '・' : '';   // 這一趟在哪（每次出門隨機）
+    D.setLabel($('pocketInfo'), 'pocket', `${pet.p.name}・${where}出門 ${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}${n ? `・撿到 ${n} 樣` : ''}`);
   }
   function renderDex() {                   // 紀念品圖鑑：撿過的看得到、沒撿過的寫什麼時候有
     const S = window.DCScene, box = $('pocketDex');
@@ -223,6 +210,7 @@
     if (!pet) return;
     try { pcv.setPointerCapture(e.pointerId); } catch (_) { /* 模擬的指標 */ }
     g.on = true; g.sx = e.clientX; g.sy = e.clientY; g.lx = e.clientX; g.ly = e.clientY; g.ax = 0; g.ay = 0; g.moved = false; g.touch = e.pointerType !== 'mouse';
+    if (pet.walking) { pet.walking = false; pet.set('sit', 1); }   // 一摸就停下來坐好（散步中）
     if (g.touch) { pet.until = performance.now() + 2500; D.strokeHint(pet); }   // 手指一碰到：先不換動作、提示順毛方向
   });
   pcv.addEventListener('pointermove', e => {

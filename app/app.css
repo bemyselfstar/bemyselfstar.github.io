@@ -1,11 +1,11 @@
 :root {
-  --build: 36;            /* 版本戳記（mobile/tools/bump.py） */
+  --build: 54;            /* 版本戳記（mobile/tools/bump.py） */
   --bg: #2a2018;
   --panel: #fffaf2;
   --ink: #3b2f28;
-  --muted: #8a7a6c;
+  --muted: #76675a;        /* 說明字（2026-10-20 健檢：#8a7a6c 對比 3.6，改到 4.8） */
   --line: #e4d6c3;
-  --accent: #e07a3f;
+  --accent: #b85a1f;       /* 主要按鈕（白字）：2026-10-20 健檢 #e07a3f 白字只有 3.0:1，改到 4.6:1 */
   --accent-ink: #fff;
   --gain: #b5541c;          /* 拿到點數、可以送的字（信箱） */
   --bad: #b83226;           /* 錯誤訊息（登入） */
@@ -58,9 +58,9 @@ body.vertical .tabs button { flex: 1; }
 .strip { flex: 1; min-width: 0; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 7px 6px 0 2px; }   /* 上、右留空：位置小圖示凸出頭像外，捲動區會切掉 */
 .strip::-webkit-scrollbar { display: none; }
 .clock { flex: none; color: var(--muted); font-size: 12px; }
-.av { position: relative; flex: none; width: 40px; border: 0; background: none; padding: 0; text-align: center; cursor: pointer; color: var(--ink); }
+.av { position: relative; flex: none; width: 44px; min-height: 44px; border: 0; background: none; padding: 0; text-align: center; cursor: pointer; color: var(--ink); }
 .av canvas { width: 36px; height: 36px; border-radius: 10px; background: var(--chip); image-rendering: pixelated; display: block; margin: 0 auto; }
-.av .nm { font-size: 10px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+.av .nm { font-size: 11px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
 .av .where { position: absolute; top: -6px; right: -4px; font-size: 12px; line-height: 1; }
 .av .where .ico { width: 16px; height: 16px; display: block; }
 .av.away canvas { opacity: .45; }
@@ -149,7 +149,7 @@ h2 { font-size: 17px; margin: 4px 8px 8px; }
 .fab { width: 56px; height: 56px; border-radius: 50%; border: 0; background: rgba(255,250,242,.92); color: #3b2f28; box-shadow: 0 3px 10px rgba(0,0,0,.3);
   display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
 .fab b { font-size: 22px; line-height: 1; font-weight: 400; }
-.fab span { font-size: 10px; margin-top: 2px; }
+.fab span { font-size: 11px; margin-top: 2px; }
 .fab.main { width: 68px; height: 68px; background: var(--accent); color: #fff; }
 .fab.main b { font-size: 28px; }
 .btn.big { padding: 10px 14px; font-size: 15px; }
@@ -175,7 +175,7 @@ h2 { font-size: 17px; margin: 4px 8px 8px; }
 .pposes::-webkit-scrollbar { display: none; }
 .pose { flex: none; width: 58px; border: 2px solid transparent; border-radius: 12px; background: rgba(255,255,255,.88); color: #3b2f28; padding: 3px 2px; cursor: pointer; text-align: center; }
 .pose canvas { width: 40px; height: 40px; image-rendering: pixelated; display: block; margin: 0 auto; }
-.pose span { display: block; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pose span { display: block; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pose.on { border-color: var(--accent); background: #fff; }
 .pcontrols button { border: 0; border-radius: 999px; background: rgba(255,255,255,.88); color: #3b2f28; padding: 6px 14px; min-height: 44px; min-width: 44px; font-size: 14px; cursor: pointer; }
 .pcontrols .shutter { width: 58px; height: 58px; padding: 0; border-radius: 50%; background: #fff; box-shadow: 0 0 0 4px rgba(255,255,255,.45); }
@@ -222,7 +222,7 @@ body.sheet-open .homebar { display: none; }
 body.vertical .toast { left: 50%; max-width: calc(100% - 32px); bottom: calc(76px + env(safe-area-inset-bottom)); }
 body.vertical .clock { display: none; }   /* 直版放不下；窗外的天色看得出時間 */
 body.vertical .hint { font-size: 11px; }
-@media (max-width: 640px) { .edit-bar span { display: none; } }
+body.vertical .edit-bar span { display: none; }   /* 手機版：佈置列不放說明字（以前照視窗寬度 640 判斷；2026-10-20 改成照手機版／網頁版） */
 
 /* 提示訊息出現在操作的地方（2026-10-14 健檢） */
 .sheet-msg { margin-top: 8px; padding: 6px 6px 6px 12px; border-radius: 12px; background: #fff1c9; color: #3b2f28; font-size: 14px; font-weight: 700;
@@ -235,15 +235,16 @@ body.vertical .hint { font-size: 11px; }
 /* 信箱（mail.js）：電腦橫版兩欄並排；手機直拿上面兩個分頁切換 */
 .tabs button { position: relative; }
 .badge { position: absolute; top: 2px; left: calc(50% + 4px); min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
-  background: #d9443c; color: #fff; font: 700 11px/18px -apple-system, sans-serif; font-style: normal; }
+  background: #c93a33; color: #fff; font: 700 11px/18px -apple-system, sans-serif; font-style: normal; }
 .mail-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .seg { display: none; }
 body.vertical .seg { display: flex; margin: 0 8px 0 auto; background: var(--chip); border-radius: 999px; padding: 2px; gap: 2px; }
 .seg button { border: 0; background: none; border-radius: 999px; min-height: 44px; padding: 0 14px; font-size: 14px; cursor: pointer; color: var(--ink); }
 .seg button.on { background: var(--panel); font-weight: 700; box-shadow: 0 1px 4px rgba(0, 0, 0, .15); }
 .mail-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; padding: 0 8px; }
-@media (max-width: 700px) { .mail-cols { grid-template-columns: minmax(0, 1fr); } }
+body.vertical .mail-cols { grid-template-columns: minmax(0, 1fr); }   /* 手機版一欄（上面切信件／動態）；網頁版不管視窗多窄都是兩欄（以前照寬度 700 判斷） */
 body.vertical .mail[data-seg="letters"] .feed-col, body.vertical .mail[data-seg="feed"] .letters-col { display: none; }
+body:not(.vertical) .letters { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); align-items: start; }   /* 電腦：明信片排成格子（2026-10-20 健檢：一張佔滿畫面高） */
 .mail h3 { font-size: 13px; color: var(--muted); margin: 12px 0 6px; }
 .mail .note { margin: 6px 0; }
 .letters { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
@@ -254,7 +255,7 @@ body.vertical .mail[data-seg="letters"] .feed-col, body.vertical .mail[data-seg=
 .letter-title { font-weight: 700; font-size: 14px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 .letter-body { font-size: 14px; line-height: 1.55; margin-top: 2px; }
 .letter-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
-.new-dot { font-size: 11px; line-height: 16px; color: #fff; background: #d9443c; border-radius: 6px; padding: 0 5px; }
+.new-dot { font-size: 11px; line-height: 16px; color: #fff; background: #c93a33; border-radius: 6px; padding: 0 5px; }
 .mail-av { width: 44px; height: 44px; border-radius: 12px; background: var(--chip); image-rendering: pixelated; display: block; }
 /* 明信片、旅行日記、照片牆：一張畫＋一件最精彩的事（2026-10-14 使用者「不能作成流水帳」） */
 .pc-canvas, .snap-canvas { display: block; width: 100%; height: auto; image-rendering: pixelated; }
@@ -265,7 +266,7 @@ body.vertical .mail[data-seg="letters"] .feed-col, body.vertical .mail[data-seg=
 .pc-stamp { position: absolute; top: 4px; right: 4px; width: 36px; height: 42px; background: #f3dcbd; border: 2px dashed #c49a6c;
   display: flex; align-items: center; justify-content: center; }
 .pc-stamp-av { width: 30px; height: 30px; image-rendering: pixelated; }
-.pc-mark { position: absolute; top: 8px; right: 44px; white-space: pre; text-align: center; font-size: 10px; line-height: 1.25; color: rgba(90, 60, 40, .75);
+.pc-mark { position: absolute; top: 8px; right: 44px; white-space: pre; text-align: center; font-size: 11px; line-height: 1.2; color: rgba(90, 60, 40, .75);
   border: 1.5px solid rgba(90, 60, 40, .55); border-radius: 50%; padding: 6px 5px; transform: rotate(-12deg); }
 .pc-cap { font-size: 15px; font-weight: 700; margin: 8px 2px 2px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 .pc-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 0 2px; }
@@ -276,6 +277,7 @@ body.vertical .mail[data-seg="letters"] .feed-col, body.vertical .mail[data-seg=
 .trip-sv { font-weight: 700; }
 .trip-row .gift-got { color: #b5541c; }
 .trip-row .btn { margin-left: auto; min-height: 44px; padding: 4px 12px; font-size: 13px; }
+.trip-row .btn:not(.main) { background: #f0e3d0; color: #3b2f28; }   /* 卡片是淺色紙：深色模式也用淺底深字（〔去家裡看〕以前看不到字） */
 .snaps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
 .snap { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
 .snap-meta { padding: 6px 8px 8px; display: flex; flex-direction: column; gap: 2px; flex: 1; }
@@ -396,9 +398,10 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .fab.ready::after, .fab.busy::after { content: ''; position: absolute; top: 2px; right: 2px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); border: 2px solid #fffaf2; }
 .fab.busy::after { background: #6aa0d8; }
 .fab { position: relative; }
-.trip { position: fixed; inset: 0; z-index: 20; background: var(--page); color: var(--ink); display: flex; flex-direction: column;
+/* 旅行照的全螢幕畫面用 #trip（不用 .trip：信箱的旅行日記卡片也叫 .pc.trip，2026-10-20 使用者：日記卡片蓋滿畫面、沒有返回） */
+#trip { position: fixed; inset: 0; z-index: 20; background: var(--page); color: var(--ink); display: flex; flex-direction: column;
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
-.trip[hidden], .trip-body[hidden], .trip [hidden] { display: none; }
+#trip[hidden], .trip-body[hidden], #trip [hidden] { display: none; }
 .trip-top { display: flex; align-items: center; justify-content: space-between; padding: 6px 8px 0 12px; }
 .trip-top h2 { margin: 0; font-size: 18px; }
 .trip-top .btn { width: 44px; padding: 0; font-size: 16px; }
@@ -432,3 +435,51 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
   -webkit-user-select: auto; user-select: auto; -webkit-touch-callout: default; }   /* 長按照片 →「加入照片」（沒有分享選單時） */
 .trip-cap { margin: 0; font-size: 15px; font-weight: 700; }
 .trip-tip { color: var(--muted); }
+
+/* ---------- 在手機建立毛孩（adopt.js，P74 M2） ---------- */
+.adopt-card { max-width: 400px; padding: 14px 14px 16px; text-align: left; }
+.ad-head { display: flex; align-items: center; justify-content: space-between; }
+.ad-head h2 { font-size: 18px; }
+.ad-head .x[hidden] { display: none; }
+.ad-stage { height: 150px; display: flex; align-items: flex-end; justify-content: center; margin: 6px 0 8px; border-radius: 12px;
+  background: linear-gradient(var(--chip), var(--chip)) bottom / 100% 26px no-repeat, var(--page); }
+.ad-stage.loading { opacity: .5; }
+.ad-stage canvas { image-rendering: pixelated; margin-bottom: 6px; }
+.ad-row { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+.ad-scroll { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0; }
+.ad-scroll::-webkit-scrollbar { display: none; }
+.chip { flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 44px; min-width: 44px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line);
+  background: var(--panel); color: var(--ink); font: inherit; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.chip.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink, #fff); }
+.chip[hidden] { display: none; }
+.chip:active { filter: brightness(.92); }
+.chip .sw { width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(0, 0, 0, .25); }
+.ad-colors { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: flex-end; margin: 4px 0 8px; }
+.ad-colors label { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--muted); gap: 2px; }
+.ad-colors label[hidden] { display: none; }
+.ad-colors input[type=color] { width: 44px; height: 44px; padding: 2px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); min-height: 0; }
+.ad-colors .ad-chk { flex-direction: row; font-size: 13px; color: var(--ink); min-height: 44px; gap: 4px; }
+.ad-chk input { width: 20px; height: 20px; min-height: 0; padding: 0; accent-color: var(--accent); }
+.ad-names { display: flex; gap: 8px; }
+.ad-names label { flex: 1; display: flex; flex-direction: column; font-size: 12px; color: var(--muted); gap: 2px; min-width: 0; }
+.ad-names label[hidden] { display: none; }
+.ad-names input { width: 100%; min-height: 44px; font-size: 16px; }
+.adopt .btn.main.big { width: 100%; }
+/* 刪除帳號（P74 M1）：在帳號卡下面問一次 */
+.acct-del { margin: -4px 8px 10px; padding: 10px 12px; border: 1px solid var(--bad); border-radius: 14px; background: var(--panel); font-size: 13px; }
+.acct-del[hidden] { display: none; }
+.acct-del p { margin: 0 0 8px; line-height: 1.5; }
+.acct-del .b { display: flex; gap: 8px; justify-content: flex-end; }
+.btn.danger { background: var(--bad); color: #fff; }
+.acct-btns { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+.btn.small { min-height: 44px; font-size: 12px; padding: 4px 10px; background: transparent; color: var(--muted); }
+.acct-btns { gap: 0; }
+.family .empty .btn { margin-top: 8px; }
+/* 通知卡（notify.js，P74 M4） */
+.notify-card { margin: 0 8px 10px; padding: 10px 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
+.notify-card[hidden] { display: none; }
+.nt-head { font-size: 14px; font-weight: 700; }
+.nt-text { margin: 4px 0 8px; font-size: 13px; color: var(--muted); line-height: 1.5; }
+.nt-kinds { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.nt-kinds .chip { min-height: 44px; }
+.nt-msg { margin: 6px 0 0; font-size: 12px; color: var(--bad); }

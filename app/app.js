@@ -2,13 +2,14 @@
 // 斜上往下看的房間（W×H 像素，比螢幕大），整數倍放大（不糊）；拖曳移動鏡頭、兩指縮放。
 // 電腦網頁＝橫版（分頁列在左邊）、手機網頁＝直版（分頁列在下面）（2026-10-14 使用者）。
 // 家具先用程式畫的簡單版（之後換成正式美術）；毛孩用遊戲的側面影格，前後只靠遮擋表現、不縮放。
-(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 36;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 54;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   // 資料：範例（假資料）或伺服器（server.js；登入後 dc_pets_mine 每 10 秒讀一次，見下面「伺服器同步」）。
   // 伺服器的毛孩換成跟假資料一樣的格式（where／mood 0～3／food 0～3／doing…），其他地方不用分兩套。
   // 毛孩圖也放進同一個 SPR.pets（key＝伺服器的檔名）；還沒下載好或電腦還沒傳圖的，先用範例裡同花色的圖。
-  // 家具、地毯：伺服器還沒有（跨線需求），先用範例的擺法＋這台瀏覽器的佈置。
+  // 家具（P78，server/020）：手機裝潢大家都有＋電腦買過的才擺（dc_home_mine 的 owned）；擺法、伴手禮存伺服器（見下面「家具跟著帳號」）。
+  // 預設位置、地毯照範例；伺服器沒有 020、沒登入、範例模式照舊（範例的家具＋這台瀏覽器的佈置）。
   const SV = window.DCServer, LIVE = SV.mode !== 'fake';
   const SPR = window.FAKE_SPRITES;
   const HOME = LIVE ? { owner: '', pets: [], furniture: window.FAKE_HOME.furniture, rugs: window.FAKE_HOME.rugs } : window.FAKE_HOME;
@@ -319,6 +320,7 @@
     }
     for (const r0 of HOME.rugs) {
       const r = rugAt(r0);
+      if (!r) continue;                          // 下面那件家具沒有（帳號沒有貓窩）：地毯也不畫
       if (r.round) {
         ellipse(r.x + r.w / 2, r.y + r.h / 2, r.w / 2 + 1, r.h / 2 + 1, OL);
         ellipse(r.x + r.w / 2, r.y + r.h / 2, r.w / 2, r.h / 2, r.c1);
@@ -331,12 +333,12 @@
     }
   }
   // 地毯跟著它下面那件家具走（r.under＝家具種類；2026-10-16）：佈置搬了茶几、貓窩，地毯一起移過去，相對位置照預設的擺法。
-  // 只算出畫的位置，不另外存（家具位置存了，地毯就跟著）；整塊留在地板上
+  // 只算出畫的位置，不另外存（家具位置存了，地毯就跟著）；整塊留在地板上。那件家具不在家裡（P78：帳號沒有）＝null，不畫
   function rugAt(r) {
     if (!r.under) return r;
-    const i = furn.findIndex(f => f.kind === r.under);
-    if (i < 0 || !DEFAULT_POS[i]) return r;
-    const x = clamp(r.x + furn[i].x - DEFAULT_POS[i][0], 0, W - r.w), y = clamp(r.y + furn[i].y - DEFAULT_POS[i][1], WALL_Y + 2, H - r.h - 1);
+    const f = furn.find(q => q.kind === r.under);
+    if (!f) return null;
+    const x = clamp(r.x + f.x - f.dx, 0, W - r.w), y = clamp(r.y + f.y - f.dy, WALL_Y + 2, H - r.h - 1);
     return { ...r, x: Math.round(x), y: Math.round(y) };
   }
 
@@ -381,16 +383,29 @@
   // 不然手機上之前佈置過的家具會跑到牆上（使用者：「手機上我的家具都飛起來了」）
   const fromOld = (x, y) => [Math.round(x * 560 / 480), Math.round(y + 94)];
   const EXTRA_KEY = 'deskcat_home_extras_v2';
-  let extras = [];
+  function localExtras() {
+    try { return (JSON.parse(localStorage.getItem(EXTRA_KEY) || '[]') || []).filter(e => e && FURN[e.kind]); } catch (_) { return []; }
+  }
   try {
     const old = localStorage.getItem('deskcat_home_extras_v1');
     if (old && !localStorage.getItem(EXTRA_KEY)) {
       localStorage.setItem(EXTRA_KEY, JSON.stringify((JSON.parse(old) || []).map(e => { const [x, y] = fromOld(e.x, e.y); return { ...e, x, y }; })));
       localStorage.removeItem('deskcat_home_extras_v1');
     }
-    extras = (JSON.parse(localStorage.getItem(EXTRA_KEY) || '[]') || []).filter(e => FURN[e.kind]);
-  } catch (_) { extras = []; }
-  const furn = [...HOME.furniture, ...extras].map(f => ({ ...f, k: FURN[f.kind] }));
+  } catch (_) { /* 換算不了：當作沒有 */ }
+  let extras = localExtras();
+  // 家具跟著帳號（P78，使用者 2026-10-19）：手機裝潢（書架、檯燈、植物、單人沙發、桌子、球）大家都有；
+  // 貓窩、貓跳台、沙發、飯碗水碗、紙箱、狗屋＝電腦買過才擺（每種 1 個，位置照範例）。手機沒有圖的電腦家具不出現、不換色
+  const DECOR = new Set(['shelf', 'lamp', 'plant', 'armchair', 'table', 'ball']);
+  const OWNABLE = new Set(['catbed', 'cattree', 'sofa', 'bowls', 'box', 'doghouse']);
+  const furn = [];                          // 每件：{kind, x, y, k: FURN 的畫法, dx/dy: 預設位置, extra: 伴手禮那筆（是伴手禮才有）}
+  function buildFurn(owned, ex) {           // owned＝null：範例的全部（範例模式、伺服器沒有 020、還沒讀到）
+    const list = HOME.furniture.filter(f => FURN[f.kind] && (!owned || DECOR.has(f.kind) || (OWNABLE.has(f.kind) && owned[f.kind] > 0)))
+      .map(f => ({ ...f, k: FURN[f.kind], dx: f.x, dy: f.y }));
+    for (const e of ex) if (FURN[e.kind]) list.push({ kind: e.kind, x: e.x, y: e.y, k: FURN[e.kind], dx: e.x, dy: e.y, extra: e });
+    furn.splice(0, furn.length, ...list);
+  }
+  buildFurn(null, extras);
 
   function blocked(x, y) {
     return furn.some(f => f.k.fp && Math.abs(x - f.x) < f.k.fp[0] / 2 + 6 && y <= f.y + 3 && y >= f.y - f.k.fp[1] - 3);
@@ -633,10 +648,10 @@
   }
 
   // ---------- 佈置模式：平常家具不能動；按「🛋 佈置」才能拖家具 ----------
-  // 先記在這台裝置的瀏覽器（之後改存伺服器）。v2 記「哪一種家具＋位置」，照種類對回去（家具順序改了也不會對錯）
+  // 照帳號擺的時候存伺服器（下面「家具跟著帳號」）；照舊的時候記在這台裝置的瀏覽器。
+  // v2 記「哪一種家具＋位置」，照種類對回去（家具順序改了也不會對錯）
   const LAYOUT_KEY = 'deskcat_home_layout_v2';
   const OLD_ORDER = ['shelf', 'cattree', 'sofa', 'lamp', 'table', 'armchair', 'armchair', 'plant', 'plant', 'catbed', 'bowls', 'box', 'doghouse', 'ball'];  // v1 的家具順序
-  const DEFAULT_POS = furn.map(f => [f.x, f.y]);
   try {
     const old = JSON.parse(localStorage.getItem('deskcat_home_layout_v1') || 'null');
     if (Array.isArray(old) && !localStorage.getItem(LAYOUT_KEY)) {
@@ -644,18 +659,119 @@
       localStorage.setItem(LAYOUT_KEY, JSON.stringify(old.slice(0, kinds.length).map(([x, y], i) => { const [nx, ny] = fromOld(x, y); return { k: kinds[i], x: nx, y: ny }; })));
       localStorage.removeItem('deskcat_home_layout_v1');
     }
-    const saved = JSON.parse(localStorage.getItem(LAYOUT_KEY) || 'null');
-    if (Array.isArray(saved)) {
-      const used = new Set();
-      for (const s of saved) {
-        const f = furn.find(q => q.kind === s.k && !used.has(q));
-        if (!f) continue;
-        used.add(f); f.x = clamp(s.x, 16, W - 16); f.y = clamp(s.y, WALL_Y + 6, H - 2);
-      }
+  } catch (_) { /* 換算不了：用預設位置 */ }
+  function localLayout() {
+    try { const a = JSON.parse(localStorage.getItem(LAYOUT_KEY) || 'null'); return Array.isArray(a) ? a : null; } catch (_) { return null; }
+  }
+  function applyLayout(saved) {             // 照種類對回去（同一種有兩個：照順序）；沒有的種類跳過
+    if (!Array.isArray(saved)) return;
+    const used = new Set();
+    for (const s of saved) {
+      const f = s && furn.find(q => q.kind === s.k && !used.has(q));
+      if (!f) continue;
+      used.add(f); f.x = clamp(+s.x || 0, 16, W - 16); f.y = clamp(+s.y || 0, WALL_Y + 6, H - 2);
     }
-  } catch (_) { /* 沒有存過、或瀏覽器不讓存：用預設位置 */ }
+  }
+  applyLayout(localLayout());
+
+  // ---------- 家具跟著帳號（P78，server/020；規格在 docs/跨線需求.md 2026-10-19 🎮 P78） ----------
+  // 登入、伺服器有 020：家具照帳號（dc_home_mine 的 owned）擺；佈置完、放進伴手禮 → 停手 2 秒存伺服器（dc_home_layout_set）。
+  // 這台瀏覽器另外照帳號記一份（HOME_KEY）＝快取：打開先照它擺、不用等伺服器；沒網路時改的（dirty）下次讀伺服器時再送。
+  // 伺服器 layout 是 null＝第一次：把這支手機以前的擺法（LAYOUT_KEY）和伴手禮（EXTRA_KEY）傳上去。
+  // 伺服器沒有 020（找不到函式＝404，正式版貼 020 之前）：照舊只存瀏覽器（範例的家具全部擺＋LAYOUT_KEY）。
+  // 送上去的 layout 只有家具（伴手禮在 extras、帶自己的位置）；帳號現在沒有的家具，以前記的位置也留著（之後有了擺回原位）。
+  const HOME_KEY = 'deskcat_home_v1';
+  const KIND_RE = /^[a-z_]{1,24}$/;
+  const TEMPLATE_KINDS = new Set(HOME.furniture.map(f => f.kind));
+  const homeAll = () => { try { const a = JSON.parse(localStorage.getItem(HOME_KEY) || '{}'); return a && typeof a === 'object' && !Array.isArray(a) ? a : {}; } catch (_) { return {}; } };
+  const homeGet = id => (id && homeAll()[id]) || null;
+  function homePut(id, v) { try { const a = homeAll(); a[id] = v; localStorage.setItem(HOME_KEY, JSON.stringify(a)); } catch (_) { /* 存不了：這次開著還是能用 */ } }
+  let homeAcct = null, homeMem = null;      // 現在照哪個帳號擺（null＝照舊）、那個帳號的 {owned, layout, extras, dirty}
+  const toInt = (v, max) => clamp(Math.round(+v || 0), 0, max);   // 伺服器只收 0～560、0～484 的整數
+  function layoutNow(prev) {                // 要存的擺法：家具現在的位置＋以前記的、現在沒有的那幾件（最多 40）
+    const out = furn.filter(f => !f.extra).map(f => ({ k: f.kind, x: toInt(f.x, W), y: toInt(f.y, H) }));
+    const have = {};
+    out.forEach(o => { have[o.k] = (have[o.k] || 0) + 1; });
+    for (const s of prev || []) {
+      if (!s || !TEMPLATE_KINDS.has(s.k)) continue;
+      if (have[s.k] > 0) { have[s.k]--; continue; }
+      out.push({ k: s.k, x: toInt(s.x, W), y: toInt(s.y, H) });
+    }
+    return out.slice(0, 40);
+  }
+  const extrasNow = () => extras.filter(e => KIND_RE.test(e.kind)).slice(-40).map(e => ({ kind: e.kind, x: toInt(e.x, W), y: toInt(e.y, H) }));
+  function useHome(id, h) {                 // 照帳號擺：手機裝潢＋owned 有的＋伴手禮，位置照 layout
+    homeAcct = id; homeMem = h;
+    extras = (h.extras || []).filter(e => e && FURN[e.kind]).map(e => ({ kind: e.kind, x: +e.x || 0, y: +e.y || 0 }));
+    buildFurn(h.owned === undefined ? {} : h.owned, extras);   // null＝電腦還沒傳家具清單：範例的全部
+    applyLayout(h.layout);
+  }
+  function homeSave(dirty) {                // 照帳號擺的時候：記進這台瀏覽器（dirty＝還沒傳上去）
+    if (!homeAcct) return;
+    for (const f of furn) if (f.extra) { f.extra.x = toInt(f.x, W); f.extra.y = toInt(f.y, H); }
+    homeMem = { owned: homeMem.owned, layout: layoutNow(homeMem.layout), extras: extrasNow(), dirty };
+    homePut(homeAcct, homeMem);
+  }
+  { // 打開時：這個帳號上次的家具先擺出來（伺服器讀到再換）
+    const id = LIVE && SV.mode === 'live' ? souvAcct() : null, h = homeGet(id);
+    if (h && !h.none) useHome(id, h);
+  }
+  let homeBusy = null, homeReady = false, homeTimer = 0, homeSending = false;   // homeReady：這次打開已經跟伺服器對過了
+  function homeSync() {
+    const id = souvAcct();
+    if (!LIVE || SV.mode !== 'live' || !id || !SV.homeMine) return Promise.resolve();
+    if (!homeBusy) homeBusy = (async () => {
+      try {
+        const r = await SV.homeMine();
+        if (souvAcct() !== id || !r || typeof r !== 'object') return;
+        // 每種最多 1 個。owned_at 是 null＝電腦還沒傳過家具清單（電腦還是舊版）：先照舊全部擺（null），不要一登入家具就少了
+        let owned = null;
+        if (r.owned_at) { owned = {}; for (const [k, v] of Object.entries(r.owned || {})) if (OWNABLE.has(k) && +v > 0) owned[k] = 1; }
+        const mine = homeGet(id);
+        let h;
+        if (mine && mine.dirty && !mine.none) h = { ...mine, owned };    // 這邊改了還沒傳上去：用這邊的，等一下送
+        else if (r.layout == null) h = { owned, layout: localLayout(), extras: localExtras(), dirty: true };   // 第一次：這支手機的搬上去
+        else h = { owned, layout: Array.isArray(r.layout) ? r.layout : [], extras: Array.isArray(r.extras) ? r.extras : [], dirty: false };
+        if (editMode) return;                  // 正在佈置：不換家具（佈置完會再讀一次）
+        useHome(id, h); homeSave(h.dirty); render();
+        homeReady = true;
+        if (h.dirty) homeSend();
+      } catch (e) {
+        if (e.status === 404) {                // 伺服器沒有 020：照舊只存瀏覽器
+          homePut(id, { none: true }); homeReady = true;
+          if (homeAcct) { homeAcct = null; homeMem = null; extras = localExtras(); buildFurn(null, extras); applyLayout(localLayout()); render(); }
+        }
+        /* 沒網路、伺服器有狀況：照快取擺著，下次讀伺服器（pull）再試 */
+      } finally { homeBusy = null; }
+    })();
+    return homeBusy;
+  }
+  const homeWaiting = () => !!(homeAcct && homeMem && homeMem.dirty && !homeTimer && !homeSending);
+  function homeLater(ms = 2000) { clearTimeout(homeTimer); homeTimer = setTimeout(homeSend, ms); }   // 停手 2 秒再送（一直拖就一直往後延）
+  async function homeSend() {
+    clearTimeout(homeTimer); homeTimer = 0;
+    const id = homeAcct, sent = homeMem;
+    if (!id || !sent || !sent.dirty || SV.mode !== 'live' || souvAcct() !== id) return;
+    if (homeSending) { homeLater(); return; }
+    homeSending = true;
+    try {
+      const r = await SV.homeLayoutSet(sent.layout, sent.extras);
+      if (r && r.ok === false) console.warn('手機的家：伺服器說格式不對（不再送）', r, sent);
+      if (homeAcct === id && homeMem === sent) { homeMem = { ...sent, dirty: false }; homePut(id, homeMem); }   // 送的時候又改了＝還是 dirty，等一下再送
+    } catch (e) {
+      if (e.status === 404) homePut(id, { ...sent, none: true });   // 伺服器沒有 020（不太會：讀的時候有）：下次打開照舊
+      /* 沒網路：留著 dirty，下次讀伺服器時再送 */
+    } finally { homeSending = false; }
+  }
+  addEventListener('online', () => { if (homeWaiting()) homeSend(); });
+
   function saveLayout() {
-    try { localStorage.setItem(LAYOUT_KEY, JSON.stringify(furn.map(f => ({ k: f.kind, x: Math.round(f.x), y: Math.round(f.y) })))); } catch (_) { /* 存不了就算了 */ }
+    for (const f of furn) if (f.extra) { f.extra.x = toInt(f.x, W); f.extra.y = toInt(f.y, H); }
+    if (homeAcct) { homeSave(true); homeLater(); return; }
+    try {
+      localStorage.setItem(LAYOUT_KEY, JSON.stringify(furn.map(f => ({ k: f.kind, x: Math.round(f.x), y: Math.round(f.y) }))));
+      localStorage.setItem(EXTRA_KEY, JSON.stringify(extras));
+    } catch (_) { /* 存不了就算了 */ }
   }
   let editMode = false, picked = null;
   function setEdit(on) {
@@ -668,7 +784,7 @@
   }
   $('editBtn').onclick = () => setEdit(!editMode);
   $('editDone').onclick = () => setEdit(false);
-  $('editReset').onclick = () => { furn.forEach((f, i) => { [f.x, f.y] = DEFAULT_POS[i]; }); picked = null; toast('家具回到原本的位置'); };
+  $('editReset').onclick = () => { furn.forEach(f => { f.x = f.dx; f.y = f.dy; }); picked = null; toast('家具回到原本的位置'); };
   function drawPicked() {                 // 選到的家具：黃色外框
     const f = picked || hoverF;
     if (!editMode || !f) return;
@@ -902,7 +1018,8 @@
   // more＝點毛孩打開的面板（多〔餵飯〕、在桌面的多〔摸摸〕）；「全家」名單只放搬家的按鈕（一列不要太高）
   function actions(p, more = false) {
     const b = [];
-    if (p.where === 'home') { b.push(['desk', '去上班', 'work']); if (isPhone) b.push(['pocket', '帶出門', 'pocket']); if (more) b.push(['bowl', '餵飯', 'feed']); }
+    const pc = !LIVE || deskAt != null || !SV.p74;   // P74：只有手機、電腦從來沒連過的帳號沒有〔去上班〕（沒有桌面可以去）
+    if (p.where === 'home') { if (pc) b.push(['desk', '去上班', 'work']); if (isPhone) b.push(['pocket', '帶出門', 'pocket']); if (more) b.push(['bowl', '餵飯', 'feed']); }
     else if (p.where === 'desk') { if (more) b.push(['paw', '摸摸', 'pet'], ['bowl', '餵飯', 'feed']); b.push(['home', '叫回家', 'callhome', true]); }
     else if (p.where === 'pocket') b.push(['home', '放回家', 'callhome', true]);
     else if (p.where === 'friend') b.push(['home', '叫回家', 'callhome']);
@@ -1048,6 +1165,7 @@
     try {
       merge(await SV.petsMine()); netError = '';
       if (!souvReady || souvWaiting()) souvSync();   // 紀念品：剛登入／剛打開先對一次；有還沒送出去的就補送
+      if (!homeReady || homeWaiting()) homeSync();   // 家具（P78）：同上；佈置還沒傳上去的補送
     } catch (e) {
       if (!netError && !booted) toast(e.message || '連不上伺服器');
       netError = e.message || '連不上伺服器'; renderAccount();
@@ -1056,7 +1174,7 @@
       schedulePull(fast() ? 3000 : 10000);
     }
   }
-  document.addEventListener('visibilitychange', () => { if (!document.hidden && SV.mode === 'live') { souvReady = false; pull(); watchActions(); } });   // 回到畫面：紀念品也再讀一次（別支手機可能加了）
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && SV.mode === 'live') { souvReady = false; homeReady = false; pull(); watchActions(); } });   // 回到畫面：紀念品、家具也再讀一次（別支手機可能加了、電腦可能買了）
 
   // 伺服器 0～100 → 畫面的 0～3（MOOD 表情、foodBar）
   const lvl = v => v == null ? 2 : v >= 75 ? 3 : v >= 50 ? 2 : v >= 25 ? 1 : 0;
@@ -1187,7 +1305,7 @@
     } else {
       info.textContent = SV.user ? `已登入 ${SV.user.email || ''}` : '還沒登入';
       b.textContent = netError ? `⚠ ${netError}`
-        : deskAt == null ? '電腦還沒連過（要新版 DeskCat）'
+        : deskAt == null ? (SV.p74 ? '只用手機養（有電腦版也可以一起玩）' : '電腦還沒連過（要新版 DeskCat）')
         : deskOn() ? `電腦開著（${agoText(deskAt)}連過）` : `電腦沒開（上次 ${agoText(deskAt)}）`;
       btn.textContent = '登出';
       btn.onclick = async () => { btn.disabled = true; await SV.logout(); reload(false); };
@@ -1195,12 +1313,26 @@
     const txt = document.createElement('div'); txt.className = 'acct-txt'; info.className = 'acct-main';
     txt.append(info, b);
     if (dev || SV.which !== 'release') { const s = document.createElement('div'); s.className = 'acct-sub'; s.textContent = `伺服器：${SV.name}`; txt.append(s); }
-    box.append(txt, btn);
+    if (LIVE && SV.user && SV.p74) {        // 刪除帳號（P74 M1）：先在下面問一次
+      const col = document.createElement('div'), del = document.createElement('button');
+      col.className = 'acct-btns'; del.className = 'btn small'; del.textContent = '刪除帳號';
+      del.onclick = () => { $('acctDel').hidden = false; $('acctDelNo').focus(); };
+      col.append(btn, del); box.append(txt, col);
+    } else box.append(txt, btn);
+    if (window.DCNotify) DCNotify.render();   // 通知卡（notify.js，P74 M4）
   }
+  $('acctDelNo').onclick = () => { $('acctDel').hidden = true; };
+  $('acctDelYes').onclick = async () => {
+    const b = $('acctDelYes'); b.disabled = true;
+    try { await SV.accountDelete(); $('acctDel').hidden = true; reload(false); }
+    catch (e) { toast(e.status === 404 ? '伺服器還沒準備好刪帳號' : e.message || '刪不了，等一下再試'); }
+    finally { b.disabled = false; }
+  };
   function showLogin(msg = '') {
     const box = $('login');
     box.hidden = false; document.body.classList.add('login-open');
     $('loginServer').textContent = SV.which === 'release' && !dev ? '' : `伺服器：${SV.name}`;
+    if (SV.p74) document.querySelector('#login .note').textContent = '有電腦版 DeskCat 就用同一個帳號；沒有也能開新的';
     // 從主畫面的網頁 App 打開：iPhone 跟 Safari 分開記登入 → 要再登入一次（2026-10-17 使用者：加到主畫面又要跳去網頁打 Gmail）。
     // 這時候信箱驗證碼放最上面（不用跳去 Google 網頁、一直在這個畫面裡），Google 放下面。iOS 26 加到主畫面預設就是網頁 App，網頁改不了預設
     const inApp = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
@@ -1215,21 +1347,28 @@
     let email = '';
     try { email = localStorage.getItem('deskcat_login_email') || ''; } catch (_) { /* 不記也沒關係 */ }
     $('loginEmail').value = email;
-    const step = code => { $('loginEmailForm').hidden = code; $('loginCodeForm').hidden = !code; (code ? $('loginCode') : $('loginEmail')).focus(); };
+    const step = code => { $('loginEmailForm').hidden = code; $('loginCodeForm').hidden = !code; $('loginNew').hidden = true; (code ? $('loginCode') : $('loginEmail')).focus(); };
+    async function send(create) {            // 寄驗證碼；create＝開新帳號（P74 M1：沒有帳號的信箱，問過才開）
+      const btn = create ? $('loginNew') : $('loginSend'); btn.disabled = true; say('寄信中…');
+      try {
+        await SV.sendCode(email, create);
+        try { localStorage.setItem('deskcat_login_email', email); } catch (_) { /* 不記也沒關係 */ }
+        $('loginSentTo').textContent = create ? `開新帳號：驗證碼寄到 ${email}` : `驗證碼寄到 ${email}`;
+        $('loginCode').value = ''; step(true); say('收信，把驗證碼打在上面');
+      } catch (err) {
+        if (err.code === 'no_account' && !create && SV.p74) { say('這個信箱還沒有帳號', true); $('loginNew').hidden = false; }
+        else if (err.code === 'no_account') say('這個信箱還沒有帳號：先在電腦版 DeskCat 登入', true);
+        else say(err.message, true);
+      } finally { btn.disabled = false; }
+    }
     $('loginEmailForm').onsubmit = async e => {
       e.preventDefault();
       email = $('loginEmail').value.trim();
       if (!/^\S+@\S+\.\S+$/.test(email)) { say('信箱格式不對', true); return; }
-      const btn = $('loginSend'); btn.disabled = true; say('寄信中…');
-      try {
-        await SV.sendCode(email);
-        try { localStorage.setItem('deskcat_login_email', email); } catch (_) { /* 不記也沒關係 */ }
-        $('loginSentTo').textContent = `驗證碼寄到 ${email}`;
-        $('loginCode').value = ''; step(true); say('收信，把驗證碼打在上面');
-      } catch (err) {
-        say(err.code === 'no_account' ? '這個信箱還沒有帳號：先在電腦版 DeskCat 登入' : err.message, true);
-      } finally { btn.disabled = false; }
+      await send(false);
     };
+    $('loginNew').onclick = () => send(true);
+    $('loginEmail').oninput = () => { $('loginNew').hidden = true; };
     $('loginCodeForm').onsubmit = async e => {
       e.preventDefault();
       const code = $('loginCode').value.replace(/\D/g, '');
@@ -1309,6 +1448,7 @@
   }
   $('sheetClose').onclick = closeSheet;
 
+  let adoptAsked = false;                    // 這次開著已經自動打開過領養畫面（關掉就不再自己跳出來）
   function render() {
     const order = ['home', 'pocket', 'desk', 'friend'];
     const list = [...HOME.pets].sort((a, b) => order.indexOf(a.where) - order.indexOf(b.where));
@@ -1323,10 +1463,18 @@
       strip.appendChild(b);
     }
     const ul = $('familyList'); ul.innerHTML = '';
-    if (LIVE && booted && !list.length) {
+    if (LIVE && booted && !list.length && !SV.p74) {   // P74 還沒上的正式網址：舊的說法
       const li = document.createElement('li'); li.className = 'empty';
       li.textContent = '還沒有毛孩：打開電腦版 DeskCat（新版），毛孩就會傳上來';
       ul.appendChild(li);
+    } else if (LIVE && booted && !list.length) {   // P74：沒有電腦也能在手機建立
+      const li = document.createElement('li'); li.className = 'empty';
+      li.textContent = '還沒有毛孩：在這裡領養一隻（有電腦版的話，打開電腦版也會傳上來）';
+      const b = document.createElement('button'); b.className = 'btn main'; b.textContent = '領養毛孩';
+      b.onclick = () => window.DCAdopt && DCAdopt.open();
+      li.append(document.createElement('br'), b);
+      ul.appendChild(li);
+      if (!adoptAsked && window.DCAdopt) { adoptAsked = true; DCAdopt.open(); }   // 新帳號第一次：直接打開領養畫面
     }
     for (const p of list) {
       const li = document.createElement('li');
@@ -1358,8 +1506,9 @@
   document.querySelectorAll('.tabs button').forEach(b => { b.onclick = () => switchTab(b.dataset.tab); });
 
   function tick() { $('clock').textContent = `${TIME_LABEL[timeOfDay()]} ${new Date().toTimeString().slice(0, 5)}`; }
-  // 直版只給手機直拿；電腦不管視窗形狀都是橫版（分頁列在左邊）（2026-10-14 使用者）
-  function layout() { document.body.classList.toggle('vertical', isPhone && innerHeight > innerWidth); }
+  // 手機＝手機版（直版版面），電腦＝網頁版（橫版，分頁列在左邊）：只照「是不是手機（觸控）」，不照視窗大小、不照手機直拿橫拿
+  // （製作規則第 3 節、裝置規格第 6 節；2026-10-20 使用者：「嚴格遵守手機版的介面跟或者是網頁版」，以前手機橫拿會變成網頁版的樣子）
+  function layout() { document.body.classList.toggle('vertical', isPhone); }
   const relayout = () => { layout(); requestAnimationFrame(fit); };
   addEventListener('resize', relayout);
   addEventListener('orientationchange', () => setTimeout(relayout, 200));   // iPhone 轉向時 resize 有時候晚一點才來
@@ -1390,16 +1539,17 @@
     furnitureOf: kind => furn.filter(f => f.kind === kind).pop() || null,
     setBoard: cards => { boardCards = cards; },
     souvenirs: () => ({ ...souv }),
-    addFurniture(kind) {                   // 伴手禮放進家裡：門附近的空地，記下來
+    addFurniture(kind) {                   // 伴手禮放進家裡：門附近的空地，記下來（照帳號擺的時候存伺服器）
       if (!FURN[kind]) return null;
-      const [fx, fy] = freeSpot(), x = clamp(fx, 400, 520), y = clamp(fy, FLOOR.y0 + 30, FLOOR.y1 - 20);
-      const f = { kind, x, y, k: FURN[kind] };
-      furn.push(f); DEFAULT_POS.push([x, y]); extras.push({ kind, x, y });
-      try { localStorage.setItem(EXTRA_KEY, JSON.stringify(extras)); } catch (_) { /* 存不了就算了 */ }
+      if (extras.length >= 40) { toast('家裡放不下更多伴手禮了'); return null; }   // 伺服器最多收 40 個
+      const [fx, fy] = freeSpot(), x = Math.round(clamp(fx, 400, 520)), y = Math.round(clamp(fy, FLOOR.y0 + 30, FLOOR.y1 - 20));
+      const e = { kind, x, y }, f = { kind, x, y, k: FURN[kind], dx: x, dy: y, extra: e };
+      extras.push(e); furn.push(f);
       saveLayout();
       return f;
     },
     useCtx: c => { ctx = c || roomCtx; },
+    pullNow: () => pull(),                  // 領養完馬上讀一次（adopt.js）
     ctx: () => ctx,
     get isPhone() { return isPhone; },
   };
@@ -1429,7 +1579,7 @@
     b['app.css'] = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--build'), 10) || null;
     return b;
   }
-  const BUILD_FILES = ['index.html', 'app.css', 'lines.js', 'server.js', 'app.js', 'pocket.js', 'trip.js', 'scenes.js', 'mail.js', 'fake/fake_data.js', 'fake/fake_mail.js'];
+  const BUILD_FILES = ['index.html', 'app.css', 'lines.js', 'server.js', 'app.js', 'pocket.js', 'trip.js', 'scenes.js', 'mail.js', 'parts.js', 'adopt.js', 'notify.js', 'outdoor.js', 'fake/fake_data.js', 'fake/fake_mail.js'];
   function staleFiles() {                 // 跟 index.html 不一樣、或根本沒有戳記的＝手機拿到舊檔（地毯飛起來那次：fake_data.js 是舊的）
     const b = builds(), want = b['index.html'];
     return BUILD_FILES.filter(k => b[k] !== want);
@@ -1453,6 +1603,7 @@
       ['加到主畫面', matchMedia('(display-mode: standalone)').matches || navigator.standalone ? '是' : '否'],
       ['網址', `${location.protocol}//${location.host}`],
       ['資料', LIVE ? `伺服器 ${SV.name}・${SV.mode === 'live' ? '已登入' : '沒登入'}・毛孩 ${HOME.pets.length} 隻` : '範例（假資料）'],
+      ['家具', homeAcct ? `跟著帳號・${furn.length} 件${homeMem && homeMem.dirty ? '・還沒傳上去' : ''}` : '只存這台瀏覽器'],
       ['離線快取', navigator.serviceWorker && navigator.serviceWorker.controller ? '有（正式網址）' : '沒有'],
       ['檔案版本', BUILD_FILES.map(k => `${k} ${builds()[k] ?? '沒有'}`).join('、')],
       ['舊檔案', old.length ? `${old.join('、')}（關掉網頁再開一次）` : '沒有 ✔'],
@@ -1488,6 +1639,11 @@
   render(); renderAccount(); tick(); setInterval(tick, 30000);
   setInterval(() => { if (!$('view-family').hidden) renderAccount(); }, 30000);   // 「電腦 3 分鐘前連過」跟著走
   if (SV.mode === 'login') showLogin(); else if (LIVE) pull();
+  {                                       // ?tab=home／family／pocket／mail：從通知點進來（sw.js），打開那一頁（P74 M4）
+    const t = params.get('tab');
+    // 等全部檔案（mail.js、pocket.js 在 app.js 後面）載入完再切，不然信箱、口袋還沒準備好＝空白
+    if (['home', 'family', 'mail'].includes(t) || (t === 'pocket' && isPhone)) document.addEventListener('DOMContentLoaded', () => switchTab(t));
+  }
   addEventListener('load', () => {        // 全部檔案載入完再比（pocket.js、mail.js 在 app.js 後面才載入）
     const old = staleFiles();
     if (old.length) { console.warn('舊檔案：', old, builds()); setTimeout(() => toast('有舊的檔案沒更新：關掉網頁再開一次'), 900); }

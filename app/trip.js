@@ -4,7 +4,7 @@
 //   產圖 SV.tripMake（Edge Function trip-photo）、相簿 SV.tripMine（dc_trip_photos_mine）、圖 SV.tripImage（Storage trip-photos）。
 // 全部玩家當天的額度用完（daily_total）：手機自己做風景照＝畫一張城市剪影＋毛孩坐著的那一格（不算今天的張數；伺服器沒有圖庫）。AI 畫失敗（ai_failed）＝同一個 key 再試。
 // 伺服器還沒有這些函式（讀相簿回 404）：口袋不顯示〔旅行照〕按鈕（不會有按了壞掉的按鈕）。
-(window.DC_BUILD = window.DC_BUILD || {})['trip.js'] = 36;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['trip.js'] = 54;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const D = window.DC, SV = window.DCServer, $ = id => document.getElementById(id);

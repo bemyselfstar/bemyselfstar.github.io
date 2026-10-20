@@ -8,7 +8,12 @@
 //   毛孩圖：Storage pet-sprites/<帳號>/<sprite>.png／.json（檔名帶指紋：外觀變了檔名就變 → 下載過的存在瀏覽器，不再下載）
 //   口袋 AI 旅行照（2026-10-17，伺服器那一半遊戲線做；規格在 docs/跨線需求.md 2026-10-17「手機要叫的函式」）：
 //     Edge Function trip-photo（產圖 15～45 秒；遊戲線 server/functions/trip-photo）、dc_trip_photos_mine（server/018：相簿＋今天還能不能拍）、Storage trip-photos/<file>（圖）
-(window.DC_BUILD = window.DC_BUILD || {})['server.js'] = 36;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+//   手機的家 家具跟著帳號（server/020，P78，2026-10-19）：dc_home_mine（電腦買過的家具＋手機的擺法、伴手禮）、dc_home_layout_set（存擺法、伴手禮）
+//   P74 只有手機也能玩（2026-10-20，手機那半先用假伺服器做；伺服器那半＝docs/跨線需求.md 2026-10-20 📱 第 1 條，🎮 做）：
+//     開新帳號＝信箱驗證碼 create_user: true（先用 false 試，沒有帳號才問要不要開）；暱稱＝profiles 表（001，自己的那一列可以改 nickname）；
+//     刪帳號 dc_account_delete（🎮 新的：現在的 delete_my_account 要電腦裝置，手機叫不了）；
+//     手機建立毛孩 dc_pet_create(p_cfg, p_sprite)（🎮 019）＋毛孩圖自己傳 Storage pet-sprites/<帳號>/<cid>-<指紋>.png／.json（權限 013 已經可以）
+(window.DC_BUILD = window.DC_BUILD || {})['server.js'] = 54;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const SERVERS = {
@@ -81,8 +86,8 @@
     expires_at: d.expires_at || Math.floor(Date.now() / 1000) + (d.expires_in || 3600),
     uid: d.user && d.user.id, email: d.user && d.user.email,
   });
-  // create_user: false＝手機不會多開一個空帳號（帳號一律在電腦版建立）
-  const sendCode = email => http('POST', '/auth/v1/otp', { email: email.trim(), create_user: false });
+  // create＝false：只登入已經有的帳號（打錯字不會多開一個空帳號）；沒有帳號（no_account）畫面問過「要開新帳號嗎」才用 true（P74 M1）
+  const sendCode = (email, create = false) => http('POST', '/auth/v1/otp', { email: email.trim(), create_user: !!create });
   async function verify(email, code) {
     const d = await http('POST', '/auth/v1/verify', { type: 'email', email: email.trim(), token: code.trim() });
     if (!d || !d.access_token) throw new ServerError('登入失敗，再試一次', 'server', 0);
@@ -125,6 +130,29 @@
     if (t) try { await http('POST', '/auth/v1/logout?scope=local', {}, t); } catch (_) { /* 伺服器那邊失敗也沒關係：這台已經忘了 */ }
   }
   function chooseFake(on) { store(MODE_KEY, on && canFake ? 'fake' : null); }
+
+  // ---------- 帳號資料（P74 M1）：暱稱（好友看得到）、刪帳號 ----------
+  async function profile() {               // {nickname, friend_code}；新帳號 nickname＝''
+    const rows = await authed('GET', `/rest/v1/profiles?select=nickname,friend_code&id=eq.${session.uid}`);
+    return (rows && rows[0]) || null;
+  }
+  const setNickname = nick => authed('PATCH', `/rest/v1/profiles?id=eq.${session.uid}`, { nickname: String(nick).trim().slice(0, 20) });
+  async function accountDelete() {         // 伺服器上這個帳號的東西全部刪掉（電腦版也是同一個帳號）→ 這台登出
+    await rpc('dc_account_delete');
+    saveSession(null); mode = 'login';
+  }
+  // 毛孩圖自己傳上去（手機建立的毛孩：零件包組好的圖表，格式跟電腦 src/pet_sprites.py 一樣）。file＝<cid>-<指紋>
+  async function spriteUpload(file, png, meta) {
+    const t = await token(), base = `${S.url}/storage/v1/object/pet-sprites/${session.uid}/${file}`;
+    const put = async (ext, body, type) => {
+      let r;
+      try { r = await fetch(base + ext, { method: 'POST', headers: { apikey: S.key, Authorization: 'Bearer ' + t, 'Content-Type': type, 'x-upsert': 'true' }, body }); }
+      catch (_) { throw new ServerError('連不上伺服器，檢查網路', 'offline', 0); }
+      if (!r.ok) throw new ServerError('毛孩圖傳不上去，等一下再試', 'server', r.status);
+    };
+    await put('.png', png, 'image/png');
+    await put('.json', JSON.stringify(meta), 'application/json');
+  }
 
   // ---------- Google 登入（2026-10-16；跟電腦版 online.google_login 同一套：PKCE 一次性鑰匙對） ----------
   // 按〔用 Google 登入〕→ 整頁跳到 Supabase → Google 選帳號 → 跳回這一頁（網址帶 ?code=）→ 用 code＋鑰匙換登入資料。
@@ -239,9 +267,20 @@
 
   window.DCServer = {
     which, name: S.name, url: S.url, key: S.key, isLocal: local, canFake,   // canFake：可以看範例（只有開發預覽）
+    // P74（開新帳號、刪帳號、在手機建立毛孩）：伺服器那半（🎮 019、dc_account_delete）還沒上之前，只在開發預覽打開；
+    // 正式網址先維持舊的樣子（不會有按了壞掉的按鈕）。🎮 做好、零件放好 mobile/parts/ 後改成 true
+    p74: local || params.get('p74') === '1',
+    // 網頁推播的公開鑰匙（VAPID 公鑰，可以放網頁；🎮 產生後填進 SERVERS 的 push，dev／正式各一把）。空的＝伺服器還沒準備好通知（notify.js）
+    pushKey: S.push || '',
     get mode() { return mode; },
     get user() { return session ? { uid: session.uid, email: session.email } : null; },
     sendCode, verify, logout, chooseFake, rpc, sprite, pruneSprites, ServerError, googleStart,
+    profile, setNickname, accountDelete, spriteUpload,                // P74 M1、M2
+    // P74 M2（🎮 019）：{ok, cid}／{ok: false, reason}。p_poses＝小工具的小圖 {姿勢: PNG base64}（電腦 dc_pet_poses_set 同格式；sit 也當 avatar）
+    // 通知（P74 M4，🎮 dc_push_subscribe／dc_push_unsubscribe）：p_sub＝PushSubscription.toJSON() {endpoint, keys: {p256dh, auth}}；同一個 endpoint＝更新要哪幾種
+    pushSubscribe: (sub, kinds) => rpc('dc_push_subscribe', { p_sub: sub, p_kinds: kinds, p_device: /iP(hone|ad)/.test(navigator.userAgent) ? 'iphone' : /Android/.test(navigator.userAgent) ? 'android' : 'web' }),
+    pushUnsubscribe: endpoint => rpc('dc_push_unsubscribe', { p_endpoint: endpoint }),
+    petCreate: (cfg, sprite, poses) => rpc('dc_pet_create', { p_cfg: cfg, p_sprite: sprite, p_poses: poses || {} }),
     get googleDone() { return googleDone; },          // 從 Google 跳回來、正在換登入資料（沒有＝null）
     onExpired: f => listeners.add(f),
     // 讀、寫（server/011～013；回傳格式見 docs/專案/P66_手機網頁版.md 第 8 節）
@@ -263,5 +302,8 @@
     tripMake,                                                // {ok, status: done／making／no, id, file, reused, reason, wait_min?, next_at?}（trip.js normMake）
     tripMine: () => rpc('dc_trip_photos_mine'),              // {photos: [{id, cid, name, city, scene, tod, status, file, reused, created_at}], today_left, next_at, min_out_min}
     tripImage,                                               // path → Blob（下載過的存在瀏覽器）
+    // 手機的家（server/020，P78；格式見 docs/跨線需求.md 2026-10-19 🎮 P78）。伺服器還沒有 020＝404（app.js 照舊只存瀏覽器）
+    homeMine: () => rpc('dc_home_mine'),                     // {owned: {catbed: 1…}（只列有的）, owned_at, layout: [{k, x, y}] 或 null（沒存過）, extras: [{kind, x, y}], layout_at}
+    homeLayoutSet: (layout, extras) => rpc('dc_home_layout_set', { p_layout: layout, p_extras: extras }),   // {ok, layout_at}／{ok: false, reason: 'invalid'}
   };
 })();
