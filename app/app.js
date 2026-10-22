@@ -2,7 +2,7 @@
 // 斜上往下看的房間（W×H 像素，比螢幕大），整數倍放大（不糊）；拖曳移動鏡頭、兩指縮放。
 // 電腦網頁＝橫版（分頁列在左邊）、手機網頁＝直版（分頁列在下面）（2026-10-14 使用者）。
 // 家具先用程式畫的簡單版（之後換成正式美術）；毛孩用遊戲的側面影格，前後只靠遮擋表現、不縮放。
-(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 55;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 57;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   // 資料：範例（假資料）或伺服器（server.js；登入後 dc_pets_mine 每 10 秒讀一次，見下面「伺服器同步」）。
@@ -1023,12 +1023,14 @@
     else if (p.where === 'desk') { if (more) b.push(['paw', '摸摸', 'pet'], ['bowl', '餵飯', 'feed']); b.push(['home', '叫回家', 'callhome', true]); }
     else if (p.where === 'pocket') b.push(['home', '放回家', 'callhome', true]);
     else if (p.where === 'friend') b.push(['home', '叫回家', 'callhome']);
+    if (more && LIVE && SV.p74 && p.cfg && window.DCAdopt) b.push(['edit', '換顏色', 'recolor']);   // P74：在手機換顏色（adopt.js）
     return b;
   }
   function act(p, what) {
     const pet = pets.find(o => o.p === p);
     if (what === 'pocket') { toPocket(p); return; }
     if (what === 'feed') { feed(p); return; }
+    if (what === 'recolor') { closeSheet(); DCAdopt.open(p); return; }
     if (what === 'pet') {                    // 在桌面的：送一個摸摸給電腦（電腦上的牠冒愛心、說話）
       if (cooling(p, 'pet')) { toast(`${p.name}剛被摸過了`); return; }
       remote(p, 'pet', true); toast(LIVE && !deskOn() ? `電腦開了${p.name}就收到` : `摸摸送到桌面了`);
@@ -1201,6 +1203,7 @@
         came_at: s.came_at || null, affection: s.affection ?? null,   // 015：來家裡的日子（面板「在一起第 N 天」）、親密 0～100
         friend: s.friend || '', back: backText(s.back_at), doing: s.doing_text || '',
         placeAt: s.place_at ? Date.parse(s.place_at) : null,
+        cfg: s.cfg && typeof s.cfg === 'object' ? s.cfg : null,   // 019：外觀（換顏色用；電腦舊版還沒傳＝null）
       });
       // 剛在這邊摸過、餵過：電腦還沒算進去之前，不要被舊的數字蓋回去
       p.mood = Math.max(lvl(s.mood), p.moodHold > t ? p.mood : 0);

@@ -3,7 +3,7 @@
 // 散步（使用者選「牠走、背景往後捲」）：每個場景是幾層會捲的圖（遠的慢、近的快），毛孩站在畫面左邊走路，背景往後移。
 // 每一層照「場景＋時段＋天氣＋大小」畫一次存起來（畫布寬 TW，左右接得起來），每一格只貼上去；會動的（雲、星星、浪、螢火蟲）每格畫。
 // 全部 Claude 用程式畫（使用者「Claude 用程式畫」），不讀圖片檔。給 pocket.js 用：DCOutdoor.build(場景, PW, PH, 時段, 天氣) → 場景物件。
-(window.DC_BUILD = window.DC_BUILD || {})['outdoor.js'] = 55;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['outdoor.js'] = 57;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const D = window.DC;

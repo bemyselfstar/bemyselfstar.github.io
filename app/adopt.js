@@ -6,7 +6,9 @@
 //   自己調過顏色 → preset＝''；玩家選的 #ffffff 存成 #fefefe（零件包格式.md 4-1）。
 // 存：毛孩圖（整張圖表＋meta，格式跟 src/pet_sprites.py 一樣）傳 Storage → dc_pet_create（🎮 019，跨線需求 2026-10-20 📱 第 1 條）。
 // 新帳號第一次進來（還沒有毛孩）時自動打開；「全家」頁沒有毛孩時也有〔建立毛孩〕。
-(window.DC_BUILD = window.DC_BUILD || {})['adopt.js'] = 55;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+// 換顏色（P74 M2 剩下的，2026-10-22）：毛孩面板〔換顏色〕→ 同一個畫面、從牠現在的 cfg 開始；不能換貓狗、品種（伺服器規定），
+//   著色本照牠現在的年齡 → 毛孩圖、小圖傳上去 → dc_pet_look_set（🎮 019）。電腦打開會照「最後改的為準」換成手機選的。
+(window.DC_BUILD = window.DC_BUILD || {})['adopt.js'] = 57;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const SV = window.DCServer, P = window.DCParts, $ = id => document.getElementById(id);
@@ -32,7 +34,22 @@
   const coatsOf = (sp, breed) => (breedsOf(sp).find(b => b.breed === breed) || breedsOf(sp)[0]).coats;
   function bookName() {
     const c = st.coat, seed = c.spotted ? `_s${st.seed}` : '';
-    return `${c.book}${seed}_${ageBook(NEW_MONTHS)}`;
+    return `${c.book}${seed}_${st.ageKey || ageBook(NEW_MONTHS)}`;
+  }
+  // 換顏色：照牠現在的年齡選著色本（cat_art.age_look）。手機建立的 cfg 有生日；電腦的只有年齡階段（幼年就用 3 個月大的，電腦打開會換成自己畫的圖）
+  function ageKeyOf(p) {
+    const born = p.cfg && typeof p.cfg.born === 'number' ? p.cfg.born : null;
+    if (born != null) { const m = (Date.now() / 1000 - born) / MONTH_SEC; return m < 6 ? ageBook(m) : m >= 132 ? 'senior' : 'adult'; }
+    return /^幼/.test(p.age || '') ? ageBook(NEW_MONTHS) : p.age === '熟齡' ? 'senior' : 'adult';
+  }
+  function stateFrom(p) {                        // 換顏色：從牠現在的外觀開始；手機沒有這個品種／花色＝null
+    const cfg = p.cfg, sp = cfg.species === 'dog' ? 'dog' : 'cat';
+    const breed = choices.species[sp] && breedsOf(sp).some(b => b.breed === cfg.breed) ? cfg.breed : null;
+    const coat = breed && coatsOf(sp, breed).find(c => c.coat === cfg.coat);
+    if (!coat) return null;
+    const colors = {}; for (const [k] of COLORS) if (cfg[k] || coat.fields[k]) colors[k] = cfg[k] || coat.fields[k];
+    return { mode: 'look', target: p, sp, breed, coat, colors, custom: cfg.preset === '', stripes: typeof cfg.stripes === 'boolean' ? cfg.stripes : null,
+             seed: choices.seeds.includes(cfg.pattern_seed) ? cfg.pattern_seed : choices.seeds[0], ageKey: ageKeyOf(p), pet: null };
   }
   function look() {                              // 零件包組圖用的顏色（parts_phone_ref 的 look）
     const f = st.coat.fields, lk = {};
@@ -65,6 +82,7 @@
     if (on && box.scrollWidth > box.clientWidth) box.scrollLeft = Math.max(0, on.offsetLeft - box.offsetLeft - (box.clientWidth - on.offsetWidth) / 2);
   }
   function renderForm() {
+    $('adSpecies').hidden = $('adBreed').hidden = st.mode === 'look';   // 換顏色不能換貓狗、品種
     seg($('adSpecies'), Object.entries(choices.species).map(([k, s]) => [k, s.label]), st.sp, v => { if (v !== st.sp) setBreed(v, breedsOf(v)[0].breed); });
     seg($('adBreed'), breedsOf(st.sp).map(b => [b.breed, b.breed]), st.breed, v => setBreed(st.sp, v));
     seg($('adCoat'), coatsOf(st.sp, st.breed).map(c => [c.coat, c.label, c.fields.fur]), st.coat.coat, v => setCoat(coatsOf(st.sp, st.breed).find(c => c.coat === v)));
@@ -163,16 +181,29 @@
     return (a.toString(16).padStart(8, '0') + b.toString(16).padStart(8, '0')).slice(0, 12);
   }
   const cidNew = () => Array.from({ length: 12 }, () => '0123456789abcdef'[Math.floor(Math.random() * 16)]).join('');
-  function buildCfg(name) {                      // cfg_rule：花色的 fields 整份抄，再改玩家調的顏色
-    const c = st.coat, f = JSON.parse(JSON.stringify(c.fields)), now = Date.now() / 1000;
-    const cfg = { name, species: st.sp, breed: st.breed, coat: c.coat, ...f };
-    cfg.preset = st.custom ? '' : c.coat;
-    if (st.custom) { Object.assign(cfg, st.colors); cfg.stripes = stripes(); }
-    if (c.spotted) cfg.pattern_seed = st.seed;
+  function buildLook() {                         // cfg_rule：花色的 fields 整份抄，再改玩家調的顏色（換顏色只送這些）
+    const c = st.coat, f = JSON.parse(JSON.stringify(c.fields));
+    const lk = { species: st.sp, breed: st.breed, coat: c.coat, ...f };
+    lk.preset = st.custom ? '' : c.coat;
+    if (st.custom) { Object.assign(lk, st.colors); lk.stripes = stripes(); }
+    if (c.spotted) lk.pattern_seed = st.seed;
+    return lk;
+  }
+  function buildCfg(name) {
+    const now = Date.now() / 1000, cfg = { name, ...buildLook() };
     Object.assign(cfg, { cid: cidNew(), born: now - NEW_MONTHS * MONTH_SEC, came_at: now, zest: 70, mood: 60, hunger: 80 });
     return cfg;
   }
+  async function upload(cid) {                   // 整張圖表＋meta 傳 Storage、做小圖 → {file, poses}
+    const sig = hash12(JSON.stringify([st.bookName, look(), stripes(), choices.v]));
+    const file = `${cid}-${sig}`, m = st.pet.meta;
+    const png = await new Promise(r => st.sheet.toBlob(r, 'image/png'));
+    const meta = { v: 1, species: st.sp, breed: st.breed, coat: st.coat.coat, w: m.w, h: m.h, anims: m.anims, ticks: m.ticks || {} };
+    await SV.spriteUpload(file, png, meta);
+    return { file, poses: await makePoses(st.rgba) };   // 小工具、好友頭像的小圖（電腦版 dc_pet_poses_set 那份；sit＝avatar）
+  }
   async function save() {
+    if (st.mode === 'look') return saveLook();
     const name = $('adName').value.trim(), nick = $('adNick').value.trim();
     if (!st.pet) return;
     if (!$('adNickRow').hidden && !nick) { say('先取一個你的暱稱', true); $('adNick').focus(); return; }
@@ -181,12 +212,7 @@
     try {
       if (!$('adNickRow').hidden) await SV.setNickname(nick);
       const cfg = buildCfg(name.slice(0, 12));
-      const sig = hash12(JSON.stringify([st.bookName, look(), stripes(), choices.v]));
-      const file = `${cfg.cid}-${sig}`, m = st.pet.meta;
-      const png = await new Promise(r => st.sheet.toBlob(r, 'image/png'));
-      const meta = { v: 1, species: st.sp, breed: st.breed, coat: cfg.coat, w: m.w, h: m.h, anims: m.anims, ticks: m.ticks || {} };
-      await SV.spriteUpload(file, png, meta);
-      const poses = await makePoses(st.rgba);          // 小工具、好友頭像的小圖（電腦版 dc_pet_poses_set 那份；sit＝avatar）
+      const { file, poses } = await upload(cfg.cid);
       const r = await SV.petCreate(cfg, file, poses);
       if (!r || r.ok === false) throw new SV.ServerError(r && r.reason === 'too_many' ? '毛孩已經滿了' : '建立不了，等一下再試', 'server', 0);
       close();
@@ -197,18 +223,45 @@
     } finally { btn.disabled = false; }
   }
 
+  const LOOK_FAIL = { no_look: '電腦版更新後才能在這裡換', gone: '找不到牠了', no_sprite: '圖沒傳好，再試一次', invalid: '這個顏色存不了' };
+  async function saveLook() {
+    const p = st.target, btn = $('adGo');
+    if (!st.pet) return;
+    btn.disabled = true; say('幫牠換顏色…');
+    try {
+      const { file, poses } = await upload(p.id);
+      const r = await SV.petLookSet(p.id, buildLook(), file, poses);
+      if (!r || r.ok === false) throw new SV.ServerError(LOOK_FAIL[r && r.reason] || '換不了，等一下再試', 'server', 0);
+      close();
+      window.DC.toast(`${p.name}換好顏色了`);
+      if (window.DC.pullNow) window.DC.pullNow();
+    } catch (e) {
+      say(e.status === 404 ? '伺服器還沒準備好換顏色' : e.message || '換不了，等一下再試', true);
+    } finally { btn.disabled = false; }
+  }
+
   // ---------- 打開、關掉 ----------
-  async function open() {
-    const box = $('adopt');
+  async function open(target) {                  // target＝要換顏色的毛孩（HOME.pets 的一隻，有 cfg）；沒有＝領養新的
+    const box = $('adopt'), recolor = !!(target && target.cfg);
     box.hidden = false; document.body.classList.add('login-open');
+    box.querySelector('.ad-head h2').textContent = recolor ? `幫${target.name}換顏色` : '領養你的毛孩';
+    box.querySelector('.ad-names').hidden = recolor;
+    $('adGo').textContent = recolor ? '換好了' : '就是牠了';
     say('讀取中…');
     try {
       if (!choices) choices = await (await fetch(PARTS + 'choices.json', { cache: 'no-store' })).json();
     } catch (e) { say('讀不到可以選的品種，檢查網路再試', true); return; }
+    $('adClose').hidden = !recolor && !(window.DC && window.DC.HOME.pets.length);   // 第一隻一定要建（不然什麼都不能玩）；之後可以關
+    if (recolor) {
+      st = stateFrom(target);
+      if (!st) { $('adClose').hidden = false; say('這個花色手機還不能換', true); return; }
+      refresh();
+      return;
+    }
+    if (st && st.mode === 'look') st = null;     // 換過顏色：領養從頭開始
     let nick = 'x';
     try { const pf = await SV.profile(); nick = (pf && pf.nickname) || ''; } catch (_) { /* 讀不到就不問暱稱 */ }
     $('adNickRow').hidden = !!nick;
-    $('adClose').hidden = !(window.DC && window.DC.HOME.pets.length);   // 第一隻一定要建（不然什麼都不能玩）；之後可以關
     if (!st) {
       const first = allCoats()[0];
       st = { sp: first.sp, breed: first.breed, coat: first.c, colors: {}, custom: false, stripes: null,
@@ -238,5 +291,5 @@
     st.seed = s[(s.indexOf(st.seed) + 1) % s.length];
     refresh();
   };
-  window.DCAdopt = { open, close, ageBook, buildCfg: name => buildCfg(name), get state() { return st; } };
+  window.DCAdopt = { open, close, ageBook, ageKeyOf, buildCfg: name => buildCfg(name), buildLook: () => buildLook(), get state() { return st; } };
 })();

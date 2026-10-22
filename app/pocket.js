@@ -1,7 +1,7 @@
 // DeskCat 手機網頁「🎒 口袋」：毛孩跟你出門（只有手機有）。P66 新設計第 6 節：口袋、合照、順毛。
 // 口袋＝毛孩跟你出門、在戶外（不是真的口袋）：直式滿版的戶外場景（城市、公園、步道；照時間換天空、天氣先手動選，不要求位置權限），功能是右下的懸浮按鈕。
 // 合照：相機畫面疊上像素毛孩（可拖、放大、換姿勢、翻面），拍下來存到手機或分享；照片只留在手機、不上傳。
-(window.DC_BUILD = window.DC_BUILD || {})['pocket.js'] = 55;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['pocket.js'] = 57;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const D = window.DC, $ = id => document.getElementById(id);

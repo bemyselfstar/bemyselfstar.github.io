@@ -1,0 +1,823 @@
+{
+ "v": 1,
+ "user_keys": [
+  "fur",
+  "stripe",
+  "belly",
+  "eye"
+ ],
+ "user_flags": [
+  "stripes"
+ ],
+ "seeds": [
+  101,
+  202,
+  303,
+  404,
+  505,
+  606,
+  707,
+  808
+ ],
+ "ages": [
+  "adult",
+  "kit76",
+  "kit80",
+  "kit84",
+  "kit88",
+  "kit92",
+  "kit96",
+  "senior"
+ ],
+ "age_rule": "成年＝adult；熟齡＝senior；幼年：grow＝0.78＋0.22×min(1, 月齡÷6)，再取 int(grow÷0.04)×0.04 → kit76～kit96（跟 cat_art.age_look 一樣）",
+ "book_rule": "狗：<品種>_<年齡>；貓：<配色範本>_<年齡>；三花、玳瑁：<配色範本>_s<斑>_<年齡>（斑從 seeds 挑一個，存進 cfg 的 pattern_seed）",
+ "cfg_rule": "建立毛孩：cfg＝{species, breed, coat, preset, pattern_seed?} ＋ coat 的 fields（跟 apply_preset 一樣整份抄）；玩家改了顏色或條紋 → 改 cfg 的 fur／stripe／belly／eye／stripes，preset 改成空字串（電腦版「自己調過」）。狗的 preset 是品種名＝預設毛色（照 AI 原色），空字串＝自己調過（照 AI 換色）。毛色 #ffffff 一律存成 #fefefe（零件包格式.md 4-1）",
+ "species": {
+  "cat": {
+   "label": "貓",
+   "breeds": [
+    {
+     "breed": "一般貓",
+     "coats": [
+      {
+       "coat": "橘虎斑",
+       "label": "橘虎斑",
+       "fields": {
+        "fur": "#f0a04e",
+        "stripe": "#c56f25",
+        "belly": "#fff6ea",
+        "eye": "#8fbf3a",
+        "stripes": true
+       },
+       "spotted": false,
+       "book": "橘虎斑"
+      },
+      {
+       "coat": "灰虎斑",
+       "label": "灰虎斑",
+       "fields": {
+        "fur": "#9ba1aa",
+        "stripe": "#5f646c",
+        "belly": "#eeeeee",
+        "eye": "#7fb04a",
+        "stripes": true
+       },
+       "spotted": false,
+       "book": "灰虎斑"
+      },
+      {
+       "coat": "奶油貓",
+       "label": "奶油",
+       "fields": {
+        "fur": "#f2d6a0",
+        "stripe": "#d9ae68",
+        "belly": "#fff8e8",
+        "eye": "#c7812f",
+        "stripes": true
+       },
+       "spotted": false,
+       "book": "奶油貓"
+      },
+      {
+       "coat": "黑貓",
+       "label": "黑貓",
+       "fields": {
+        "fur": "#26262c",
+        "stripe": "#26262c",
+        "belly": "#26262c",
+        "eye": "#e8c547",
+        "stripes": false
+       },
+       "spotted": false,
+       "book": "黑貓"
+      },
+      {
+       "coat": "藍灰貓",
+       "label": "藍灰",
+       "fields": {
+        "fur": "#7e8b9d",
+        "stripe": "#7e8b9d",
+        "belly": "#7e8b9d",
+        "eye": "#e3a92e",
+        "stripes": false
+       },
+       "spotted": false,
+       "book": "藍灰貓"
+      },
+      {
+       "coat": "白貓",
+       "label": "白貓",
+       "fields": {
+        "fur": "#f6f3ec",
+        "stripe": "#e2dccf",
+        "belly": "#ffffff",
+        "eye": "#5fa3e8",
+        "stripes": false
+       },
+       "spotted": false,
+       "book": "白貓"
+      },
+      {
+       "coat": "賓士貓",
+       "label": "賓士",
+       "fields": {
+        "fur": "#2f2f36",
+        "stripe": "#2f2f36",
+        "belly": "#f6f6f2",
+        "eye": "#e8c547",
+        "stripes": false
+       },
+       "spotted": false,
+       "book": "賓士貓"
+      },
+      {
+       "coat": "三花",
+       "label": "三花",
+       "fields": {
+        "fur": "#f6f1e8",
+        "stripe": "#f6f1e8",
+        "belly": "#ffffff",
+        "eye": "#d9a33a",
+        "stripes": false,
+        "pattern": "calico",
+        "patch1": "#e08a34",
+        "patch2": "#2e2927"
+       },
+       "spotted": true,
+       "book": "三花"
+      },
+      {
+       "coat": "玳瑁",
+       "label": "玳瑁",
+       "fields": {
+        "fur": "#2e2724",
+        "stripe": "#2e2724",
+        "belly": "#2e2724",
+        "eye": "#d9a33a",
+        "stripes": false,
+        "pattern": "tortie",
+        "patch1": "#d0772b",
+        "patch2": "#2e2724"
+       },
+       "spotted": true,
+       "book": "玳瑁"
+      }
+     ]
+    },
+    {
+     "breed": "暹羅貓",
+     "coats": [
+      {
+       "coat": "暹羅貓",
+       "label": "海豹重點色",
+       "fields": {
+        "fur": "#efe4d2",
+        "stripe": "#efe4d2",
+        "belly": "#f7f0e4",
+        "eye": "#5aa0e6",
+        "stripes": false,
+        "pattern": "point",
+        "point": "#3e2b22",
+        "point_soft": "#9b7e69",
+        "shape": {
+         "body_w": 0.9,
+         "ear": 1.22,
+         "tail_w": 0.8,
+         "head_w": 0.95
+        }
+       },
+       "spotted": false,
+       "book": "暹羅貓"
+      },
+      {
+       "coat": "暹羅貓・藍色重點色",
+       "label": "藍色重點色",
+       "fields": {
+        "fur": "#eeeae4",
+        "stripe": "#eeeae4",
+        "belly": "#f6f4f0",
+        "eye": "#5aa0e6",
+        "stripes": false,
+        "pattern": "point",
+        "point": "#6f7c8f",
+        "point_soft": "#a3acb9",
+        "shape": {
+         "body_w": 0.9,
+         "ear": 1.22,
+         "tail_w": 0.8,
+         "head_w": 0.95
+        }
+       },
+       "spotted": false,
+       "book": "暹羅貓・藍色重點色"
+      },
+      {
+       "coat": "暹羅貓・巧克力重點色",
+       "label": "巧克力重點色",
+       "fields": {
+        "fur": "#f1e6d6",
+        "stripe": "#f1e6d6",
+        "belly": "#f8f1e6",
+        "eye": "#5aa0e6",
+        "stripes": false,
+        "pattern": "point",
+        "point": "#6b4a36",
+        "point_soft": "#a88a73",
+        "shape": {
+         "body_w": 0.9,
+         "ear": 1.22,
+         "tail_w": 0.8,
+         "head_w": 0.95
+        }
+       },
+       "spotted": false,
+       "book": "暹羅貓・巧克力重點色"
+      }
+     ]
+    },
+    {
+     "breed": "布偶貓",
+     "coats": [
+      {
+       "coat": "布偶貓",
+       "label": "海豹手套",
+       "fields": {
+        "fur": "#f3ebdd",
+        "stripe": "#f3ebdd",
+        "belly": "#ffffff",
+        "eye": "#4d8fe0",
+        "stripes": false,
+        "pattern": "mitted",
+        "point": "#6e5646",
+        "point_soft": "#a88f7c",
+        "shape": {
+         "body_w": 1.12,
+         "body_h": 1.05,
+         "tail_w": 1.55,
+         "fluff": true,
+         "head_w": 1.05
+        }
+       },
+       "spotted": false,
+       "book": "布偶貓"
+      },
+      {
+       "coat": "布偶貓・藍色手套",
+       "label": "藍色手套",
+       "fields": {
+        "fur": "#f0eeea",
+        "stripe": "#f0eeea",
+        "belly": "#ffffff",
+        "eye": "#4d8fe0",
+        "stripes": false,
+        "pattern": "mitted",
+        "point": "#7d8898",
+        "point_soft": "#aab2bd",
+        "shape": {
+         "body_w": 1.12,
+         "body_h": 1.05,
+         "tail_w": 1.55,
+         "fluff": true,
+         "head_w": 1.05
+        }
+       },
+       "spotted": false,
+       "book": "布偶貓・藍色手套"
+      }
+     ]
+    },
+    {
+     "breed": "英國短毛貓",
+     "coats": [
+      {
+       "coat": "英國短毛貓",
+       "label": "藍灰",
+       "fields": {
+        "fur": "#8e98a6",
+        "stripe": "#8e98a6",
+        "belly": "#8e98a6",
+        "eye": "#e39a2e",
+        "stripes": false,
+        "shape": {
+         "head_w": 1.16,
+         "head_h": 1.04,
+         "ear": 0.78,
+         "body_w": 1.15,
+         "tail_w": 1.25,
+         "leg_w": 1.15
+        }
+       },
+       "spotted": false,
+       "book": "英國短毛貓"
+      },
+      {
+       "coat": "英國短毛貓・銀虎斑",
+       "label": "銀虎斑",
+       "fields": {
+        "fur": "#c9ccd0",
+        "stripe": "#3c3f45",
+        "belly": "#e8e9ea",
+        "eye": "#4fae5a",
+        "stripes": true,
+        "shape": {
+         "head_w": 1.16,
+         "head_h": 1.04,
+         "ear": 0.78,
+         "body_w": 1.15,
+         "tail_w": 1.25,
+         "leg_w": 1.15
+        }
+       },
+       "spotted": false,
+       "book": "英國短毛貓・銀虎斑"
+      },
+      {
+       "coat": "英國短毛貓・奶油",
+       "label": "奶油",
+       "fields": {
+        "fur": "#f0d7a8",
+        "stripe": "#f0d7a8",
+        "belly": "#f7e8cc",
+        "eye": "#e39a2e",
+        "stripes": false,
+        "shape": {
+         "head_w": 1.16,
+         "head_h": 1.04,
+         "ear": 0.78,
+         "body_w": 1.15,
+         "tail_w": 1.25,
+         "leg_w": 1.15
+        }
+       },
+       "spotted": false,
+       "book": "英國短毛貓・奶油"
+      }
+     ]
+    },
+    {
+     "breed": "斯芬克斯",
+     "coats": [
+      {
+       "coat": "斯芬克斯",
+       "label": "粉膚",
+       "fields": {
+        "fur": "#e7bfa9",
+        "stripe": "#e7bfa9",
+        "belly": "#efcdb9",
+        "eye": "#b5cf45",
+        "stripes": false,
+        "pattern": "sphynx",
+        "shape": {
+         "ear": 1.35,
+         "tail_w": 0.55,
+         "body_w": 0.95,
+         "head_w": 0.96
+        }
+       },
+       "spotted": false,
+       "book": "斯芬克斯"
+      },
+      {
+       "coat": "斯芬克斯・灰膚",
+       "label": "灰膚",
+       "fields": {
+        "fur": "#b9aeb0",
+        "stripe": "#b9aeb0",
+        "belly": "#cfc4c5",
+        "eye": "#7fc0e8",
+        "stripes": false,
+        "pattern": "sphynx",
+        "shape": {
+         "ear": 1.35,
+         "tail_w": 0.55,
+         "body_w": 0.95,
+         "head_w": 0.96
+        }
+       },
+       "spotted": false,
+       "book": "斯芬克斯・灰膚"
+      }
+     ]
+    },
+    {
+     "breed": "阿比西尼亞",
+     "coats": [
+      {
+       "coat": "阿比西尼亞",
+       "label": "紅棕",
+       "fields": {
+        "fur": "#c78a4c",
+        "stripe": "#9a622f",
+        "belly": "#edd3ad",
+        "eye": "#6fa84a",
+        "stripes": true
+       },
+       "spotted": false,
+       "book": "阿比西尼亞"
+      },
+      {
+       "coat": "阿比西尼亞・藍",
+       "label": "藍灰",
+       "fields": {
+        "fur": "#8c94a6",
+        "stripe": "#5f6677",
+        "belly": "#d6d2cc",
+        "eye": "#c9a13a",
+        "stripes": true
+       },
+       "spotted": false,
+       "book": "阿比西尼亞・藍"
+      }
+     ]
+    }
+   ]
+  },
+  "dog": {
+   "label": "狗",
+   "breeds": [
+    {
+     "breed": "薩摩耶",
+     "coats": [
+      {
+       "coat": "薩摩耶",
+       "label": "白",
+       "fields": {
+        "fur": "#f8f5ee",
+        "stripe": "#f8f5ee",
+        "belly": "#ffffff",
+        "eye": "#2a1e16",
+        "stripes": false,
+        "shape": {
+         "dog": true,
+         "size": 1.55,
+         "snout": 1.5,
+         "ear": 1.0,
+         "tail_style": "curl",
+         "fluff": true,
+         "body_w": 1.1,
+         "body_h": 1.06,
+         "head_w": 1.06,
+         "leg_len": 1.6,
+         "tail_w": 1.7,
+         "smile": true
+        }
+       },
+       "spotted": false,
+       "book": "薩摩耶"
+      },
+      {
+       "coat": "薩摩耶・奶油",
+       "label": "奶油",
+       "fields": {
+        "fur": "#f3e3c4",
+        "stripe": "#f3e3c4",
+        "belly": "#fbf3e3",
+        "eye": "#2a1e16",
+        "stripes": false,
+        "shape": {
+         "dog": true,
+         "size": 1.55,
+         "snout": 1.5,
+         "ear": 1.0,
+         "tail_style": "curl",
+         "fluff": true,
+         "body_w": 1.1,
+         "body_h": 1.06,
+         "head_w": 1.06,
+         "leg_len": 1.6,
+         "tail_w": 1.7,
+         "smile": true
+        }
+       },
+       "spotted": false,
+       "book": "薩摩耶"
+      }
+     ]
+    },
+    {
+     "breed": "阿拉斯加雪橇犬",
+     "coats": [
+      {
+       "coat": "阿拉斯加雪橇犬",
+       "label": "灰白",
+       "fields": {
+        "fur": "#6b7079",
+        "stripe": "#6b7079",
+        "belly": "#f3f1eb",
+        "eye": "#7a4a22",
+        "stripes": false,
+        "shape": {
+         "dog": true,
+         "size": 1.7,
+         "snout": 1.6,
+         "ear": 1.04,
+         "tail_style": "curl",
+         "fluff": true,
+         "body_w": 1.16,
+         "body_h": 1.08,
+         "head_w": 1.08,
+         "leg_len": 2.0,
+         "tail_w": 1.6
+        },
+        "pattern": "malamute"
+       },
+       "spotted": false,
+       "book": "阿拉斯加雪橇犬"
+      },
+      {
+       "coat": "阿拉斯加雪橇犬・黑白",
+       "label": "黑白",
+       "fields": {
+        "fur": "#34363c",
+        "stripe": "#34363c",
+        "belly": "#f3f1eb",
+        "eye": "#7a4a22",
+        "stripes": false,
+        "shape": {
+         "dog": true,
+         "size": 1.7,
+         "snout": 1.6,
+         "ear": 1.04,
+         "tail_style": "curl",
+         "fluff": true,
+         "body_w": 1.16,
+         "body_h": 1.08,
+         "head_w": 1.08,
+         "leg_len": 2.0,
+         "tail_w": 1.6
+        },
+        "pattern": "malamute"
+       },
+       "spotted": false,
+       "book": "阿拉斯加雪橇犬"
+      },
+      {
+       "coat": "阿拉斯加雪橇犬・紅白",
+       "label": "紅白",
+       "fields": {
+        "fur": "#a5653a",
+        "stripe": "#a5653a",
+        "belly": "#f6efe4",
+        "eye": "#7a4a22",
+        "stripes": false,
+        "shape": {
+         "dog": true,
+         "size": 1.7,
+         "snout": 1.6,
+         "ear": 1.04,
+         "tail_style": "curl",
+         "fluff": true,
+         "body_w": 1.16,
+         "body_h": 1.08,
+         "head_w": 1.08,
+         "leg_len": 2.0,
+         "tail_w": 1.6
+        },
+        "pattern": "malamute"
+       },
+       "spotted": false,
+       "book": "阿拉斯加雪橇犬"
+      }
+     ]
+    },
+    {
+     "breed": "哈士奇",
+     "coats": [
+      {
+       "coat": "哈士奇",
+       "label": "黑白・藍眼",
+       "fields": {
+        "fur": "#454a53",
+        "stripe": "#454a53",
+        "belly": "#f5f5f1",
+        "eye": "#6db6f0",
+        "stripes": false,
+        "shape": {
+         "dog": true,
+         "size": 1.45,
+         "snout": 1.55,
+         "ear": 1.2,
+         "tail_style": "sickle",
+         "head_w": 1.02,
+         "leg_len": 1.9,
+         "tail_w": 1.3
+        },
+        "pattern": "husky"
+       },
+       "spotted": false,
+       "book": "哈士奇"
+      },
+      {
+       "coat": "哈士奇・灰白",
+       "label": "灰白・棕眼",
+       "fields": {
+        "fur": "#868c96",
+        "stripe": "#868c96",
+        "belly": "#f5f5f1",
+        "eye": "#8a5428",
+        "stripes": false,
+        "shape": {
+         "dog": true,
+         "size": 1.45,
+         "snout": 1.55,
+         "ear": 1.2,
+         "tail_style": "sickle",
+         "head_w": 1.02,
+         "leg_len": 1.9,
+         "tail_w": 1.3
+        },
+        "pattern": "husky"
+       },
+       "spotted": false,
+       "book": "哈士奇"
+      },
+      {
+       "coat": "哈士奇・紅白",
+       "label": "紅白・藍眼",
+       "fields": {
+        "fur": "#b0673a",
+        "stripe": "#b0673a",
+        "belly": "#f7f1ea",
+        "eye": "#6db6f0",
+        "stripes": false,
+        "shape": {
+         "dog": true,
+         "size": 1.45,
+         "snout": 1.55,
+         "ear": 1.2,
+         "tail_style": "sickle",
+         "head_w": 1.02,
+         "leg_len": 1.9,
+         "tail_w": 1.3
+        },
+        "pattern": "husky"
+       },
+       "spotted": false,
+       "book": "哈士奇"
+      }
+     ]
+    },
+    {
+     "breed": "柴犬",
+     "coats": [
+      {
+       "coat": "柴犬",
+       "label": "赤柴",
+       "fields": {
+        "fur": "#dc8a3e",
+        "stripe": "#dc8a3e",
+        "belly": "#fcf2e3",
+        "eye": "#3a2412",
+        "stripes": false,
+        "shape": {
+         "dog": true,
+         "size": 1.25,
+         "snout": 1.38,
+         "ear": 1.1,
+         "tail_style": "curl",
+         "body_w": 0.98,
+         "head_w": 1.02,
+         "leg_len": 1.2,
+         "tail_w": 1.45,
+         "smile": true
+        },
+        "pattern": "shiba"
+       },
+       "spotted": false,
+       "book": "柴犬"
+      },
+      {
+       "coat": "柴犬・黑柴",
+       "label": "黑柴",
+       "fields": {
+        "fur": "#2e2a2a",
+        "stripe": "#2e2a2a",
+        "belly": "#f4e6cf",
+        "eye": "#3a2412",
+        "stripes": false,
+        "shape": {
+         "dog": true,
+         "size": 1.25,
+         "snout": 1.38,
+         "ear": 1.1,
+         "tail_style": "curl",
+         "body_w": 0.98,
+         "head_w": 1.02,
+         "leg_len": 1.2,
+         "tail_w": 1.45,
+         "smile": true
+        },
+        "pattern": "shiba"
+       },
+       "spotted": false,
+       "book": "柴犬"
+      },
+      {
+       "coat": "柴犬・白柴",
+       "label": "白柴",
+       "fields": {
+        "fur": "#f4ead8",
+        "stripe": "#f4ead8",
+        "belly": "#fffaf0",
+        "eye": "#3a2412",
+        "stripes": false,
+        "shape": {
+         "dog": true,
+         "size": 1.25,
+         "snout": 1.38,
+         "ear": 1.1,
+         "tail_style": "curl",
+         "body_w": 0.98,
+         "head_w": 1.02,
+         "leg_len": 1.2,
+         "tail_w": 1.45,
+         "smile": true
+        },
+        "pattern": "shiba"
+       },
+       "spotted": false,
+       "book": "柴犬"
+      }
+     ]
+    },
+    {
+     "breed": "邊境牧羊犬",
+     "coats": [
+      {
+       "coat": "邊境牧羊犬",
+       "label": "黑白",
+       "fields": {
+        "fur": "#26262b",
+        "stripe": "#26262b",
+        "belly": "#f7f7f4",
+        "eye": "#7a5326",
+        "stripes": false,
+        "shape": {
+         "dog": true,
+         "size": 1.45,
+         "snout": 1.5,
+         "ear": 1.05,
+         "ear_style": "fold",
+         "tail_style": "brush",
+         "leg_len": 1.8,
+         "tail_w": 1.4
+        },
+        "pattern": "collie"
+       },
+       "spotted": false,
+       "book": "邊境牧羊犬"
+      },
+      {
+       "coat": "邊境牧羊犬・咖啡白",
+       "label": "咖啡白",
+       "fields": {
+        "fur": "#5a3a26",
+        "stripe": "#5a3a26",
+        "belly": "#f7f4ee",
+        "eye": "#a8782e",
+        "stripes": false,
+        "shape": {
+         "dog": true,
+         "size": 1.45,
+         "snout": 1.5,
+         "ear": 1.05,
+         "ear_style": "fold",
+         "tail_style": "brush",
+         "leg_len": 1.8,
+         "tail_w": 1.4
+        },
+        "pattern": "collie"
+       },
+       "spotted": false,
+       "book": "邊境牧羊犬"
+      },
+      {
+       "coat": "邊境牧羊犬・藍灰白",
+       "label": "藍灰白",
+       "fields": {
+        "fur": "#6f7a88",
+        "stripe": "#6f7a88",
+        "belly": "#f7f7f4",
+        "eye": "#6db6f0",
+        "stripes": false,
+        "shape": {
+         "dog": true,
+         "size": 1.45,
+         "snout": 1.5,
+         "ear": 1.05,
+         "ear_style": "fold",
+         "tail_style": "brush",
+         "leg_len": 1.8,
+         "tail_w": 1.4
+        },
+        "pattern": "collie"
+       },
+       "spotted": false,
+       "book": "邊境牧羊犬"
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

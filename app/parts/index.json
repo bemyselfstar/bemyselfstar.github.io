@@ -1,0 +1,5749 @@
+{
+ "v": 1,
+ "fp": "src:1792672389:4919277",
+ "made": "2026-10-22 20:45",
+ "ages": [
+  "adult",
+  "kit76",
+  "kit80",
+  "kit84",
+  "kit88",
+  "kit92",
+  "kit96",
+  "senior"
+ ],
+ "seeds": [
+  101,
+  202,
+  303,
+  404,
+  505,
+  606,
+  707,
+  808
+ ],
+ "books": [
+  {
+   "book": "薩摩耶_adult",
+   "preset": "薩摩耶",
+   "age": "adult",
+   "seed": null,
+   "species": "dog",
+   "breed": "薩摩耶",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 67139,
+   "sha": "6932bbeb394b",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "薩摩耶_kit76",
+   "preset": "薩摩耶",
+   "age": "kit76",
+   "seed": null,
+   "species": "dog",
+   "breed": "薩摩耶",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 54895,
+   "sha": "4a88d5807c24",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "薩摩耶_kit80",
+   "preset": "薩摩耶",
+   "age": "kit80",
+   "seed": null,
+   "species": "dog",
+   "breed": "薩摩耶",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 55940,
+   "sha": "b75b656f30b5",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "薩摩耶_kit84",
+   "preset": "薩摩耶",
+   "age": "kit84",
+   "seed": null,
+   "species": "dog",
+   "breed": "薩摩耶",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 59159,
+   "sha": "9ffb38fbc985",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "薩摩耶_kit88",
+   "preset": "薩摩耶",
+   "age": "kit88",
+   "seed": null,
+   "species": "dog",
+   "breed": "薩摩耶",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 59856,
+   "sha": "0f1a7e5efaae",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "薩摩耶_kit92",
+   "preset": "薩摩耶",
+   "age": "kit92",
+   "seed": null,
+   "species": "dog",
+   "breed": "薩摩耶",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 62952,
+   "sha": "0c232d63722d",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "薩摩耶_kit96",
+   "preset": "薩摩耶",
+   "age": "kit96",
+   "seed": null,
+   "species": "dog",
+   "breed": "薩摩耶",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 64774,
+   "sha": "cef71ed0eb6a",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "薩摩耶_senior",
+   "preset": "薩摩耶",
+   "age": "senior",
+   "seed": null,
+   "species": "dog",
+   "breed": "薩摩耶",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 72449,
+   "sha": "9933b55837d4",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "阿拉斯加雪橇犬_adult",
+   "preset": "阿拉斯加雪橇犬",
+   "age": "adult",
+   "seed": null,
+   "species": "dog",
+   "breed": "阿拉斯加雪橇犬",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 90215,
+   "sha": "561d2d705661",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "阿拉斯加雪橇犬_kit76",
+   "preset": "阿拉斯加雪橇犬",
+   "age": "kit76",
+   "seed": null,
+   "species": "dog",
+   "breed": "阿拉斯加雪橇犬",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 72781,
+   "sha": "0de23e5b223d",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "阿拉斯加雪橇犬_kit80",
+   "preset": "阿拉斯加雪橇犬",
+   "age": "kit80",
+   "seed": null,
+   "species": "dog",
+   "breed": "阿拉斯加雪橇犬",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 74734,
+   "sha": "c79d8c0eee60",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "阿拉斯加雪橇犬_kit84",
+   "preset": "阿拉斯加雪橇犬",
+   "age": "kit84",
+   "seed": null,
+   "species": "dog",
+   "breed": "阿拉斯加雪橇犬",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 77524,
+   "sha": "fc74740171f7",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "阿拉斯加雪橇犬_kit88",
+   "preset": "阿拉斯加雪橇犬",
+   "age": "kit88",
+   "seed": null,
+   "species": "dog",
+   "breed": "阿拉斯加雪橇犬",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 81620,
+   "sha": "bf3cb99e5f82",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "阿拉斯加雪橇犬_kit92",
+   "preset": "阿拉斯加雪橇犬",
+   "age": "kit92",
+   "seed": null,
+   "species": "dog",
+   "breed": "阿拉斯加雪橇犬",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 83531,
+   "sha": "7b78c7f48663",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "阿拉斯加雪橇犬_kit96",
+   "preset": "阿拉斯加雪橇犬",
+   "age": "kit96",
+   "seed": null,
+   "species": "dog",
+   "breed": "阿拉斯加雪橇犬",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 86306,
+   "sha": "cee58dbd02dc",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "阿拉斯加雪橇犬_senior",
+   "preset": "阿拉斯加雪橇犬",
+   "age": "senior",
+   "seed": null,
+   "species": "dog",
+   "breed": "阿拉斯加雪橇犬",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 99871,
+   "sha": "031d77415cd1",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "哈士奇_adult",
+   "preset": "哈士奇",
+   "age": "adult",
+   "seed": null,
+   "species": "dog",
+   "breed": "哈士奇",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 66310,
+   "sha": "29175186de38",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "哈士奇_kit76",
+   "preset": "哈士奇",
+   "age": "kit76",
+   "seed": null,
+   "species": "dog",
+   "breed": "哈士奇",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 53687,
+   "sha": "9bcd11cb562b",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "哈士奇_kit80",
+   "preset": "哈士奇",
+   "age": "kit80",
+   "seed": null,
+   "species": "dog",
+   "breed": "哈士奇",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 59155,
+   "sha": "45ada7be9709",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "哈士奇_kit84",
+   "preset": "哈士奇",
+   "age": "kit84",
+   "seed": null,
+   "species": "dog",
+   "breed": "哈士奇",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 58003,
+   "sha": "0bb5e95f6fe3",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "哈士奇_kit88",
+   "preset": "哈士奇",
+   "age": "kit88",
+   "seed": null,
+   "species": "dog",
+   "breed": "哈士奇",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 62227,
+   "sha": "fcf8e64f8de2",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "哈士奇_kit92",
+   "preset": "哈士奇",
+   "age": "kit92",
+   "seed": null,
+   "species": "dog",
+   "breed": "哈士奇",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 62839,
+   "sha": "c82f720c9e31",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "哈士奇_kit96",
+   "preset": "哈士奇",
+   "age": "kit96",
+   "seed": null,
+   "species": "dog",
+   "breed": "哈士奇",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 66303,
+   "sha": "7ad2fd609648",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "哈士奇_senior",
+   "preset": "哈士奇",
+   "age": "senior",
+   "seed": null,
+   "species": "dog",
+   "breed": "哈士奇",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 71414,
+   "sha": "12a2e0804360",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "柴犬_adult",
+   "preset": "柴犬",
+   "age": "adult",
+   "seed": null,
+   "species": "dog",
+   "breed": "柴犬",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 40328,
+   "sha": "ed1316f3fc2b",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "柴犬_kit76",
+   "preset": "柴犬",
+   "age": "kit76",
+   "seed": null,
+   "species": "dog",
+   "breed": "柴犬",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 33027,
+   "sha": "e167fd1746c7",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "柴犬_kit80",
+   "preset": "柴犬",
+   "age": "kit80",
+   "seed": null,
+   "species": "dog",
+   "breed": "柴犬",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 34062,
+   "sha": "b6f4c50c2787",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "柴犬_kit84",
+   "preset": "柴犬",
+   "age": "kit84",
+   "seed": null,
+   "species": "dog",
+   "breed": "柴犬",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 35324,
+   "sha": "fceb975b83c6",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "柴犬_kit88",
+   "preset": "柴犬",
+   "age": "kit88",
+   "seed": null,
+   "species": "dog",
+   "breed": "柴犬",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 36253,
+   "sha": "05b1b21ddc73",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "柴犬_kit92",
+   "preset": "柴犬",
+   "age": "kit92",
+   "seed": null,
+   "species": "dog",
+   "breed": "柴犬",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 37811,
+   "sha": "74d0a1ca937d",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "柴犬_kit96",
+   "preset": "柴犬",
+   "age": "kit96",
+   "seed": null,
+   "species": "dog",
+   "breed": "柴犬",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 38454,
+   "sha": "7759fb8d062f",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "柴犬_senior",
+   "preset": "柴犬",
+   "age": "senior",
+   "seed": null,
+   "species": "dog",
+   "breed": "柴犬",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 44480,
+   "sha": "d3fc008631d5",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "邊境牧羊犬_adult",
+   "preset": "邊境牧羊犬",
+   "age": "adult",
+   "seed": null,
+   "species": "dog",
+   "breed": "邊境牧羊犬",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 58721,
+   "sha": "aaef2cf71448",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "邊境牧羊犬_kit76",
+   "preset": "邊境牧羊犬",
+   "age": "kit76",
+   "seed": null,
+   "species": "dog",
+   "breed": "邊境牧羊犬",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 47603,
+   "sha": "9ac15aafdad9",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "邊境牧羊犬_kit80",
+   "preset": "邊境牧羊犬",
+   "age": "kit80",
+   "seed": null,
+   "species": "dog",
+   "breed": "邊境牧羊犬",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 49075,
+   "sha": "ada5141ddf0e",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "邊境牧羊犬_kit84",
+   "preset": "邊境牧羊犬",
+   "age": "kit84",
+   "seed": null,
+   "species": "dog",
+   "breed": "邊境牧羊犬",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 51086,
+   "sha": "a637f91e8826",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "邊境牧羊犬_kit88",
+   "preset": "邊境牧羊犬",
+   "age": "kit88",
+   "seed": null,
+   "species": "dog",
+   "breed": "邊境牧羊犬",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 53091,
+   "sha": "2cf99405b500",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "邊境牧羊犬_kit92",
+   "preset": "邊境牧羊犬",
+   "age": "kit92",
+   "seed": null,
+   "species": "dog",
+   "breed": "邊境牧羊犬",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 55931,
+   "sha": "50a9428a1b28",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "邊境牧羊犬_kit96",
+   "preset": "邊境牧羊犬",
+   "age": "kit96",
+   "seed": null,
+   "species": "dog",
+   "breed": "邊境牧羊犬",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 57709,
+   "sha": "786665acee16",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "邊境牧羊犬_senior",
+   "preset": "邊境牧羊犬",
+   "age": "senior",
+   "seed": null,
+   "species": "dog",
+   "breed": "邊境牧羊犬",
+   "files": [
+    "book.json",
+    "book_s0.png"
+   ],
+   "bytes": 63692,
+   "sha": "05e3f578b123",
+   "tests": 12,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "橘虎斑_adult",
+   "preset": "橘虎斑",
+   "age": "adult",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40294,
+   "sha": "e2559f1ecb3a",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "橘虎斑_kit76",
+   "preset": "橘虎斑",
+   "age": "kit76",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 32232,
+   "sha": "a60c4e9cea5e",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "橘虎斑_kit80",
+   "preset": "橘虎斑",
+   "age": "kit80",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34168,
+   "sha": "65251b54c75c",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "橘虎斑_kit84",
+   "preset": "橘虎斑",
+   "age": "kit84",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34866,
+   "sha": "aef4b2051489",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "橘虎斑_kit88",
+   "preset": "橘虎斑",
+   "age": "kit88",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 36215,
+   "sha": "a193cabc3830",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "橘虎斑_kit92",
+   "preset": "橘虎斑",
+   "age": "kit92",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 37424,
+   "sha": "df60d5b7f3e2",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "橘虎斑_kit96",
+   "preset": "橘虎斑",
+   "age": "kit96",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 38701,
+   "sha": "342ad643c5cb",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "橘虎斑_senior",
+   "preset": "橘虎斑",
+   "age": "senior",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 41908,
+   "sha": "c2cb79828c2d",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "賓士貓_adult",
+   "preset": "賓士貓",
+   "age": "adult",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40294,
+   "sha": "92744f73c17d",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "賓士貓_kit76",
+   "preset": "賓士貓",
+   "age": "kit76",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 32232,
+   "sha": "26527347d98b",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "賓士貓_kit80",
+   "preset": "賓士貓",
+   "age": "kit80",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34168,
+   "sha": "8cece72bd38d",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "賓士貓_kit84",
+   "preset": "賓士貓",
+   "age": "kit84",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34866,
+   "sha": "f038780e416f",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "賓士貓_kit88",
+   "preset": "賓士貓",
+   "age": "kit88",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 36215,
+   "sha": "cb5e0be993a7",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "賓士貓_kit92",
+   "preset": "賓士貓",
+   "age": "kit92",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 37424,
+   "sha": "d58258566ebd",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "賓士貓_kit96",
+   "preset": "賓士貓",
+   "age": "kit96",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 38701,
+   "sha": "32d0a4868a32",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "賓士貓_senior",
+   "preset": "賓士貓",
+   "age": "senior",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 41908,
+   "sha": "b610eaf32b82",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "黑貓_adult",
+   "preset": "黑貓",
+   "age": "adult",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40274,
+   "sha": "e58a4150841a",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "黑貓_kit76",
+   "preset": "黑貓",
+   "age": "kit76",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 32170,
+   "sha": "a3e0fd881c0f",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "黑貓_kit80",
+   "preset": "黑貓",
+   "age": "kit80",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34143,
+   "sha": "7c76efd62d10",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "黑貓_kit84",
+   "preset": "黑貓",
+   "age": "kit84",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34902,
+   "sha": "dfb2e9a19dbf",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "黑貓_kit88",
+   "preset": "黑貓",
+   "age": "kit88",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 36228,
+   "sha": "43255eec5b18",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "黑貓_kit92",
+   "preset": "黑貓",
+   "age": "kit92",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 37392,
+   "sha": "398d62cc2a18",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "黑貓_kit96",
+   "preset": "黑貓",
+   "age": "kit96",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 38646,
+   "sha": "6dcc6b5863c3",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "黑貓_senior",
+   "preset": "黑貓",
+   "age": "senior",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 41879,
+   "sha": "5143f23e94c0",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "白貓_adult",
+   "preset": "白貓",
+   "age": "adult",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40291,
+   "sha": "11f87f0bd73a",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "白貓_kit76",
+   "preset": "白貓",
+   "age": "kit76",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 32229,
+   "sha": "79c22e5e8c4c",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "白貓_kit80",
+   "preset": "白貓",
+   "age": "kit80",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34165,
+   "sha": "0a920f6614b2",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "白貓_kit84",
+   "preset": "白貓",
+   "age": "kit84",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34863,
+   "sha": "b0866d33235f",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "白貓_kit88",
+   "preset": "白貓",
+   "age": "kit88",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 36212,
+   "sha": "f04c0b892299",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "白貓_kit92",
+   "preset": "白貓",
+   "age": "kit92",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 37421,
+   "sha": "b3f91a9f1ef4",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "白貓_kit96",
+   "preset": "白貓",
+   "age": "kit96",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 38698,
+   "sha": "8db76cdbda2d",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "白貓_senior",
+   "preset": "白貓",
+   "age": "senior",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 41905,
+   "sha": "df163be223d4",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "灰虎斑_adult",
+   "preset": "灰虎斑",
+   "age": "adult",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40294,
+   "sha": "d0b9a56ef418",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "灰虎斑_kit76",
+   "preset": "灰虎斑",
+   "age": "kit76",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 32232,
+   "sha": "1c6f2ccf2519",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "灰虎斑_kit80",
+   "preset": "灰虎斑",
+   "age": "kit80",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34168,
+   "sha": "dcd94dccf46b",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "灰虎斑_kit84",
+   "preset": "灰虎斑",
+   "age": "kit84",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34866,
+   "sha": "fe12d419ef26",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "灰虎斑_kit88",
+   "preset": "灰虎斑",
+   "age": "kit88",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 36215,
+   "sha": "120310970ed2",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "灰虎斑_kit92",
+   "preset": "灰虎斑",
+   "age": "kit92",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 37424,
+   "sha": "34cfd1c406fc",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "灰虎斑_kit96",
+   "preset": "灰虎斑",
+   "age": "kit96",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 38701,
+   "sha": "cf7a7caefd51",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "灰虎斑_senior",
+   "preset": "灰虎斑",
+   "age": "senior",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 41908,
+   "sha": "09f8f5e0d03c",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "阿比西尼亞_adult",
+   "preset": "阿比西尼亞",
+   "age": "adult",
+   "seed": null,
+   "species": "cat",
+   "breed": "阿比西尼亞",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40289,
+   "sha": "1e618139ceca",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "阿比西尼亞_kit76",
+   "preset": "阿比西尼亞",
+   "age": "kit76",
+   "seed": null,
+   "species": "cat",
+   "breed": "阿比西尼亞",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 32185,
+   "sha": "23aca7f6f0e0",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "阿比西尼亞_kit80",
+   "preset": "阿比西尼亞",
+   "age": "kit80",
+   "seed": null,
+   "species": "cat",
+   "breed": "阿比西尼亞",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34158,
+   "sha": "3e996e0eec32",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "阿比西尼亞_kit84",
+   "preset": "阿比西尼亞",
+   "age": "kit84",
+   "seed": null,
+   "species": "cat",
+   "breed": "阿比西尼亞",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34917,
+   "sha": "5b9b35d92512",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "阿比西尼亞_kit88",
+   "preset": "阿比西尼亞",
+   "age": "kit88",
+   "seed": null,
+   "species": "cat",
+   "breed": "阿比西尼亞",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 36243,
+   "sha": "817e3dca190b",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "阿比西尼亞_kit92",
+   "preset": "阿比西尼亞",
+   "age": "kit92",
+   "seed": null,
+   "species": "cat",
+   "breed": "阿比西尼亞",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 37407,
+   "sha": "b729d64fbcde",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "阿比西尼亞_kit96",
+   "preset": "阿比西尼亞",
+   "age": "kit96",
+   "seed": null,
+   "species": "cat",
+   "breed": "阿比西尼亞",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 38661,
+   "sha": "3ec310bf5d78",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "阿比西尼亞_senior",
+   "preset": "阿比西尼亞",
+   "age": "senior",
+   "seed": null,
+   "species": "cat",
+   "breed": "阿比西尼亞",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 41894,
+   "sha": "8a6adec1cfa1",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "奶油貓_adult",
+   "preset": "奶油貓",
+   "age": "adult",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40294,
+   "sha": "13c8a2120319",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "奶油貓_kit76",
+   "preset": "奶油貓",
+   "age": "kit76",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 32232,
+   "sha": "27baadc62a32",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "奶油貓_kit80",
+   "preset": "奶油貓",
+   "age": "kit80",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34168,
+   "sha": "cb66f2930153",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "奶油貓_kit84",
+   "preset": "奶油貓",
+   "age": "kit84",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34866,
+   "sha": "544040f018a8",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "奶油貓_kit88",
+   "preset": "奶油貓",
+   "age": "kit88",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 36215,
+   "sha": "83ade26f7849",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "奶油貓_kit92",
+   "preset": "奶油貓",
+   "age": "kit92",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 37424,
+   "sha": "b6f9df8af583",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "奶油貓_kit96",
+   "preset": "奶油貓",
+   "age": "kit96",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 38701,
+   "sha": "a3e818e58a03",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "奶油貓_senior",
+   "preset": "奶油貓",
+   "age": "senior",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 41908,
+   "sha": "33e1a4708c62",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "藍灰貓_adult",
+   "preset": "藍灰貓",
+   "age": "adult",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40294,
+   "sha": "6b9e5810d292",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "藍灰貓_kit76",
+   "preset": "藍灰貓",
+   "age": "kit76",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 32232,
+   "sha": "ab07410166b7",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "藍灰貓_kit80",
+   "preset": "藍灰貓",
+   "age": "kit80",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34168,
+   "sha": "34f35d6ac668",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "藍灰貓_kit84",
+   "preset": "藍灰貓",
+   "age": "kit84",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34866,
+   "sha": "a5d4ea2c8b3c",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "藍灰貓_kit88",
+   "preset": "藍灰貓",
+   "age": "kit88",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 36215,
+   "sha": "6e2e122fbffe",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "藍灰貓_kit92",
+   "preset": "藍灰貓",
+   "age": "kit92",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 37424,
+   "sha": "9b72e73ece3f",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "藍灰貓_kit96",
+   "preset": "藍灰貓",
+   "age": "kit96",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 38701,
+   "sha": "b81f3e2de744",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "藍灰貓_senior",
+   "preset": "藍灰貓",
+   "age": "senior",
+   "seed": null,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 41908,
+   "sha": "dedeabefb44e",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s101_adult",
+   "preset": "三花",
+   "age": "adult",
+   "seed": 101,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 43332,
+   "sha": "7a9908b021c3",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s202_adult",
+   "preset": "三花",
+   "age": "adult",
+   "seed": 202,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 43507,
+   "sha": "41eec7dbfdec",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s303_adult",
+   "preset": "三花",
+   "age": "adult",
+   "seed": 303,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 43336,
+   "sha": "be812e677357",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s404_adult",
+   "preset": "三花",
+   "age": "adult",
+   "seed": 404,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 43281,
+   "sha": "c996244b7d6a",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s505_adult",
+   "preset": "三花",
+   "age": "adult",
+   "seed": 505,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 43338,
+   "sha": "202a4bde8e12",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s606_adult",
+   "preset": "三花",
+   "age": "adult",
+   "seed": 606,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 43398,
+   "sha": "dd259767c547",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s707_adult",
+   "preset": "三花",
+   "age": "adult",
+   "seed": 707,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 43385,
+   "sha": "9e4612f4c369",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s808_adult",
+   "preset": "三花",
+   "age": "adult",
+   "seed": 808,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 43383,
+   "sha": "e0e65530848d",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s101_kit76",
+   "preset": "三花",
+   "age": "kit76",
+   "seed": 101,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34874,
+   "sha": "a36d59b374a2",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s202_kit76",
+   "preset": "三花",
+   "age": "kit76",
+   "seed": 202,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34595,
+   "sha": "aff2007b447e",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s303_kit76",
+   "preset": "三花",
+   "age": "kit76",
+   "seed": 303,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34585,
+   "sha": "666223190289",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s404_kit76",
+   "preset": "三花",
+   "age": "kit76",
+   "seed": 404,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34636,
+   "sha": "ab707f721d10",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s505_kit76",
+   "preset": "三花",
+   "age": "kit76",
+   "seed": 505,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34898,
+   "sha": "b7cc930d00ee",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s606_kit76",
+   "preset": "三花",
+   "age": "kit76",
+   "seed": 606,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34746,
+   "sha": "6cd21d22b5f1",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s707_kit76",
+   "preset": "三花",
+   "age": "kit76",
+   "seed": 707,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34629,
+   "sha": "559f00fe3eb1",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s808_kit76",
+   "preset": "三花",
+   "age": "kit76",
+   "seed": 808,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34771,
+   "sha": "6a22a2fac26e",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s101_kit80",
+   "preset": "三花",
+   "age": "kit80",
+   "seed": 101,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 36720,
+   "sha": "37362d2ffa20",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s202_kit80",
+   "preset": "三花",
+   "age": "kit80",
+   "seed": 202,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 36554,
+   "sha": "b6a082a2e75e",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s303_kit80",
+   "preset": "三花",
+   "age": "kit80",
+   "seed": 303,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 36594,
+   "sha": "c011594631b1",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s404_kit80",
+   "preset": "三花",
+   "age": "kit80",
+   "seed": 404,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 36680,
+   "sha": "76b7194cd58f",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s505_kit80",
+   "preset": "三花",
+   "age": "kit80",
+   "seed": 505,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 36726,
+   "sha": "ae690eccba7b",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s606_kit80",
+   "preset": "三花",
+   "age": "kit80",
+   "seed": 606,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 36728,
+   "sha": "0aed42befcca",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s707_kit80",
+   "preset": "三花",
+   "age": "kit80",
+   "seed": 707,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 36593,
+   "sha": "b6aa4be038d5",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s808_kit80",
+   "preset": "三花",
+   "age": "kit80",
+   "seed": 808,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 36531,
+   "sha": "4500853bdae4",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s101_kit84",
+   "preset": "三花",
+   "age": "kit84",
+   "seed": 101,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 37700,
+   "sha": "7abaf4d813e6",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s202_kit84",
+   "preset": "三花",
+   "age": "kit84",
+   "seed": 202,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 37625,
+   "sha": "3788f1f6f44f",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s303_kit84",
+   "preset": "三花",
+   "age": "kit84",
+   "seed": 303,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 37810,
+   "sha": "9ec768412c9e",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s404_kit84",
+   "preset": "三花",
+   "age": "kit84",
+   "seed": 404,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 37665,
+   "sha": "5a68fca386b0",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s505_kit84",
+   "preset": "三花",
+   "age": "kit84",
+   "seed": 505,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 37710,
+   "sha": "fc0434169151",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s606_kit84",
+   "preset": "三花",
+   "age": "kit84",
+   "seed": 606,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 37750,
+   "sha": "2b3d291b5e15",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s707_kit84",
+   "preset": "三花",
+   "age": "kit84",
+   "seed": 707,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 37733,
+   "sha": "e7fd84a84065",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s808_kit84",
+   "preset": "三花",
+   "age": "kit84",
+   "seed": 808,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 37585,
+   "sha": "76fbd2068a45",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s101_kit88",
+   "preset": "三花",
+   "age": "kit88",
+   "seed": 101,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 39195,
+   "sha": "b45a3d28cffc",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s202_kit88",
+   "preset": "三花",
+   "age": "kit88",
+   "seed": 202,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 39140,
+   "sha": "f502b12df348",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s303_kit88",
+   "preset": "三花",
+   "age": "kit88",
+   "seed": 303,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 39188,
+   "sha": "99d88351c210",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s404_kit88",
+   "preset": "三花",
+   "age": "kit88",
+   "seed": 404,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 39114,
+   "sha": "0b9ed154264d",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s505_kit88",
+   "preset": "三花",
+   "age": "kit88",
+   "seed": 505,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 39257,
+   "sha": "0c6e6f56afd5",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s606_kit88",
+   "preset": "三花",
+   "age": "kit88",
+   "seed": 606,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 39255,
+   "sha": "bf4c0b535226",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s707_kit88",
+   "preset": "三花",
+   "age": "kit88",
+   "seed": 707,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 39163,
+   "sha": "6899c4a071e6",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s808_kit88",
+   "preset": "三花",
+   "age": "kit88",
+   "seed": 808,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 39214,
+   "sha": "2c658b16f685",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s101_kit92",
+   "preset": "三花",
+   "age": "kit92",
+   "seed": 101,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40732,
+   "sha": "988e15b8224c",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s202_kit92",
+   "preset": "三花",
+   "age": "kit92",
+   "seed": 202,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40474,
+   "sha": "2bb75de7519b",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s303_kit92",
+   "preset": "三花",
+   "age": "kit92",
+   "seed": 303,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40479,
+   "sha": "a014de6a6667",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s404_kit92",
+   "preset": "三花",
+   "age": "kit92",
+   "seed": 404,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40536,
+   "sha": "395ca43aa91b",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s505_kit92",
+   "preset": "三花",
+   "age": "kit92",
+   "seed": 505,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40775,
+   "sha": "7c8037c7f848",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s606_kit92",
+   "preset": "三花",
+   "age": "kit92",
+   "seed": 606,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40721,
+   "sha": "e6af2f3e5a3a",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s707_kit92",
+   "preset": "三花",
+   "age": "kit92",
+   "seed": 707,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40447,
+   "sha": "3b82b7554fcc",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s808_kit92",
+   "preset": "三花",
+   "age": "kit92",
+   "seed": 808,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40674,
+   "sha": "b4436966606d",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s101_kit96",
+   "preset": "三花",
+   "age": "kit96",
+   "seed": 101,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 42292,
+   "sha": "d7497714629c",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s202_kit96",
+   "preset": "三花",
+   "age": "kit96",
+   "seed": 202,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 42322,
+   "sha": "17e1d6581659",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s303_kit96",
+   "preset": "三花",
+   "age": "kit96",
+   "seed": 303,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 42229,
+   "sha": "2e0ff8bf22a3",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s404_kit96",
+   "preset": "三花",
+   "age": "kit96",
+   "seed": 404,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 42310,
+   "sha": "5f45b6757246",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s505_kit96",
+   "preset": "三花",
+   "age": "kit96",
+   "seed": 505,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 42320,
+   "sha": "fc0720d0a434",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s606_kit96",
+   "preset": "三花",
+   "age": "kit96",
+   "seed": 606,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 42467,
+   "sha": "fa41758d0132",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s707_kit96",
+   "preset": "三花",
+   "age": "kit96",
+   "seed": 707,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 42252,
+   "sha": "aa003abad28d",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s808_kit96",
+   "preset": "三花",
+   "age": "kit96",
+   "seed": 808,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 42345,
+   "sha": "db9dc07a9774",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s101_senior",
+   "preset": "三花",
+   "age": "senior",
+   "seed": 101,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 45829,
+   "sha": "0de0d757542b",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s202_senior",
+   "preset": "三花",
+   "age": "senior",
+   "seed": 202,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 45765,
+   "sha": "f987d9426a8c",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s303_senior",
+   "preset": "三花",
+   "age": "senior",
+   "seed": 303,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 45709,
+   "sha": "681351c70327",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s404_senior",
+   "preset": "三花",
+   "age": "senior",
+   "seed": 404,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 45639,
+   "sha": "f55692d581e7",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s505_senior",
+   "preset": "三花",
+   "age": "senior",
+   "seed": 505,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 45793,
+   "sha": "824397835bbe",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s606_senior",
+   "preset": "三花",
+   "age": "senior",
+   "seed": 606,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 45773,
+   "sha": "2bbee622220e",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s707_senior",
+   "preset": "三花",
+   "age": "senior",
+   "seed": 707,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 45656,
+   "sha": "91ec3f4abd3a",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "三花_s808_senior",
+   "preset": "三花",
+   "age": "senior",
+   "seed": 808,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 45800,
+   "sha": "5cd9c5f57abb",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s101_adult",
+   "preset": "玳瑁",
+   "age": "adult",
+   "seed": 101,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 49473,
+   "sha": "125296effe00",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s202_adult",
+   "preset": "玳瑁",
+   "age": "adult",
+   "seed": 202,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 50159,
+   "sha": "71a1e1ddb6c1",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s303_adult",
+   "preset": "玳瑁",
+   "age": "adult",
+   "seed": 303,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 49045,
+   "sha": "9c976c694afd",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s404_adult",
+   "preset": "玳瑁",
+   "age": "adult",
+   "seed": 404,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 48562,
+   "sha": "475a357d845d",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s505_adult",
+   "preset": "玳瑁",
+   "age": "adult",
+   "seed": 505,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 49995,
+   "sha": "f865d6c8cc39",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s606_adult",
+   "preset": "玳瑁",
+   "age": "adult",
+   "seed": 606,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 50004,
+   "sha": "ee737ff482d1",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s707_adult",
+   "preset": "玳瑁",
+   "age": "adult",
+   "seed": 707,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 49450,
+   "sha": "177f0133c058",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s808_adult",
+   "preset": "玳瑁",
+   "age": "adult",
+   "seed": 808,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 49809,
+   "sha": "6a8b31a4c4df",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s101_kit76",
+   "preset": "玳瑁",
+   "age": "kit76",
+   "seed": 101,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 37198,
+   "sha": "8826eaedb467",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s202_kit76",
+   "preset": "玳瑁",
+   "age": "kit76",
+   "seed": 202,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 38389,
+   "sha": "d1d75784178d",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s303_kit76",
+   "preset": "玳瑁",
+   "age": "kit76",
+   "seed": 303,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 37610,
+   "sha": "e83a1d57b849",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s404_kit76",
+   "preset": "玳瑁",
+   "age": "kit76",
+   "seed": 404,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 37417,
+   "sha": "8991b23b32b5",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s505_kit76",
+   "preset": "玳瑁",
+   "age": "kit76",
+   "seed": 505,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 37527,
+   "sha": "6b91fbc6f999",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s606_kit76",
+   "preset": "玳瑁",
+   "age": "kit76",
+   "seed": 606,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 38142,
+   "sha": "c35e20aa9f80",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s707_kit76",
+   "preset": "玳瑁",
+   "age": "kit76",
+   "seed": 707,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 37282,
+   "sha": "41d8473e68bc",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s808_kit76",
+   "preset": "玳瑁",
+   "age": "kit76",
+   "seed": 808,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 38036,
+   "sha": "7be79223563a",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s101_kit80",
+   "preset": "玳瑁",
+   "age": "kit80",
+   "seed": 101,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 39648,
+   "sha": "f0659650f314",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s202_kit80",
+   "preset": "玳瑁",
+   "age": "kit80",
+   "seed": 202,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40179,
+   "sha": "e39c18dbbf74",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s303_kit80",
+   "preset": "玳瑁",
+   "age": "kit80",
+   "seed": 303,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40229,
+   "sha": "6c48516dd8b5",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s404_kit80",
+   "preset": "玳瑁",
+   "age": "kit80",
+   "seed": 404,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40114,
+   "sha": "beeabf2a3b36",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s505_kit80",
+   "preset": "玳瑁",
+   "age": "kit80",
+   "seed": 505,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40148,
+   "sha": "da21086fd139",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s606_kit80",
+   "preset": "玳瑁",
+   "age": "kit80",
+   "seed": 606,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40715,
+   "sha": "22475bf6495a",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s707_kit80",
+   "preset": "玳瑁",
+   "age": "kit80",
+   "seed": 707,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 39993,
+   "sha": "d81ca5b9a7a8",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s808_kit80",
+   "preset": "玳瑁",
+   "age": "kit80",
+   "seed": 808,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40514,
+   "sha": "3b07d3b8f61f",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s101_kit84",
+   "preset": "玳瑁",
+   "age": "kit84",
+   "seed": 101,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40871,
+   "sha": "2417a6630404",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s202_kit84",
+   "preset": "玳瑁",
+   "age": "kit84",
+   "seed": 202,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 41132,
+   "sha": "ee142f1c7ff6",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s303_kit84",
+   "preset": "玳瑁",
+   "age": "kit84",
+   "seed": 303,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 41943,
+   "sha": "7b5ff52637c2",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s404_kit84",
+   "preset": "玳瑁",
+   "age": "kit84",
+   "seed": 404,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 41259,
+   "sha": "8ee19734b189",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s505_kit84",
+   "preset": "玳瑁",
+   "age": "kit84",
+   "seed": 505,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 41009,
+   "sha": "147db8e68eb4",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s606_kit84",
+   "preset": "玳瑁",
+   "age": "kit84",
+   "seed": 606,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 41345,
+   "sha": "cd905a2bf760",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s707_kit84",
+   "preset": "玳瑁",
+   "age": "kit84",
+   "seed": 707,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40913,
+   "sha": "82172d586248",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s808_kit84",
+   "preset": "玳瑁",
+   "age": "kit84",
+   "seed": 808,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 41491,
+   "sha": "41b4c3e62d55",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s101_kit88",
+   "preset": "玳瑁",
+   "age": "kit88",
+   "seed": 101,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 43909,
+   "sha": "e3de0293760a",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s202_kit88",
+   "preset": "玳瑁",
+   "age": "kit88",
+   "seed": 202,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 43749,
+   "sha": "e11773eb392a",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s303_kit88",
+   "preset": "玳瑁",
+   "age": "kit88",
+   "seed": 303,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 44605,
+   "sha": "69c59990a128",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s404_kit88",
+   "preset": "玳瑁",
+   "age": "kit88",
+   "seed": 404,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 43592,
+   "sha": "5a6d0244b51b",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s505_kit88",
+   "preset": "玳瑁",
+   "age": "kit88",
+   "seed": 505,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 44738,
+   "sha": "85919aceed20",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s606_kit88",
+   "preset": "玳瑁",
+   "age": "kit88",
+   "seed": 606,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 44084,
+   "sha": "3745752867fb",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s707_kit88",
+   "preset": "玳瑁",
+   "age": "kit88",
+   "seed": 707,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 44113,
+   "sha": "97aff3d1c8e1",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s808_kit88",
+   "preset": "玳瑁",
+   "age": "kit88",
+   "seed": 808,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 43877,
+   "sha": "699234eb3952",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s101_kit92",
+   "preset": "玳瑁",
+   "age": "kit92",
+   "seed": 101,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 45155,
+   "sha": "0e2c2a2b276f",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s202_kit92",
+   "preset": "玳瑁",
+   "age": "kit92",
+   "seed": 202,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 45112,
+   "sha": "59e64a7552ab",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s303_kit92",
+   "preset": "玳瑁",
+   "age": "kit92",
+   "seed": 303,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 46205,
+   "sha": "be3120b0b798",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s404_kit92",
+   "preset": "玳瑁",
+   "age": "kit92",
+   "seed": 404,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 44286,
+   "sha": "4c644c164c45",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s505_kit92",
+   "preset": "玳瑁",
+   "age": "kit92",
+   "seed": 505,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 45570,
+   "sha": "7deafedf0937",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s606_kit92",
+   "preset": "玳瑁",
+   "age": "kit92",
+   "seed": 606,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 45465,
+   "sha": "d968a7149fa7",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s707_kit92",
+   "preset": "玳瑁",
+   "age": "kit92",
+   "seed": 707,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 44367,
+   "sha": "0552fb166948",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s808_kit92",
+   "preset": "玳瑁",
+   "age": "kit92",
+   "seed": 808,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 44438,
+   "sha": "3ca41b479924",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s101_kit96",
+   "preset": "玳瑁",
+   "age": "kit96",
+   "seed": 101,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 47371,
+   "sha": "974b0c391ade",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s202_kit96",
+   "preset": "玳瑁",
+   "age": "kit96",
+   "seed": 202,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 47526,
+   "sha": "eb1008400cb8",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s303_kit96",
+   "preset": "玳瑁",
+   "age": "kit96",
+   "seed": 303,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 47353,
+   "sha": "b81d7582a7bd",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s404_kit96",
+   "preset": "玳瑁",
+   "age": "kit96",
+   "seed": 404,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 46388,
+   "sha": "cdb405cb9d04",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s505_kit96",
+   "preset": "玳瑁",
+   "age": "kit96",
+   "seed": 505,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 48256,
+   "sha": "c6492af0644a",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s606_kit96",
+   "preset": "玳瑁",
+   "age": "kit96",
+   "seed": 606,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 47399,
+   "sha": "18eae476d7b9",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s707_kit96",
+   "preset": "玳瑁",
+   "age": "kit96",
+   "seed": 707,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 47487,
+   "sha": "415d5222388f",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s808_kit96",
+   "preset": "玳瑁",
+   "age": "kit96",
+   "seed": 808,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 47673,
+   "sha": "bf54e08cb4a5",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s101_senior",
+   "preset": "玳瑁",
+   "age": "senior",
+   "seed": 101,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 51437,
+   "sha": "25a2cc49b54e",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s202_senior",
+   "preset": "玳瑁",
+   "age": "senior",
+   "seed": 202,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 52007,
+   "sha": "0b1f0eac6d46",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s303_senior",
+   "preset": "玳瑁",
+   "age": "senior",
+   "seed": 303,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 51020,
+   "sha": "24ae7b5ca70d",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s404_senior",
+   "preset": "玳瑁",
+   "age": "senior",
+   "seed": 404,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 50533,
+   "sha": "dc78f58de3ca",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s505_senior",
+   "preset": "玳瑁",
+   "age": "senior",
+   "seed": 505,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 51510,
+   "sha": "b449c6b50b8c",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s606_senior",
+   "preset": "玳瑁",
+   "age": "senior",
+   "seed": 606,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 51757,
+   "sha": "3eda80c11f6d",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s707_senior",
+   "preset": "玳瑁",
+   "age": "senior",
+   "seed": 707,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 51482,
+   "sha": "3d461af752e5",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "玳瑁_s808_senior",
+   "preset": "玳瑁",
+   "age": "senior",
+   "seed": 808,
+   "species": "cat",
+   "breed": "一般貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 51407,
+   "sha": "392822b58c2d",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "暹羅貓_adult",
+   "preset": "暹羅貓",
+   "age": "adult",
+   "seed": null,
+   "species": "cat",
+   "breed": "暹羅貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 43014,
+   "sha": "80c5ecdd67fe",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "暹羅貓_kit76",
+   "preset": "暹羅貓",
+   "age": "kit76",
+   "seed": null,
+   "species": "cat",
+   "breed": "暹羅貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34606,
+   "sha": "646005934d12",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "暹羅貓_kit80",
+   "preset": "暹羅貓",
+   "age": "kit80",
+   "seed": null,
+   "species": "cat",
+   "breed": "暹羅貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 36342,
+   "sha": "ee1744fc949b",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "暹羅貓_kit84",
+   "preset": "暹羅貓",
+   "age": "kit84",
+   "seed": null,
+   "species": "cat",
+   "breed": "暹羅貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 37945,
+   "sha": "503c534517ab",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "暹羅貓_kit88",
+   "preset": "暹羅貓",
+   "age": "kit88",
+   "seed": null,
+   "species": "cat",
+   "breed": "暹羅貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 39187,
+   "sha": "6a6217ebe1fa",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "暹羅貓_kit92",
+   "preset": "暹羅貓",
+   "age": "kit92",
+   "seed": null,
+   "species": "cat",
+   "breed": "暹羅貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 39793,
+   "sha": "39f176e9e20a",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "暹羅貓_kit96",
+   "preset": "暹羅貓",
+   "age": "kit96",
+   "seed": null,
+   "species": "cat",
+   "breed": "暹羅貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 41380,
+   "sha": "f400d3fc2fd0",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "暹羅貓_senior",
+   "preset": "暹羅貓",
+   "age": "senior",
+   "seed": null,
+   "species": "cat",
+   "breed": "暹羅貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 44696,
+   "sha": "eb9531ac091d",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "布偶貓_adult",
+   "preset": "布偶貓",
+   "age": "adult",
+   "seed": null,
+   "species": "cat",
+   "breed": "布偶貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 46774,
+   "sha": "acc19fd42aa5",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "布偶貓_kit76",
+   "preset": "布偶貓",
+   "age": "kit76",
+   "seed": null,
+   "species": "cat",
+   "breed": "布偶貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 37125,
+   "sha": "c55b731a4080",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "布偶貓_kit80",
+   "preset": "布偶貓",
+   "age": "kit80",
+   "seed": null,
+   "species": "cat",
+   "breed": "布偶貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 39037,
+   "sha": "d4959744640e",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "布偶貓_kit84",
+   "preset": "布偶貓",
+   "age": "kit84",
+   "seed": null,
+   "species": "cat",
+   "breed": "布偶貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40173,
+   "sha": "b8932f78d4ff",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "布偶貓_kit88",
+   "preset": "布偶貓",
+   "age": "kit88",
+   "seed": null,
+   "species": "cat",
+   "breed": "布偶貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 42102,
+   "sha": "206184d02d54",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "布偶貓_kit92",
+   "preset": "布偶貓",
+   "age": "kit92",
+   "seed": null,
+   "species": "cat",
+   "breed": "布偶貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 43732,
+   "sha": "b77076f27cc0",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "布偶貓_kit96",
+   "preset": "布偶貓",
+   "age": "kit96",
+   "seed": null,
+   "species": "cat",
+   "breed": "布偶貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 45735,
+   "sha": "2ccb86093539",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "布偶貓_senior",
+   "preset": "布偶貓",
+   "age": "senior",
+   "seed": null,
+   "species": "cat",
+   "breed": "布偶貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 48562,
+   "sha": "9bcdda97eb37",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "英國短毛貓_adult",
+   "preset": "英國短毛貓",
+   "age": "adult",
+   "seed": null,
+   "species": "cat",
+   "breed": "英國短毛貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40849,
+   "sha": "f22a6fb4c4d3",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "英國短毛貓_kit76",
+   "preset": "英國短毛貓",
+   "age": "kit76",
+   "seed": null,
+   "species": "cat",
+   "breed": "英國短毛貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 32770,
+   "sha": "42fe6dc09cf4",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "英國短毛貓_kit80",
+   "preset": "英國短毛貓",
+   "age": "kit80",
+   "seed": null,
+   "species": "cat",
+   "breed": "英國短毛貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34513,
+   "sha": "e33c4b47d70e",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "英國短毛貓_kit84",
+   "preset": "英國短毛貓",
+   "age": "kit84",
+   "seed": null,
+   "species": "cat",
+   "breed": "英國短毛貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 35428,
+   "sha": "a28a26da8efd",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "英國短毛貓_kit88",
+   "preset": "英國短毛貓",
+   "age": "kit88",
+   "seed": null,
+   "species": "cat",
+   "breed": "英國短毛貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 36737,
+   "sha": "b2bab85e23c3",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "英國短毛貓_kit92",
+   "preset": "英國短毛貓",
+   "age": "kit92",
+   "seed": null,
+   "species": "cat",
+   "breed": "英國短毛貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 38226,
+   "sha": "937f54b81682",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "英國短毛貓_kit96",
+   "preset": "英國短毛貓",
+   "age": "kit96",
+   "seed": null,
+   "species": "cat",
+   "breed": "英國短毛貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 39213,
+   "sha": "c01b53df6b79",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "英國短毛貓_senior",
+   "preset": "英國短毛貓",
+   "age": "senior",
+   "seed": null,
+   "species": "cat",
+   "breed": "英國短毛貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 42696,
+   "sha": "54271f47a196",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "斯芬克斯_adult",
+   "preset": "斯芬克斯",
+   "age": "adult",
+   "seed": null,
+   "species": "cat",
+   "breed": "斯芬克斯",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40589,
+   "sha": "6b23ab4fcc09",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "斯芬克斯_kit76",
+   "preset": "斯芬克斯",
+   "age": "kit76",
+   "seed": null,
+   "species": "cat",
+   "breed": "斯芬克斯",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34065,
+   "sha": "e70d7c2d4ffe",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "斯芬克斯_kit80",
+   "preset": "斯芬克斯",
+   "age": "kit80",
+   "seed": null,
+   "species": "cat",
+   "breed": "斯芬克斯",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 35199,
+   "sha": "7e095f3f672e",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "斯芬克斯_kit84",
+   "preset": "斯芬克斯",
+   "age": "kit84",
+   "seed": null,
+   "species": "cat",
+   "breed": "斯芬克斯",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 36514,
+   "sha": "cba16c2d2415",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "斯芬克斯_kit88",
+   "preset": "斯芬克斯",
+   "age": "kit88",
+   "seed": null,
+   "species": "cat",
+   "breed": "斯芬克斯",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 36988,
+   "sha": "993ffad5751e",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "斯芬克斯_kit92",
+   "preset": "斯芬克斯",
+   "age": "kit92",
+   "seed": null,
+   "species": "cat",
+   "breed": "斯芬克斯",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 38540,
+   "sha": "6d11ef298625",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "斯芬克斯_kit96",
+   "preset": "斯芬克斯",
+   "age": "kit96",
+   "seed": null,
+   "species": "cat",
+   "breed": "斯芬克斯",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 39838,
+   "sha": "fae64e7abb4f",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "斯芬克斯_senior",
+   "preset": "斯芬克斯",
+   "age": "senior",
+   "seed": null,
+   "species": "cat",
+   "breed": "斯芬克斯",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 42445,
+   "sha": "f6c244a95fb4",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "暹羅貓・藍色重點色_adult",
+   "preset": "暹羅貓・藍色重點色",
+   "age": "adult",
+   "seed": null,
+   "species": "cat",
+   "breed": "暹羅貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 43032,
+   "sha": "d234fffb62a5",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "暹羅貓・藍色重點色_kit76",
+   "preset": "暹羅貓・藍色重點色",
+   "age": "kit76",
+   "seed": null,
+   "species": "cat",
+   "breed": "暹羅貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34624,
+   "sha": "fa0dcae18330",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "暹羅貓・藍色重點色_kit80",
+   "preset": "暹羅貓・藍色重點色",
+   "age": "kit80",
+   "seed": null,
+   "species": "cat",
+   "breed": "暹羅貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 36360,
+   "sha": "ecdd9302dd96",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "暹羅貓・藍色重點色_kit84",
+   "preset": "暹羅貓・藍色重點色",
+   "age": "kit84",
+   "seed": null,
+   "species": "cat",
+   "breed": "暹羅貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 37963,
+   "sha": "0928e59eefe2",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "暹羅貓・藍色重點色_kit88",
+   "preset": "暹羅貓・藍色重點色",
+   "age": "kit88",
+   "seed": null,
+   "species": "cat",
+   "breed": "暹羅貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 39205,
+   "sha": "b48c9dfece29",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "暹羅貓・藍色重點色_kit92",
+   "preset": "暹羅貓・藍色重點色",
+   "age": "kit92",
+   "seed": null,
+   "species": "cat",
+   "breed": "暹羅貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 39811,
+   "sha": "c5023193d056",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "暹羅貓・藍色重點色_kit96",
+   "preset": "暹羅貓・藍色重點色",
+   "age": "kit96",
+   "seed": null,
+   "species": "cat",
+   "breed": "暹羅貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 41398,
+   "sha": "fa5df7212e38",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "暹羅貓・藍色重點色_senior",
+   "preset": "暹羅貓・藍色重點色",
+   "age": "senior",
+   "seed": null,
+   "species": "cat",
+   "breed": "暹羅貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 44714,
+   "sha": "f2fe6bc2b964",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "暹羅貓・巧克力重點色_adult",
+   "preset": "暹羅貓・巧克力重點色",
+   "age": "adult",
+   "seed": null,
+   "species": "cat",
+   "breed": "暹羅貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 43035,
+   "sha": "a59c85bab84d",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "暹羅貓・巧克力重點色_kit76",
+   "preset": "暹羅貓・巧克力重點色",
+   "age": "kit76",
+   "seed": null,
+   "species": "cat",
+   "breed": "暹羅貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34627,
+   "sha": "440384073fca",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "暹羅貓・巧克力重點色_kit80",
+   "preset": "暹羅貓・巧克力重點色",
+   "age": "kit80",
+   "seed": null,
+   "species": "cat",
+   "breed": "暹羅貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 36363,
+   "sha": "11393eb2d916",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "暹羅貓・巧克力重點色_kit84",
+   "preset": "暹羅貓・巧克力重點色",
+   "age": "kit84",
+   "seed": null,
+   "species": "cat",
+   "breed": "暹羅貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 37966,
+   "sha": "83c6819b559a",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "暹羅貓・巧克力重點色_kit88",
+   "preset": "暹羅貓・巧克力重點色",
+   "age": "kit88",
+   "seed": null,
+   "species": "cat",
+   "breed": "暹羅貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 39208,
+   "sha": "77d4ade8d87b",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "暹羅貓・巧克力重點色_kit92",
+   "preset": "暹羅貓・巧克力重點色",
+   "age": "kit92",
+   "seed": null,
+   "species": "cat",
+   "breed": "暹羅貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 39814,
+   "sha": "56997155d8cb",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "暹羅貓・巧克力重點色_kit96",
+   "preset": "暹羅貓・巧克力重點色",
+   "age": "kit96",
+   "seed": null,
+   "species": "cat",
+   "breed": "暹羅貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 41401,
+   "sha": "751d404a9fe8",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "暹羅貓・巧克力重點色_senior",
+   "preset": "暹羅貓・巧克力重點色",
+   "age": "senior",
+   "seed": null,
+   "species": "cat",
+   "breed": "暹羅貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 44717,
+   "sha": "c503b52ba627",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "布偶貓・藍色手套_adult",
+   "preset": "布偶貓・藍色手套",
+   "age": "adult",
+   "seed": null,
+   "species": "cat",
+   "breed": "布偶貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 46789,
+   "sha": "e699aae8b6a4",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "布偶貓・藍色手套_kit76",
+   "preset": "布偶貓・藍色手套",
+   "age": "kit76",
+   "seed": null,
+   "species": "cat",
+   "breed": "布偶貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 37140,
+   "sha": "6c6e7dec0477",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "布偶貓・藍色手套_kit80",
+   "preset": "布偶貓・藍色手套",
+   "age": "kit80",
+   "seed": null,
+   "species": "cat",
+   "breed": "布偶貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 39052,
+   "sha": "ee0786791e81",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "布偶貓・藍色手套_kit84",
+   "preset": "布偶貓・藍色手套",
+   "age": "kit84",
+   "seed": null,
+   "species": "cat",
+   "breed": "布偶貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40188,
+   "sha": "0685107e8fec",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "布偶貓・藍色手套_kit88",
+   "preset": "布偶貓・藍色手套",
+   "age": "kit88",
+   "seed": null,
+   "species": "cat",
+   "breed": "布偶貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 42117,
+   "sha": "87f8815670dd",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "布偶貓・藍色手套_kit92",
+   "preset": "布偶貓・藍色手套",
+   "age": "kit92",
+   "seed": null,
+   "species": "cat",
+   "breed": "布偶貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 43747,
+   "sha": "b8073a3ced21",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "布偶貓・藍色手套_kit96",
+   "preset": "布偶貓・藍色手套",
+   "age": "kit96",
+   "seed": null,
+   "species": "cat",
+   "breed": "布偶貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 45750,
+   "sha": "2dd0a0fc1932",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "布偶貓・藍色手套_senior",
+   "preset": "布偶貓・藍色手套",
+   "age": "senior",
+   "seed": null,
+   "species": "cat",
+   "breed": "布偶貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 48577,
+   "sha": "3f1f51ee2d9a",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "英國短毛貓・銀虎斑_adult",
+   "preset": "英國短毛貓・銀虎斑",
+   "age": "adult",
+   "seed": null,
+   "species": "cat",
+   "breed": "英國短毛貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40861,
+   "sha": "3d23715dc1f3",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "英國短毛貓・銀虎斑_kit76",
+   "preset": "英國短毛貓・銀虎斑",
+   "age": "kit76",
+   "seed": null,
+   "species": "cat",
+   "breed": "英國短毛貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 32782,
+   "sha": "589efb1662d1",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "英國短毛貓・銀虎斑_kit80",
+   "preset": "英國短毛貓・銀虎斑",
+   "age": "kit80",
+   "seed": null,
+   "species": "cat",
+   "breed": "英國短毛貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34525,
+   "sha": "ce583310f7f9",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "英國短毛貓・銀虎斑_kit84",
+   "preset": "英國短毛貓・銀虎斑",
+   "age": "kit84",
+   "seed": null,
+   "species": "cat",
+   "breed": "英國短毛貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 35440,
+   "sha": "4126f1d1b2e1",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "英國短毛貓・銀虎斑_kit88",
+   "preset": "英國短毛貓・銀虎斑",
+   "age": "kit88",
+   "seed": null,
+   "species": "cat",
+   "breed": "英國短毛貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 36749,
+   "sha": "4fd79d1b8174",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "英國短毛貓・銀虎斑_kit92",
+   "preset": "英國短毛貓・銀虎斑",
+   "age": "kit92",
+   "seed": null,
+   "species": "cat",
+   "breed": "英國短毛貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 38238,
+   "sha": "6486542e45ef",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "英國短毛貓・銀虎斑_kit96",
+   "preset": "英國短毛貓・銀虎斑",
+   "age": "kit96",
+   "seed": null,
+   "species": "cat",
+   "breed": "英國短毛貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 39225,
+   "sha": "454f4bdfad3a",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "英國短毛貓・銀虎斑_senior",
+   "preset": "英國短毛貓・銀虎斑",
+   "age": "senior",
+   "seed": null,
+   "species": "cat",
+   "breed": "英國短毛貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 42708,
+   "sha": "eb1aa05ae12e",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "英國短毛貓・奶油_adult",
+   "preset": "英國短毛貓・奶油",
+   "age": "adult",
+   "seed": null,
+   "species": "cat",
+   "breed": "英國短毛貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40858,
+   "sha": "83979027c4fe",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "英國短毛貓・奶油_kit76",
+   "preset": "英國短毛貓・奶油",
+   "age": "kit76",
+   "seed": null,
+   "species": "cat",
+   "breed": "英國短毛貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 32779,
+   "sha": "7c9bf690981e",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "英國短毛貓・奶油_kit80",
+   "preset": "英國短毛貓・奶油",
+   "age": "kit80",
+   "seed": null,
+   "species": "cat",
+   "breed": "英國短毛貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34522,
+   "sha": "25c30cc2bf4f",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "英國短毛貓・奶油_kit84",
+   "preset": "英國短毛貓・奶油",
+   "age": "kit84",
+   "seed": null,
+   "species": "cat",
+   "breed": "英國短毛貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 35437,
+   "sha": "d4dcf29a2156",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "英國短毛貓・奶油_kit88",
+   "preset": "英國短毛貓・奶油",
+   "age": "kit88",
+   "seed": null,
+   "species": "cat",
+   "breed": "英國短毛貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 36746,
+   "sha": "06d724797f84",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "英國短毛貓・奶油_kit92",
+   "preset": "英國短毛貓・奶油",
+   "age": "kit92",
+   "seed": null,
+   "species": "cat",
+   "breed": "英國短毛貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 38235,
+   "sha": "7ce87040f6ec",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "英國短毛貓・奶油_kit96",
+   "preset": "英國短毛貓・奶油",
+   "age": "kit96",
+   "seed": null,
+   "species": "cat",
+   "breed": "英國短毛貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 39222,
+   "sha": "8a9d6a3ad240",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "英國短毛貓・奶油_senior",
+   "preset": "英國短毛貓・奶油",
+   "age": "senior",
+   "seed": null,
+   "species": "cat",
+   "breed": "英國短毛貓",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 42705,
+   "sha": "aa8c560fe164",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "斯芬克斯・灰膚_adult",
+   "preset": "斯芬克斯・灰膚",
+   "age": "adult",
+   "seed": null,
+   "species": "cat",
+   "breed": "斯芬克斯",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40598,
+   "sha": "c1ce9fabc91b",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "斯芬克斯・灰膚_kit76",
+   "preset": "斯芬克斯・灰膚",
+   "age": "kit76",
+   "seed": null,
+   "species": "cat",
+   "breed": "斯芬克斯",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34074,
+   "sha": "645a928bf3c9",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "斯芬克斯・灰膚_kit80",
+   "preset": "斯芬克斯・灰膚",
+   "age": "kit80",
+   "seed": null,
+   "species": "cat",
+   "breed": "斯芬克斯",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 35208,
+   "sha": "aec551f8a0d8",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "斯芬克斯・灰膚_kit84",
+   "preset": "斯芬克斯・灰膚",
+   "age": "kit84",
+   "seed": null,
+   "species": "cat",
+   "breed": "斯芬克斯",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 36523,
+   "sha": "4035ccea81e3",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "斯芬克斯・灰膚_kit88",
+   "preset": "斯芬克斯・灰膚",
+   "age": "kit88",
+   "seed": null,
+   "species": "cat",
+   "breed": "斯芬克斯",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 36997,
+   "sha": "b1e70946bf82",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "斯芬克斯・灰膚_kit92",
+   "preset": "斯芬克斯・灰膚",
+   "age": "kit92",
+   "seed": null,
+   "species": "cat",
+   "breed": "斯芬克斯",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 38549,
+   "sha": "3d4b7a891178",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "斯芬克斯・灰膚_kit96",
+   "preset": "斯芬克斯・灰膚",
+   "age": "kit96",
+   "seed": null,
+   "species": "cat",
+   "breed": "斯芬克斯",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 39847,
+   "sha": "b42a45ed68ce",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "斯芬克斯・灰膚_senior",
+   "preset": "斯芬克斯・灰膚",
+   "age": "senior",
+   "seed": null,
+   "species": "cat",
+   "breed": "斯芬克斯",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 42454,
+   "sha": "ef81cd030198",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "阿比西尼亞・藍_adult",
+   "preset": "阿比西尼亞・藍",
+   "age": "adult",
+   "seed": null,
+   "species": "cat",
+   "breed": "阿比西尼亞",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 40295,
+   "sha": "3aee5e097de4",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "阿比西尼亞・藍_kit76",
+   "preset": "阿比西尼亞・藍",
+   "age": "kit76",
+   "seed": null,
+   "species": "cat",
+   "breed": "阿比西尼亞",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 32191,
+   "sha": "695ddbc5497a",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "阿比西尼亞・藍_kit80",
+   "preset": "阿比西尼亞・藍",
+   "age": "kit80",
+   "seed": null,
+   "species": "cat",
+   "breed": "阿比西尼亞",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34164,
+   "sha": "58d39cddd240",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "阿比西尼亞・藍_kit84",
+   "preset": "阿比西尼亞・藍",
+   "age": "kit84",
+   "seed": null,
+   "species": "cat",
+   "breed": "阿比西尼亞",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 34923,
+   "sha": "2180e3ad9cbc",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "阿比西尼亞・藍_kit88",
+   "preset": "阿比西尼亞・藍",
+   "age": "kit88",
+   "seed": null,
+   "species": "cat",
+   "breed": "阿比西尼亞",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 36249,
+   "sha": "c0351e2bea41",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "阿比西尼亞・藍_kit92",
+   "preset": "阿比西尼亞・藍",
+   "age": "kit92",
+   "seed": null,
+   "species": "cat",
+   "breed": "阿比西尼亞",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 37413,
+   "sha": "5c7df48eaae3",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "阿比西尼亞・藍_kit96",
+   "preset": "阿比西尼亞・藍",
+   "age": "kit96",
+   "seed": null,
+   "species": "cat",
+   "breed": "阿比西尼亞",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 38667,
+   "sha": "e1802d1aa002",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  },
+  {
+   "book": "阿比西尼亞・藍_senior",
+   "preset": "阿比西尼亞・藍",
+   "age": "senior",
+   "seed": null,
+   "species": "cat",
+   "breed": "阿比西尼亞",
+   "files": [
+    "book.json",
+    "book_s0.png",
+    "book_s1.png"
+   ],
+   "bytes": 41900,
+   "sha": "ddc7e700e40f",
+   "tests": 22,
+   "ok": true,
+   "fp_ok": true
+  }
+ ],
+ "bad": [],
+ "total_bytes": 13625773
+}

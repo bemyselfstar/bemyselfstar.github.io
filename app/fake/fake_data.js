@@ -1,6 +1,6 @@
 // 假資料（P66 新設計 M4 用假資料先做樣子）：等遊戲線做好 M1～M3，改讀伺服器上的「每隻毛孩在哪裡＋現在在做什麼」。
 // where：home＝🏠 家、desk＝🖥 桌面、pocket＝📱 口袋、friend＝🐾 好友家；personality＝個性（台詞照個性挑，lines.js）；came_at＝來家裡的日子（面板「在一起第 N 天」，跟伺服器 015 一樣）
-(window.DC_BUILD = window.DC_BUILD || {})['fake/fake_data.js'] = 55;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['fake/fake_data.js'] = 57;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 window.FAKE_HOME = {
   owner: '主人',
   pets: [
