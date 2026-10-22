@@ -4,15 +4,31 @@
 //   產圖 SV.tripMake（Edge Function trip-photo）、相簿 SV.tripMine（dc_trip_photos_mine）、圖 SV.tripImage（Storage trip-photos）。
 // 全部玩家當天的額度用完（daily_total）：手機自己做風景照＝畫一張城市剪影＋毛孩坐著的那一格（不算今天的張數；伺服器沒有圖庫）。AI 畫失敗（ai_failed）＝同一個 key 再試。
 // 伺服器還沒有這些函式（讀相簿回 404）：口袋不顯示〔旅行照〕按鈕（不會有按了壞掉的按鈕）。
-(window.DC_BUILD = window.DC_BUILD || {})['trip.js'] = 54;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['trip.js'] = 55;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const D = window.DC, SV = window.DCServer, $ = id => document.getElementById(id);
-  // 代號跟 tools/pet_prompt.py 的 CITIES／SCENES 同一組（伺服器照代號組提示字）
-  const CITIES = [['taipei', '台北'], ['tokyo', '東京'], ['kyoto', '京都'], ['paris', '巴黎'], ['seaside', '海邊小鎮']];
+  // 代號跟 src/ai_prompt.py 的 CITIES／SCENES 同一組（伺服器照代號組提示字；改了以那邊為準）
+  // 2026-10-21 🎮 022：城市 5 → 10、每個城市 3 個街景＋1 個公園可以選（spot）；不選＝伺服器隨機抽一個街景（不抽公園），野餐固定公園
+  const CITIES = [['taipei', '台北'], ['tainan', '台南'], ['tokyo', '東京'], ['kyoto', '京都'], ['seoul', '首爾'],
+    ['bangkok', '曼谷'], ['paris', '巴黎'], ['london', '倫敦'], ['newyork', '紐約'], ['seaside', '海邊小鎮']];
   const SCENES = [['walk', '散步'], ['cafe', '咖啡廳'], ['market', '逛市集'], ['picnic', '野餐'], ['rain', '雨中散步']];
+  const SPOTS = {                           // 每個城市：3 個街景＋公園（最後一個）
+    taipei: [['arcade', '騎樓巷子'], ['dihua', '迪化街'], ['alley', '老公寓巷弄'], ['park', '河濱公園']],
+    tainan: [['shennong', '神農街'], ['temple', '廟口'], ['anping', '安平老街'], ['park', '老榕樹公園']],
+    tokyo: [['sidestreet', '住宅小路'], ['shitamachi', '下町商店街'], ['tracks', '鐵道旁小巷'], ['park', '運河櫻花公園']],
+    kyoto: [['oldstreet', '石板老街'], ['gion', '祇園'], ['canal', '小運河步道'], ['park', '鴨川河岸']],
+    seoul: [['bukchon', '北村韓屋'], ['cafestreet', '咖啡小巷'], ['namsan', '南山腳下'], ['park', '漢江公園']],
+    bangkok: [['canal', '運河人家'], ['oldtown', '老城區'], ['soi', '熱鬧小巷'], ['park', '湖畔公園']],
+    paris: [['terrace', '咖啡座街道'], ['seine', '塞納河畔'], ['montmartre', '蒙馬特'], ['park', '公園噴泉']],
+    london: [['mews', '彩色小巷'], ['highstreet', '紅色巴士大街'], ['thames', '泰晤士河畔'], ['park', '大公園']],
+    newyork: [['brownstone', '褐石公寓街'], ['avenue', '黃色計程車大道'], ['dumbo', '大橋下的石板路'], ['park', '中央公園']],
+    seaside: [['promenade', '海濱步道'], ['harbor', '漁港'], ['hillside', '山坡小巷'], ['park', '海邊山丘']],
+  };
   const cityName = k => (CITIES.find(c => c[0] === k) || [k, k])[1];
   const sceneName = k => (SCENES.find(c => c[0] === k) || [k, k])[1];
+  const spotName = (city, k) => (k && (SPOTS[city] || []).find(c => c[0] === k) || [k, ''])[1];   // 022 之前的照片 spot＝''
+  const placeName = ph => cityName(ph.city) + (spotName(ph.city, ph.spot) ? '・' + spotName(ph.city, ph.spot) : '');   // 台北・迪化街
   const NEED_MIN = 60, PENDING_KEY = 'deskcat_trip_pending_v1';
   const WAIT_MS = 90000;                    // 一次最多等 90 秒（AI 通常 15～45 秒），太久就用同一個代號再問
 
@@ -37,12 +53,35 @@
     else if (city === 'tokyo') { for (let k = 0; k < 10; k++) { const w = 12 - k; R(86 + k / 2, GY - 12 - k * 4, w, 4, k % 3 === 0 ? '#e8e8e8' : red); } R(91, GY - 56, 2, 8, red); }
     else if (city === 'kyoto') { for (let k = 0; k < 5; k++) { R(80 + k, GY - 12 - k * 8, 18 - k * 2, 2, L); R(83 + k, GY - 10 - k * 8, 12 - k * 2, 6, L); } R(88, GY - 56, 2, 8, L);
       R(18, GY - 18, 22, 3, red); R(16, GY - 21, 26, 3, red); R(21, GY - 15, 2, 15, red); R(35, GY - 15, 2, 15, red); }
+    else if (city === 'tainan') {           // 廟：紅柱子、兩層燕尾翹脊
+      R(78, GY - 14, 24, 14, L); R(80, GY - 14, 2, 14, red); R(98, GY - 14, 2, 14, red); R(87, GY - 10, 6, 10, night ? '#ffd77a' : '#7a4a33');
+      R(74, GY - 18, 32, 4, red); R(71, GY - 21, 4, 3, red); R(105, GY - 21, 4, 3, red);
+      R(82, GY - 26, 16, 8, L); R(79, GY - 29, 22, 3, red); R(77, GY - 31, 3, 2, red); R(100, GY - 31, 3, 2, red); R(88, GY - 33, 4, 4, '#d9a93b'); }
+    else if (city === 'seoul') {            // 南山＋首爾塔
+      for (let k = 0; k < 12; k++) { const w = 40 - k * 3; R(89 - w / 2, GY - 1 - k, w, 1, night ? '#24304a' : rain ? '#56606a' : '#5f8a5a'); }
+      R(88, GY - 44, 3, 32, night ? '#6a6f86' : '#e8e8e8'); R(85, GY - 47, 9, 5, L); R(86, GY - 46, 7, 1, night ? '#ffe39a' : '#bfc8d4'); R(89, GY - 60, 1, 13, L); }
+    else if (city === 'bangkok') {          // 寺廟的金色尖塔
+      const gold = night ? '#8a7440' : rain ? '#9a8a5a' : '#d9a93b';
+      R(76, GY - 10, 26, 10, L); R(74, GY - 12, 30, 2, red);
+      for (let k = 0; k < 9; k++) { const w = 18 - k * 2; R(89 - w / 2, GY - 14 - k * 4, w, 4, k % 2 ? L : gold); }
+      R(88, GY - 58, 2, 8, gold); }
+    else if (city === 'london') {           // 大笨鐘（巴士在近處的房子前面畫）
+      R(84, GY - 46, 10, 46, L); R(86, GY - 41, 6, 6, night ? '#ffe39a' : '#f4f0e6'); R(88, GY - 40, 1, 3, L); R(88, GY - 38, 3, 1, L);
+      for (let k = 0; k < 6; k++) { const w = 10 - k * 1.6; R(89 - w / 2, GY - 48 - k * 2, w, 2, L); } R(88, GY - 62, 2, 4, L); }
+    else if (city === 'newyork') {          // 帝國大廈（計程車在近處的房子前面畫）
+      R(81, GY - 30, 16, 30, L); R(83, GY - 40, 12, 10, L); R(85, GY - 48, 8, 8, L); R(87, GY - 54, 4, 6, L); R(88, GY - 62, 2, 8, L);
+      if (night) for (let yy = GY - 28; yy < GY - 2; yy += 4) for (let xx = 83; xx < 95; xx += 3) R(xx, yy, 1, 2, '#ffd77a'); }
     else if (city === 'paris') { for (let k = 0; k < 44; k++) { const w = Math.max(1, Math.round(16 - k * .34)); R(88 - w / 2, GY - k, w, 1, L); } R(83, GY - 12, 10, 4, sky[2]); R(86, GY - 46, 2, 6, L); }
     else { R(0, GY - 14, PW, 14, night ? '#1d3a5c' : rain ? '#5f7a90' : '#3f86c4'); R(0, GY - 14, PW, 1, 'rgba(255,255,255,.35)');
       for (let k = 0; k < 3; k++) { const x = 6 + k * 18; R(x, GY - 10, 14, 10, '#f4f0e6'); R(x - 1, GY - 12, 16, 2, '#3f6fb0'); R(x + 3, GY - 7, 3, 3, '#3f6fb0'); R(x + 8, GY - 7, 3, 3, '#3f6fb0'); } R(92, GY - 34, 7, 28, '#f2f2f2'); R(92, GY - 26, 7, 4, red); R(92, GY - 16, 7, 4, red); R(91, GY - 38, 9, 4, '#3b3f4a');
       R(93, GY - 37, 5, 2, night ? '#ffe39a' : '#fff6c8'); R(62, GY - 6, 14, 3, '#7a5a40'); R(68, GY - 12, 1, 6, '#7a5a40'); R(69, GY - 11, 5, 5, '#f4f0e6'); }
     if (!sea) for (let x = 0, i = 0; x < PW; i++) { const w = 14 + (i * 5) % 10, h = 6 + (i * 7) % 10; if (x > 70 && x < 104) { x += w; continue; } R(x, GY - h, w - 1, h, near);
       if (night) for (let yy = GY - h + 2; yy < GY - 1; yy += 3) for (let xx = x + 2; xx < x + w - 2; xx += 3) if ((xx + yy + i) % 2) R(xx, yy, 1, 1, '#ffd77a'); x += w; }
+    // 街上的車（近處房子的前面）：倫敦紅色雙層巴士、紐約黃色計程車
+    if (city === 'london') { R(14, GY - 13, 26, 13, red); R(14, GY - 7, 26, 1, night ? '#5a2a34' : '#9a3530');
+      for (let k = 0; k < 4; k++) { R(16 + k * 6, GY - 11, 4, 3, night ? '#ffe39a' : '#cfe3f2'); R(16 + k * 6, GY - 5, 4, 2, night ? '#ffe39a' : '#cfe3f2'); } }
+    if (city === 'newyork') { R(18, GY - 6, 20, 5, '#f2c230'); R(22, GY - 9, 11, 3, '#f2c230'); R(24, GY - 8, 3, 2, '#cfe3f2'); R(28, GY - 8, 3, 2, '#cfe3f2');
+      R(26, GY - 10, 4, 1, '#3b3f4a'); R(21, GY - 1, 3, 2, '#2a2a2a'); R(32, GY - 1, 3, 2, '#2a2a2a'); }
     // 地面（照情境）
     const ground = { walk: '#d8cdb9', cafe: '#cdbba2', market: '#4c4b5e', picnic: '#7fb36a', rain: '#5d6670' }[scene] || '#d8cdb9';
     R(0, GY, PW, PH - GY, ground);
@@ -115,14 +154,14 @@
     const c = out.getContext('2d'); c.imageSmoothingEnabled = false;
     c.fillStyle = '#fffaf2'; c.fillRect(0, 0, W, H + bar); c.drawImage(cv, 0, 0, W, H);
     c.fillStyle = '#3b2f28'; c.font = `${Math.round(bar * .42)}px sans-serif`; c.textBaseline = 'middle';
-    c.textAlign = 'left'; c.fillText(`🐾 ${ph.name || ''}・${cityName(ph.city)}・${sceneName(ph.scene)}`, bar * .4, H + bar / 2);
+    c.textAlign = 'left'; c.fillText(`🐾 ${ph.name || ''}・${placeName(ph)}・${sceneName(ph.scene)}`, bar * .4, H + bar / 2);
     c.textAlign = 'right'; c.fillStyle = '#8a7a6a'; c.fillText(`${(ph.created_at || '').slice(0, 10).replace(/-/g, '/')}  DeskCat`, W - bar * .4, H + bar / 2);
     const blob = await new Promise(r => out.toBlob(r, 'image/jpeg', .92));
     return new File([blob], `DeskCat_旅行照_${ph.name || ''}_${cityName(ph.city)}.jpg`, { type: 'image/jpeg' });
   }
 
   // ---------- 伺服器回的格式 → 這邊用的（遊戲線 2026-10-17 定案：server/018、server/functions/trip-photo） ----------
-  // 相簿 {photos: [{id, cid, name, city, scene, tod, status, file, reused, created_at}], today_left, next_at, min_out_min}
+  // 相簿 {photos: [{id, cid, name, city, scene, spot, tod, status, file, reused, created_at}], today_left, next_at, min_out_min}（spot：022 起，之前的＝''）
   // 產圖一律帶 status：done＝成功（file）、making＝還在畫（5 秒後同一個 key 再問）、no＝不行（reason）。
   //   daily_total（全部玩家的額度用完、AI 沒開）→ 手機自己做風景照，不算今天的張數；ai_failed → 用同一個 key 再試一次。
   // 伺服器沒有圖庫：風景照＝手機自己畫的城市剪影＋毛孩（只留在這次開著，不上傳）
@@ -142,7 +181,7 @@
   // → {ok: true, photo, why?}／{busy: true}／{retry: '原因'}（同一個 key 再送）／{ok: false, reason, wait_min?, next_at?}
   function normMake(res, job) {
     res = res || {};
-    const base = { id: res.id, cid: job.cid, name: job.name, city: job.city, scene: job.scene, created_at: new Date().toISOString() };
+    const base = { id: res.id, cid: job.cid, name: job.name, city: job.city, spot: res.spot || job.spot || '', scene: job.scene, created_at: new Date().toISOString() };
     if (res.status === 'done' && res.file) return { ok: true, photo: normPhoto({ ...base, file: res.file, reused: !!res.reused }) };
     if (res.status === 'making' || res.reason === 'busy') return { busy: true };
     if (res.reason === 'daily_total')
@@ -154,7 +193,7 @@
   }
 
   // ---------- 狀態 ----------
-  const st = { ok: null, left: 1, nextAt: null, need: NEED_MIN, photos: [], at: 0, city: null, scene: null, run: null, view: null, err: '' };
+  const st = { ok: null, left: 1, nextAt: null, need: NEED_MIN, photos: [], at: 0, city: null, spot: '', scene: null, run: null, view: null, err: '' };
   const acct = () => SV.user ? SV.which + '/' + SV.user.uid : '';
   const usable = () => D.LIVE && SV.mode === 'live';
   const loadPending = () => { try { const v = JSON.parse(localStorage.getItem(PENDING_KEY) || 'null'); return v && v.acct === acct() && Date.now() - v.at < 6 * 3600e3 ? v : null; } catch (_) { return null; } };
@@ -220,11 +259,12 @@
           const cv = document.createElement('canvas'); cv.width = PW; cv.height = PH; drawPlace(cv.getContext('2d'), k, 'walk');
           const s = document.createElement('span'); s.textContent = name; b.append(cv, s);
         } else b.textContent = name;
-        b.onclick = () => { st[key] = k; st.err = ''; renderPick(); };
+        b.onclick = () => { if (key === 'city' && st.city !== k) st.spot = ''; st[key] = k; st.err = ''; renderPick(); };
         box.appendChild(b);
       });
       box.querySelectorAll('button').forEach(b => { const on = b.dataset.k === st[key]; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
     }
+    renderSpots();
     const m = minsOut(p), go = $('tripGo');
     let rule, label = '拍旅行照', can = false;
     if (!p) rule = '口袋裡沒有毛孩';
@@ -233,10 +273,27 @@
     else if (st.left < 1) { rule = `今天的張數用完了・${nextText(st.nextAt)}再來`; label = '明天再來'; }
     else if (m < st.need) { rule = `出門 ${m} 分・滿 ${needText()}才能拍`; label = `還要 ${st.need - m} 分鐘`; }
     else if (!st.city || !st.scene) { rule = `今天還能拍 ${st.left} 張・AI 會照${p.name}的樣子畫`; label = !st.city ? '先選城市' : '先選做什麼'; }
-    else { rule = `今天還能拍 ${st.left} 張・AI 會照${p.name}的樣子畫`; can = true; label = `去${cityName(st.city)}拍照`; }
+    else { rule = `今天還能拍 ${st.left} 張・AI 會照${p.name}的樣子畫`; can = true; label = `去${spotName(st.city, st.scene === 'picnic' ? 'park' : st.spot) || cityName(st.city)}拍照`; }
     $('tripRule').textContent = rule;
     D.setLabel(go, 'trip', label); go.disabled = !can;
     renderAlbum($('tripAlbum'));
+  }
+  // 選好城市後：去哪裡逛（〔隨便逛逛〕＝不送 spot，伺服器抽一個街景；野餐固定公園，只剩公園一個）
+  function renderSpots() {
+    const box = $('tripSpots'), head = $('tripSpotsHead');
+    box.hidden = head.hidden = !st.city;
+    if (!st.city) return;
+    const picnic = st.scene === 'picnic';
+    const list = picnic ? SPOTS[st.city].filter(c => c[0] === 'park') : [['', '隨便逛逛'], ...SPOTS[st.city]];
+    const on = picnic ? 'park' : st.spot;
+    box.innerHTML = '';
+    for (const [k, name] of list) {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'btn trip-scene'; b.textContent = name;
+      b.classList.toggle('on', k === on); b.setAttribute('aria-pressed', k === on);
+      if (!picnic) b.onclick = () => { st.spot = k; renderSpots(); };
+      box.append(b);
+    }
+    if (picnic) { const n = document.createElement('span'); n.className = 'trip-spot-note'; n.textContent = '野餐都在公園'; box.append(n); }
   }
   // 相簿：拍過的旅行照（口袋頁、旅行照頁都有一份）
   function renderAlbum(box) {
@@ -249,7 +306,7 @@
     const grid = document.createElement('div'); grid.className = 'trip-grid';
     for (const ph of st.photos) {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'trip-thumb';
-      const im = document.createElement('img'); im.alt = `${ph.name}在${cityName(ph.city)}`;
+      const im = document.createElement('img'); im.alt = `${ph.name}在${placeName(ph)}`;
       const s = document.createElement('span'); s.textContent = `${ph.name}・${cityName(ph.city)}`;
       b.append(im, s); b.onclick = () => { if (sec.hidden) open(ph); else showView(ph); };
       photoCanvas(ph).then(cv => { im.src = cv.toDataURL('image/png'); }).catch(() => { s.textContent += '（圖下載不了）'; });
@@ -263,7 +320,7 @@
   function showWait() {
     showPart('tripWait');
     const r = st.run;
-    $('tripWaitText').textContent = `${r.name}去${cityName(r.city)}${sceneName(r.scene)}了…`;
+    $('tripWaitText').textContent = `${r.name}去${spotName(r.city, r.spot) || cityName(r.city)}${sceneName(r.scene)}了…`;
     $('tripWaitErr').hidden = !r.err; $('tripWaitErr').textContent = r.err || '';
     $('tripRetry').hidden = !r.err;
     tickWait();
@@ -291,7 +348,7 @@
     }
     requestAnimationFrame(walk);
   }
-  function start(job) {                    // job＝{acct, key, cid, name, city, scene, at}
+  function start(job) {                    // job＝{acct, key, cid, name, city, spot, scene, at}
     savePending(job);
     st.run = { ...job, t0: Date.now(), err: '' };
     if (!sec.hidden) showWait();
@@ -309,7 +366,7 @@
       if (!sec.hidden && !$('tripWait').hidden) showWait();
       else D.toast('旅行照還沒拿到', ['再試一次', () => { open(); send(); }]);
     };
-    try { res = normMake(await SV.tripMake(r.cid, r.city, r.scene, r.key, WAIT_MS), r); }
+    try { res = normMake(await SV.tripMake(r.cid, r.city, r.scene, r.key, WAIT_MS, r.spot), r); }
     catch (e) {
       r.sending = false;
       if (st.run !== r) return;
@@ -334,7 +391,11 @@
     if (!ph.fallback) st.left = Math.max(0, st.left - 1);   // 今天用掉 1 張（下面再跟伺服器對一次）
     st.photos = [ph, ...st.photos.filter(x => x.id !== ph.id)];
     st.at = Date.now();
-    refresh(true).then(() => { if (!sec.hidden && !$('tripPick').hidden) renderPick(); badge(); });
+    refresh(true).then(() => {
+      const got = st.photos.find(x => x.id === ph.id);   // 〔隨便逛逛〕：伺服器抽了哪個街景，相簿讀回來才知道（產圖的回覆沒有 spot）
+      if (got && got.spot && !ph.spot) { ph.spot = got.spot; if (st.view === ph) $('tripCap').textContent = `${ph.name}・${placeName(ph)}・${sceneName(ph.scene)}`; }
+      if (!sec.hidden && !$('tripPick').hidden) renderPick(); badge();
+    });
     if (!sec.hidden) showView(ph);
     else D.toast(`${ph.name}的旅行照洗好了`, ['看照片', () => open(ph)]);
     if (window.DCPocket) window.DCPocket.render();
@@ -346,7 +407,7 @@
   async function showView(ph) {
     st.view = ph; showPart('tripView');
     $('tripTip').hidden = true;
-    $('tripCap').textContent = `${ph.name}・${cityName(ph.city)}・${sceneName(ph.scene)}`;
+    $('tripCap').textContent = `${ph.name}・${placeName(ph)}・${sceneName(ph.scene)}`;
     const note = ph.fallback ? (ph.why === 'error' ? 'AI 這次沒畫好，先送你風景照（不算今天的張數）' : 'AI 今天畫累了，先送你風景照（不算今天的張數）') : '';
     $('tripNote').textContent = note; $('tripNote').hidden = !note;
     const im = $('tripImg'); im.removeAttribute('src');
@@ -377,7 +438,8 @@
     const pet = pocketPet();
     if (!pet || !st.city || !st.scene) return;
     D.say(pet, D.line(pet, 'tripphoto_go', { other: cityName(st.city) }));
-    start({ acct: acct(), key: newKey(), cid: pet.p.id, name: pet.p.name, city: st.city, scene: st.scene, at: Date.now() });
+    const spot = st.scene === 'picnic' ? 'park' : st.spot;   // ''＝不送（伺服器抽）
+    start({ acct: acct(), key: newKey(), cid: pet.p.id, name: pet.p.name, city: st.city, spot, scene: st.scene, at: Date.now() });
   };
   addEventListener('online', () => { if (st.run && st.run.err) send(); });   // 網路回來了：用同一個代號再問
 
@@ -398,5 +460,5 @@
   }
   setInterval(() => { if (!$('view-pocket').hidden) badge(); }, 15000);
 
-  window.DCTrip = { open, close, pocketShown, badge, renderAlbum, drawPlace, drawPetOn, petReady, norm: { normMake, normMine }, CITIES, SCENES, PW, PH, get st() { return st; } };
+  window.DCTrip = { open, close, pocketShown, badge, renderAlbum, drawPlace, drawPetOn, petReady, norm: { normMake, normMine }, CITIES, SCENES, SPOTS, PW, PH, get st() { return st; } };
 })();

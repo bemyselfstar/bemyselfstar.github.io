@@ -6,7 +6,7 @@
 //   自己調過顏色 → preset＝''；玩家選的 #ffffff 存成 #fefefe（零件包格式.md 4-1）。
 // 存：毛孩圖（整張圖表＋meta，格式跟 src/pet_sprites.py 一樣）傳 Storage → dc_pet_create（🎮 019，跨線需求 2026-10-20 📱 第 1 條）。
 // 新帳號第一次進來（還沒有毛孩）時自動打開；「全家」頁沒有毛孩時也有〔建立毛孩〕。
-(window.DC_BUILD = window.DC_BUILD || {})['adopt.js'] = 54;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['adopt.js'] = 55;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const SV = window.DCServer, P = window.DCParts, $ = id => document.getElementById(id);

@@ -13,17 +13,25 @@
 //     開新帳號＝信箱驗證碼 create_user: true（先用 false 試，沒有帳號才問要不要開）；暱稱＝profiles 表（001，自己的那一列可以改 nickname）；
 //     刪帳號 dc_account_delete（🎮 新的：現在的 delete_my_account 要電腦裝置，手機叫不了）；
 //     手機建立毛孩 dc_pet_create(p_cfg, p_sprite)（🎮 019）＋毛孩圖自己傳 Storage pet-sprites/<帳號>/<cid>-<指紋>.png／.json（權限 013 已經可以）
-(window.DC_BUILD = window.DC_BUILD || {})['server.js'] = 54;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['server.js'] = 55;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const SERVERS = {
-    dev: { name: 'deskcat-dev（開發）', url: 'https://kzoobeloeqbfmdcndler.supabase.co', key: 'sb_publishable_Wg2X80iEVJTaJonOTtHq0w_epFtB7IK' },
+    dev: { name: 'deskcat-dev（開發）', url: 'https://kzoobeloeqbfmdcndler.supabase.co', key: 'sb_publishable_Wg2X80iEVJTaJonOTtHq0w_epFtB7IK',
+      push: 'BFQ6kJVIepUK1I9uHQ-Pr6LK1gu7tsZsQH3oT4ldE2qaReU0rGyI_WNyh8WAUg6QxM9yRJWXFdIpCP1UG_6RbX0' },   // 🎮 024 dev 伺服器自己產生的（dc_push_public_key()，2026-10-21）
     release: { name: 'deskcat（正式）', url: 'https://pjbiyvakvtgnjgbatsri.supabase.co', key: 'sb_publishable_-aEcZNFZ5muOoGR8BNZoHw_3zt7rpAt' },
   };
   const params = new URLSearchParams(location.search);
-  // 在家裡 Wi-Fi、本機開（開發中）＝dev；正式網址＝正式。網址加 ?server=dev／release 可以指定
+  // 在家裡 Wi-Fi、本機開（開發中）＝dev；正式網址＝正式。網址加 ?server=dev／release 可以指定，**這台瀏覽器會記住**
+  // （2026-10-22：正式網址用 dev 試推播時，點通知打開的網址 ./?tab=… 沒帶 ?server=，不記住就跑去正式伺服器；?server=release 改回來）
   const local = location.protocol === 'file:' || /^(localhost|127\.|192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.)/.test(location.hostname);
-  const which = SERVERS[params.get('server')] ? params.get('server') : (local ? 'dev' : 'release');
+  const SERVER_KEY = 'deskcat_server_v1';
+  let picked = params.get('server');
+  try {
+    if (SERVERS[picked]) localStorage.setItem(SERVER_KEY, picked);
+    else picked = localStorage.getItem(SERVER_KEY);
+  } catch (_) { /* 存不了：只看網址 */ }
+  const which = SERVERS[picked] ? picked : (local ? 'dev' : 'release');
   const S = SERVERS[which];
 
   // 瀏覽器記的（裝置規格.md 第 4 節）：登入資料（照伺服器分開）、選了「先看範例」
@@ -233,12 +241,18 @@
     return tripMemo[id];
   }
   // 產圖：等最久 ms 毫秒（太久＝timeout，畫面用同一個 key 再送；伺服器那邊同一個 key 不會再產、不會再扣）
-  function tripMake(cid, city, scene, key, ms = 90000) {
+  // spot＝街景代號（🎮 022，2026-10-21）：''／沒給＝不送（伺服器隨機抽一個街景）；野餐伺服器一律用公園
+  function tripMake(cid, city, scene, key, ms = 90000, spot = '') {
     let timer = 0;
     const late = new Promise((_, rej) => { timer = setTimeout(() => rej(new ServerError('等太久了，再試一次', 'timeout', 0)), ms); });
-    const go = authed('POST', '/functions/v1/trip-photo', { cid, city, scene, key })
+    const go = authed('POST', '/functions/v1/trip-photo', spot ? { cid, city, scene, spot, key } : { cid, city, scene, key })
       .catch(e => { if (e.code !== 'auth' && e.body && e.body.status) return e.body; throw e; });   // 不是 200 但有說原因：照原因處理
     return Promise.race([go, late]).finally(() => clearTimeout(timer));
+  }
+  // 送我一則（🎮 雲端函式 push-send，P74 M4）：{ok: true, sent, gone, failed}／{ok: false, reason: none|too_soon|no_key|server}
+  async function pushTest() {
+    try { return await authed('POST', '/functions/v1/push-send', { test: true }); }
+    catch (e) { if (e.code !== 'auth' && e.body && e.body.reason) return e.body; throw e; }   // 不是 200 但有說原因：照原因處理
   }
 
   const memo = {};                         // 這次開著已經準備好的：檔名 → Promise<圖的說明＋網址>
@@ -280,6 +294,7 @@
     // 通知（P74 M4，🎮 dc_push_subscribe／dc_push_unsubscribe）：p_sub＝PushSubscription.toJSON() {endpoint, keys: {p256dh, auth}}；同一個 endpoint＝更新要哪幾種
     pushSubscribe: (sub, kinds) => rpc('dc_push_subscribe', { p_sub: sub, p_kinds: kinds, p_device: /iP(hone|ad)/.test(navigator.userAgent) ? 'iphone' : /Android/.test(navigator.userAgent) ? 'android' : 'web' }),
     pushUnsubscribe: endpoint => rpc('dc_push_unsubscribe', { p_endpoint: endpoint }),
+    pushTest,
     petCreate: (cfg, sprite, poses) => rpc('dc_pet_create', { p_cfg: cfg, p_sprite: sprite, p_poses: poses || {} }),
     get googleDone() { return googleDone; },          // 從 Google 跳回來、正在換登入資料（沒有＝null）
     onExpired: f => listeners.add(f),
@@ -300,7 +315,7 @@
     souvMerge: counts => rpc('dc_souvenirs_merge', { p_counts: counts }),              // {ok, souvenirs}；每種取大的、不相加
     // 口袋 AI 旅行照（2026-10-17；trip.js）
     tripMake,                                                // {ok, status: done／making／no, id, file, reused, reason, wait_min?, next_at?}（trip.js normMake）
-    tripMine: () => rpc('dc_trip_photos_mine'),              // {photos: [{id, cid, name, city, scene, tod, status, file, reused, created_at}], today_left, next_at, min_out_min}
+    tripMine: () => rpc('dc_trip_photos_mine'),              // {photos: [{id, cid, name, city, scene, spot, tod, status, file, reused, created_at}], today_left, next_at, min_out_min}
     tripImage,                                               // path → Blob（下載過的存在瀏覽器）
     // 手機的家（server/020，P78；格式見 docs/跨線需求.md 2026-10-19 🎮 P78）。伺服器還沒有 020＝404（app.js 照舊只存瀏覽器）
     homeMine: () => rpc('dc_home_mine'),                     // {owned: {catbed: 1…}（只列有的）, owned_at, layout: [{k, x, y}] 或 null（沒存過）, extras: [{kind, x, y}], layout_at}

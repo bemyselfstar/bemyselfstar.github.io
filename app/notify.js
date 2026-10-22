@@ -3,8 +3,11 @@
 // 開通知＝問 iPhone 准不准（一定要按按鈕才能問）→ 用伺服器的公開推播鑰匙（server.js pushKey，VAPID 公鑰，可以放網頁）訂閱 →
 //   訂閱資料（endpoint＋鑰匙）跟要哪幾種一起交給伺服器 SV.pushSubscribe（🎮：dc_push_subscribe，跨線需求 2026-10-20 📱 第 1 條 ⑤）。
 // 伺服器判斷什麼時候通知（毛孩餓了、口袋撿到東西），送推播 → sw.js 的 push 顯示、點了打開網頁（網址 ?tab=…）。
-// 測試：假伺服器 ?mock=1 的 &pushenv=ok（預設）／notinstalled（還沒加到主畫面）／nosupport（收不到通知的瀏覽器）／denied（按過不允許）、&pushkey=0（伺服器還沒有鑰匙）。
-(window.DC_BUILD = window.DC_BUILD || {})['notify.js'] = 54;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+// 開著的時候有〔送我一則〕（🎮 雲端函式 push-send 馬上送一則測試）；每次打開重送一次訂閱（2026-10-22 接 dev 真的推播）。
+// 測試：假伺服器 ?mock=1 的 &pushenv=ok（預設）／notinstalled（還沒加到主畫面）／nosupport（收不到通知的瀏覽器）／denied（按過不允許）、&pushkey=0（伺服器還沒有鑰匙）、
+//   &pushtest=none／too_soon／no_key／gone（〔送我一則〕的各種回覆）。
+// 真的推播只在 https 正式網址（sw.js 只在那裡註冊）：用 dev 試＝正式網址加 ?server=dev（會記住；manifest-dev 讓加到主畫面的也連 dev）。
+(window.DC_BUILD = window.DC_BUILD || {})['notify.js'] = 55;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const SV = window.DCServer, D = window.DC, $ = id => document.getElementById(id);
@@ -34,7 +37,7 @@
   const save = v => {
     try { const all = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; all[SV.which] = v || undefined; localStorage.setItem(KEY, JSON.stringify(all)); } catch (_) { /* 存不了：下次再問伺服器 */ }
   };
-  let busy = false, msg = '';
+  let busy = false, msg = '', msgOk = false;     // msgOk：卡片下面那行是好消息（綠字）
 
   function el(tag, cls, txt) { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
   function btn(label, main, fn) { const b = el('button', 'btn' + (main ? ' main' : ''), label); b.type = 'button'; b.disabled = busy; b.onclick = fn; return b; }
@@ -49,13 +52,27 @@
     return sub && load() ? 'on' : 'off';
   }
 
+  // 每次打開、通知開著：重送一次訂閱（🎮 建議：iPhone 有時換訂閱，舊的推播服務回「沒了」伺服器就刪掉，重送才接得回來）
+  let synced = false;
+  async function resync(cur) {
+    synced = true;
+    try {
+      const sub = await env.current();
+      if (!sub) return;
+      await SV.pushSubscribe(sub.toJSON ? sub.toJSON() : sub, cur.kinds);
+      if (sub.endpoint !== cur.endpoint) save({ endpoint: sub.endpoint, kinds: cur.kinds });
+    } catch (e) { console.warn('通知重送', e); }   // 沒網路：下次打開再送
+  }
+
   async function render() {
     const box = $('notifyCard');
     if (!box) return;
-    const show = SV.p74 && D.LIVE && SV.user && D.isPhone;
+    // 伺服器有推播鑰匙就顯示（2026-10-22 起不跟著 p74：dev 有 024 了，正式版網址加 ?server=dev 也能試）
+    const show = (SV.p74 || !!SV.pushKey) && D.LIVE && SV.user && D.isPhone;
     box.hidden = !show;
     if (!show) return;
     const st = await state(), cur = load();
+    if (st === 'on' && !synced) resync(cur);
     box.innerHTML = '';
     const head = el('div', 'nt-head'); D.setLabel(head, 'letter', '通知'); box.append(head);
     const say = t => box.append(el('p', 'nt-text', t));
@@ -77,13 +94,15 @@
         row.append(b);
       }
       say('通知開著：要哪幾種');
-      box.append(row, btn('關掉通知', false, turnOff));
+      const acts = el('div', 'nt-acts');
+      acts.append(btn('送我一則', false, testOne), btn('關掉通知', false, turnOff));   // 不用橘色：上面選種類的小方塊開著也是橘色
+      box.append(row, acts);
     }
-    if (msg) box.append(el('p', 'nt-msg', msg));
+    if (msg) box.append(el('p', 'nt-msg' + (msgOk ? ' ok' : ''), msg));
   }
   async function act(fn) {
     if (busy) return;
-    busy = true; msg = ''; await render();
+    busy = true; msg = ''; msgOk = false; await render();
     try { await fn(); } catch (e) { msg = e.status === 404 ? '伺服器還沒準備好通知' : e.message && /^[^a-z]/i.test(e.message) ? e.message : '開不了通知，等一下再試'; console.warn('通知', e); }
     busy = false; await render();
   }
@@ -94,7 +113,7 @@
       const sub = await env.subscribe(SV.pushKey);
       const kinds = KINDS.map(k => k[0]);
       await SV.pushSubscribe(sub.toJSON ? sub.toJSON() : sub, kinds);
-      save({ endpoint: sub.endpoint, kinds });
+      save({ endpoint: sub.endpoint, kinds }); synced = true;   // 剛送過，這次打開不用再重送
       D.toast('通知開好了');
     });
   }
@@ -104,6 +123,16 @@
       if (!sub) { save(null); return; }
       await SV.pushSubscribe(sub.toJSON ? sub.toJSON() : sub, kinds);
       save({ endpoint: sub.endpoint, kinds });
+    });
+  }
+  // 送我一則：伺服器馬上送一則測試通知到這個帳號開過通知的手機（30 秒內只能一次）
+  const TEST_SAY = { none: '伺服器沒有這支手機：關掉再開一次', too_soon: '剛送過了，30 秒後再試', no_key: '伺服器還沒準備好通知' };
+  function testOne() {
+    return act(async () => {
+      const r = await SV.pushTest();
+      if (r && r.ok && r.sent > 0) { msg = '送出了，等一下就會收到'; msgOk = true; }
+      else if (r && r.ok && r.gone > 0) { msg = '這支手機的通知失效了：關掉再開一次'; }
+      else msg = (r && TEST_SAY[r.reason]) || '送不出去，等一下再試';
     });
   }
   function turnOff() {
