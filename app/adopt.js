@@ -8,7 +8,8 @@
 // 新帳號第一次進來（還沒有毛孩）時自動打開；「全家」頁沒有毛孩時也有〔建立毛孩〕。
 // 換顏色（P74 M2 剩下的，2026-10-22）：毛孩面板〔換顏色〕→ 同一個畫面、從牠現在的 cfg 開始；不能換貓狗、品種（伺服器規定），
 //   著色本照牠現在的年齡 → 毛孩圖、小圖傳上去 → dc_pet_look_set（🎮 019）。電腦打開會照「最後改的為準」換成手機選的。
-(window.DC_BUILD = window.DC_BUILD || {})['adopt.js'] = 57;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+// 長大換著色本（2026-10-23）：手機建立、電腦還沒接的毛孩長大了（ageKeyOf 變了）→ 背景照同一份外觀重畫、傳上去（checkGrow）。
+(window.DC_BUILD = window.DC_BUILD || {})['adopt.js'] = 59;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const SV = window.DCServer, P = window.DCParts, $ = id => document.getElementById(id);
@@ -117,9 +118,13 @@
     } finally { $('adStage').classList.remove('loading'); }
   }
   const SEQ = ['walk', 'sit_wag', 'idle'];
-  function draw() {                              // 照現在的顏色組整張圖表 → 預覽輪流播「走路」「坐著搖尾巴」
-    const rgba = P.compose(st.pet, look(), stripes()), m = st.pet.meta, W = st.pet.width;
+  function paint() {                             // 照現在的顏色組整張圖表（st.sheet、st.rgba）
+    const rgba = P.compose(st.pet, look(), stripes());
     st.sheet = P.toCanvas(st.pet, rgba); st.rgba = rgba;
+    return rgba;
+  }
+  function draw() {                              // 組整張圖表 → 預覽輪流播「走路」「坐著搖尾巴」
+    const rgba = paint(), m = st.pet.meta, W = st.pet.width;
     let x0 = m.w, y0 = m.h, x1 = -1, y1 = -1;     // 預覽只放毛孩那一塊（幼犬的格子很大、毛孩很小）：這幾個動作所有格子的範圍
     for (const a of SEQ.filter(k => m.anims[k])) for (let i = 0; i < m.anims[a][1]; i++) {
       const r = P.frameRect(m, a, i);
@@ -198,7 +203,7 @@
     const sig = hash12(JSON.stringify([st.bookName, look(), stripes(), choices.v]));
     const file = `${cid}-${sig}`, m = st.pet.meta;
     const png = await new Promise(r => st.sheet.toBlob(r, 'image/png'));
-    const meta = { v: 1, species: st.sp, breed: st.breed, coat: st.coat.coat, w: m.w, h: m.h, anims: m.anims, ticks: m.ticks || {} };
+    const meta = { v: 1, species: st.sp, breed: st.breed, coat: st.coat.coat, book: st.bookName, w: m.w, h: m.h, anims: m.anims, ticks: m.ticks || {} };   // book：長大換圖看這個
     await SV.spriteUpload(file, png, meta);
     return { file, poses: await makePoses(st.rgba) };   // 小工具、好友頭像的小圖（電腦版 dc_pet_poses_set 那份；sit＝avatar）
   }
@@ -242,6 +247,7 @@
 
   // ---------- 打開、關掉 ----------
   async function open(target) {                  // target＝要換顏色的毛孩（HOME.pets 的一隻，有 cfg）；沒有＝領養新的
+    while (growing) await new Promise(r => setTimeout(r, 200));   // 背景正在幫別隻換長大的圖（共用 st）：等它做完
     const box = $('adopt'), recolor = !!(target && target.cfg);
     box.hidden = false; document.body.classList.add('login-open');
     box.querySelector('.ad-head h2').textContent = recolor ? `幫${target.name}換顏色` : '領養你的毛孩';
@@ -281,6 +287,40 @@
     if (st.pet) draw();
   }
 
+  // ---------- 長大換著色本（手機建立、電腦還沒接的毛孩；電腦接走後由電腦自己畫、自己傳） ----------
+  // 傳上去的毛孩圖 meta.book 記著那時候的著色本（例：橘虎斑_kit88）；年齡那段跟 ageKeyOf(p) 不一樣 → 照同一份外觀重畫 → dc_pet_look_set。
+  // 舊的圖（2026-10-23 以前）沒有 book：重畫一次補上。這次開著同一隻同一個年齡只試一次（失敗下次打開再說）。
+  const ageOfBook = b => String(b || '').split('_').pop();
+  const growDone = new Set();
+  let growing = false;
+  async function checkGrow(list, infoOf) {      // list＝HOME.pets；infoOf(p)＝牠現在那張圖的說明（還沒下載好＝null）
+    if (growing || !SV.p74 || !$('adopt').hidden) return;
+    const todo = list.filter(p => p.origin === 'phone' && !p.adopted && p.cfg && typeof p.cfg.born === 'number');
+    if (!todo.length) return;
+    growing = true;
+    try {
+      if (!choices) choices = await (await fetch(PARTS + 'choices.json', { cache: 'no-store' })).json();
+      for (const p of todo) {
+        const info = infoOf(p), want = ageKeyOf(p), key = `${p.id}:${want}`;
+        if (!info || ageOfBook(info.book) === want || growDone.has(key)) continue;
+        growDone.add(key);
+        const keep = st;
+        try {
+          st = stateFrom(p);
+          if (!st) continue;
+          st.bookName = bookName(); st.pet = await getBook(st.bookName);
+          paint();
+          const { file, poses } = await upload(p.id);
+          const r = await SV.petLookSet(p.id, buildLook(), file, poses);
+          if (r && r.ok !== false) { if (window.DC.pullNow) window.DC.pullNow(); }
+          else console.warn('長大換圖沒成功', p.name, r);
+        } catch (e) { console.warn('長大換圖沒成功', p.name, e); }
+        finally { st = keep; }
+      }
+    } catch (e) { console.warn('長大換圖：讀不到可以選的品種', e); }
+    finally { growing = false; }
+  }
+
   $('adGo').onclick = save;
   $('adClose').onclick = close;
   for (const [k] of COLORS) $('adC_' + k).addEventListener('input', colorChanged);
@@ -291,5 +331,5 @@
     st.seed = s[(s.indexOf(st.seed) + 1) % s.length];
     refresh();
   };
-  window.DCAdopt = { open, close, ageBook, ageKeyOf, buildCfg: name => buildCfg(name), buildLook: () => buildLook(), get state() { return st; } };
+  window.DCAdopt = { open, close, ageBook, ageKeyOf, checkGrow, buildCfg: name => buildCfg(name), buildLook: () => buildLook(), get state() { return st; } };
 })();

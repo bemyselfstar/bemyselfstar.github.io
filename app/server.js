@@ -13,13 +13,14 @@
 //     開新帳號＝信箱驗證碼 create_user: true（先用 false 試，沒有帳號才問要不要開）；暱稱＝profiles 表（001，自己的那一列可以改 nickname）；
 //     刪帳號 dc_account_delete（🎮 新的：現在的 delete_my_account 要電腦裝置，手機叫不了）；
 //     手機建立毛孩 dc_pet_create(p_cfg, p_sprite)（🎮 019）＋毛孩圖自己傳 Storage pet-sprites/<帳號>/<cid>-<指紋>.png／.json（權限 013 已經可以）
-(window.DC_BUILD = window.DC_BUILD || {})['server.js'] = 57;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['server.js'] = 59;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const SERVERS = {
     dev: { name: 'deskcat-dev（開發）', url: 'https://kzoobeloeqbfmdcndler.supabase.co', key: 'sb_publishable_Wg2X80iEVJTaJonOTtHq0w_epFtB7IK',
       push: 'BFQ6kJVIepUK1I9uHQ-Pr6LK1gu7tsZsQH3oT4ldE2qaReU0rGyI_WNyh8WAUg6QxM9yRJWXFdIpCP1UG_6RbX0' },   // 🎮 024 dev 伺服器自己產生的（dc_push_public_key()，2026-10-21）
-    release: { name: 'deskcat（正式）', url: 'https://pjbiyvakvtgnjgbatsri.supabase.co', key: 'sb_publishable_-aEcZNFZ5muOoGR8BNZoHw_3zt7rpAt' },
+    release: { name: 'deskcat（正式）', url: 'https://pjbiyvakvtgnjgbatsri.supabase.co', key: 'sb_publishable_-aEcZNFZ5muOoGR8BNZoHw_3zt7rpAt',
+      push: 'BC_RgV9mIjj0vsWXbDYCTj7sfWugg4AGgH4oVw96v4aRCgljz5RfD59wvp6pWPsPRr61ejP5aNA-xGxqQ0LrkgY' },   // 🎮 024 正式版伺服器自己產生的（dc_push_public_key()，2026-10-23 讀回一致）
   };
   const params = new URLSearchParams(location.search);
   // 在家裡 Wi-Fi、本機開（開發中）＝dev；正式網址＝正式。網址加 ?server=dev／release 可以指定，**這台瀏覽器會記住**
@@ -283,8 +284,9 @@
     which, name: S.name, url: S.url, key: S.key, isLocal: local, canFake,   // canFake：可以看範例（只有開發預覽）
     // P74（開新帳號、刪帳號、在手機建立毛孩）：伺服器那半（🎮 019、dc_account_delete）還沒上之前，只在開發預覽打開；
     // 正式網址先維持舊的樣子（不會有按了壞掉的按鈕）。🎮 做好、零件放好 mobile/parts/ 後改成 true
-    // 2026-10-22：零件放好了、dev 有 019 → 連 dev 時也打開（正式網址 ?server=dev 可以在 iPhone 試）；正式伺服器等 v4.17.0
-    p74: local || which === 'dev' || params.get('p74') === '1',
+    // 2026-10-22：零件放好了、dev 有 019 → 連 dev 時也打開（正式網址 ?server=dev 可以在 iPhone 試）
+    // 2026-10-23：v4.17.0 正式伺服器也打開（使用者選「B 發 v4.17.0 正式版」；正式版 019、023、024、025 都上了）
+    p74: true,
     // 網頁推播的公開鑰匙（VAPID 公鑰，可以放網頁；🎮 產生後填進 SERVERS 的 push，dev／正式各一把）。空的＝伺服器還沒準備好通知（notify.js）
     pushKey: S.push || '',
     get mode() { return mode; },

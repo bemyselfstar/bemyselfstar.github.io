@@ -4,7 +4,7 @@
 // 那兩支是美術線的、改了這裡要跟著改。對答案：python 不用，node mobile/tools/parts_check.js（320 份 check.json 全部 0 誤差）。
 // Qt 每個顏色存 16 位元、用 32 位元小數算 → 每一步都 Math.fround（f32）；兩個 f32 加減乘除先用 double 算再 fround＝跟 float32 一樣。
 // 用法（網頁）：const pet = await DCParts.load('parts/薩摩耶_adult/')；DCParts.compose(pet, look, stripes) → ImageData 大小的 RGBA。
-(window.DC_BUILD = window.DC_BUILD || {})['parts.js'] = 57;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['parts.js'] = 59;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const f32 = Math.fround, U = 65535;

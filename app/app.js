@@ -2,7 +2,7 @@
 // 斜上往下看的房間（W×H 像素，比螢幕大），整數倍放大（不糊）；拖曳移動鏡頭、兩指縮放。
 // 電腦網頁＝橫版（分頁列在左邊）、手機網頁＝直版（分頁列在下面）（2026-10-14 使用者）。
 // 家具先用程式畫的簡單版（之後換成正式美術）；毛孩用遊戲的側面影格，前後只靠遮擋表現、不縮放。
-(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 57;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 59;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   // 資料：範例（假資料）或伺服器（server.js；登入後 dc_pets_mine 每 10 秒讀一次，見下面「伺服器同步」）。
@@ -1204,6 +1204,7 @@
         friend: s.friend || '', back: backText(s.back_at), doing: s.doing_text || '',
         placeAt: s.place_at ? Date.parse(s.place_at) : null,
         cfg: s.cfg && typeof s.cfg === 'object' ? s.cfg : null,   // 019：外觀（換顏色用；電腦舊版還沒傳＝null）
+        origin: s.origin || 'desk', adopted: s.adopted !== false,   // 019：phone＝手機建立；adopted＝電腦接走了沒（長大換圖只管還沒接的）
       });
       // 剛在這邊摸過、餵過：電腦還沒算進去之前，不要被舊的數字蓋回去
       p.mood = Math.max(lvl(s.mood), p.moodHold > t ? p.mood : 0);
@@ -1223,6 +1224,7 @@
       if (fresh) p.where = place;
       else if (place !== was && !p.moving) { p.where = place; moves.push([p, was]); }
     }
+    if (LIVE && window.DCAdopt) DCAdopt.checkGrow(HOME.pets, p => SPR.pets[p.spriteWant] || null);   // 手機建立的長大了：換一張長大的圖（adopt.js）
     for (const p of [...HOME.pets]) {        // 電腦刪掉的毛孩
       if (seen.has(p.id)) continue;
       HOME.pets.splice(HOME.pets.indexOf(p), 1);

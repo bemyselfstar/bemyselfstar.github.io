@@ -1,5 +1,5 @@
 :root {
-  --build: 57;            /* 版本戳記（mobile/tools/bump.py） */
+  --build: 59;            /* 版本戳記（mobile/tools/bump.py） */
   --bg: #2a2018;
   --panel: #fffaf2;
   --ink: #3b2f28;
