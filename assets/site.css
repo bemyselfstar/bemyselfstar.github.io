@@ -64,12 +64,12 @@ a { color: inherit; }
 .logo canvas, .logo img { width: 36px; height: 36px; }
 .logo span { font-family: "Press Start 2P", monospace; font-size: 14px; }
 .nav { display: flex; gap: 4px; margin-left: auto; flex-wrap: wrap; }
-.nav a { text-decoration: none; padding: 6px 10px; font-weight: 700; font-size: 15px; border: 2px solid transparent; }
+.nav a { text-decoration: none; padding: 6px 8px; font-weight: 700; font-size: 15px; border: 2px solid transparent; }   /* 2026-10-23：選單 10 項，左右各少 2px 才排得成一行 */
 .nav a:hover { border-color: var(--line); background: var(--bg-2); }
 .nav a[aria-current="page"] { background: var(--accent); color: var(--accent-ink); border-color: var(--line); }
 .nav-toggle { display: none; margin-left: auto; background: var(--paper); border: 2px solid var(--line); padding: 6px 10px; font: inherit; font-weight: 700; color: var(--ink); }
 .theme-btn { background: none; border: 2px solid var(--line); color: var(--ink); width: 36px; height: 36px; font-size: 16px; cursor: pointer; }
-@media (max-width: 1020px) {
+@media (max-width: 1080px) {
   .nav-toggle { display: block; }
   .nav { display: none; position: absolute; left: 0; right: 0; top: 100%; background: var(--paper); border-bottom: 3px solid var(--line); padding: 8px 16px; flex-direction: column; }
   .nav.open { display: flex; }
@@ -310,7 +310,7 @@ h3 { font-size: 21px; letter-spacing: 0; }
 
 /* 頁首：微透明＋模糊，捲動時內容在後面隱約可見 */
 .site-head { background: color-mix(in srgb, var(--paper) 90%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-@media (max-width: 1020px) { .nav { background: var(--paper); } .nav a { padding: 10px 12px; } }
+@media (max-width: 1080px) { .nav { background: var(--paper); } .nav a { padding: 10px 12px; } }
 
 /* 首頁主畫面：不再上下各空一大塊；舞台後面一圈暖色燈光，不是死平的底 */
 section.hero { margin-top: 0; padding: 56px 0 24px; position: relative; }
@@ -347,3 +347,14 @@ section.hero::before {
 .hero h1 { font-size: clamp(32px, 4.4vw, 46px); text-wrap: wrap; }
 /* 頁首 logo＝程式圖示（橘貓＋黑白狗趴在視窗上，2026-10-17）：72px 圖縮成 36px 顯示，用平滑縮放不用像素化 */
 .logo img { image-rendering: auto; }
+
+/* 手機版畫面截圖（2026-10-23，使用者「也要貼出範例圖 注意 圖文並茂 文字不要太多」）：手機網頁用範例資料拍的真實畫面 */
+.shot { display: block; width: 100%; max-width: 230px; margin: 0 auto 12px; border: 3px solid var(--line); border-radius: 18px; box-shadow: 4px 4px 0 var(--shadow); background: #1e1916; }
+.shot.wide { max-width: 300px; }
+.pic-card { display: flex; flex-direction: column; }
+.pic-card h3 { margin-top: 4px; }
+.pic-card p { margin: 0; }
+.pic-card .actions { margin-top: auto; padding-top: 12px; }
+.pic-card canvas { height: 120px; align-self: center; margin-bottom: 8px; }
+.pic-card .shot.crop { height: 180px; object-fit: cover; object-position: 50% 72%; max-width: 260px; }
+.grid.shots3 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }

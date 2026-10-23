@@ -4,15 +4,17 @@
   'use strict';
   const SP = window.DESKCAT_SPRITES;
   const SITE = {
-    version: 'v4.16.2',
+    version: 'v4.17.0',
     download: 'https://github.com/bemyselfstar/DeskCat-release/releases/latest/download/DeskCat.exe',   // 直接下載（檔名每版都一樣）
     releases: 'https://github.com/bemyselfstar/DeskCat-release/releases',   // 所有版本
     mail: 'bemyselfstar.studio@gmail.com',
   };
   window.DESKCAT_SITE = SITE;
+  // 2026-10-23 整理（使用者「官網補上 v4.17.0 的新功能 並且在整個重新整理過一次內容」）：加手機版、常見問題拆成一頁、更新日誌放最後
   const NAV = [
-    ['index.html', '首頁'], ['updates.html', '更新日誌'], ['guide.html', '新手指南'], ['modes.html', '陪伴模式'],
-    ['pets.html', '貓狗圖鑑'], ['play.html', '玩法介紹'], ['events.html', '主題活動'], ['friends.html', '好友與常見問題'],
+    ['index.html', '首頁'], ['guide.html', '新手指南'], ['modes.html', '陪伴模式'], ['play.html', '玩法介紹'],
+    ['pets.html', '貓狗圖鑑'], ['phone.html', '手機版'], ['friends.html', '好友'], ['events.html', '主題活動'],
+    ['faq.html', '常見問題'], ['updates.html', '更新日誌'],
   ];
   const reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -45,8 +47,8 @@
     const foot = document.createElement('footer');
     foot.className = 'site-foot';
     foot.innerHTML = `<div class="wrap">
-      <div>DeskCat 桌面貓咪・Windows 免安裝・網站內容依 ${SITE.version} 玩家版說明整理<br>演出畫面以遊戲實際影格重現，非錄影；聯絡：${SITE.mail}</div>
-      <nav class="foot-links" aria-label="頁尾連結"><a href="friends.html#privacy">隱私說明</a><a href="friends.html#faq">常見問題</a><a data-download href="${SITE.download}">下載</a></nav></div>`;
+      <div>DeskCat 桌面貓咪・Windows 免安裝・手機網頁・網站內容依 ${SITE.version} 玩家版說明整理<br>演出畫面以遊戲實際影格重現，非錄影；聯絡：${SITE.mail}</div>
+      <nav class="foot-links" aria-label="頁尾連結"><a href="faq.html#privacy">隱私說明</a><a href="faq.html#faq">常見問題</a><a href="phone.html">手機版</a><a data-download href="${SITE.download}">下載</a></nav></div>`;
     document.body.append(foot);
     document.querySelectorAll('[data-download]').forEach(a => { a.href = SITE.download; a.rel = 'noopener'; });
     document.querySelectorAll('[data-releases]').forEach(a => { a.href = SITE.releases; a.target = '_blank'; a.rel = 'noopener'; });
@@ -59,6 +61,8 @@
       'play.html': ['三花', [['washface', 1800], ['sit', 1800]]],
       'events.html': ['黑貓', [['sit', 2200], ['tail_flick', 900], ['sit_blink', 300]]],
       'friends.html': ['賓士貓', [['stretch', 1200], ['sit', 2200]]],
+      'phone.html': ['薩摩耶', [['sit_wag', 2200], ['sit', 1600]], 2],
+      'faq.html': ['英國短毛貓', [['loaf', 2400], ['yawn', 900], ['loaf', 1800]]],
     };
     const pt = document.querySelector('.page-title'), tp = TITLE_PET[here];
     if (SP && pt && tp && SP.pets[tp[0]]) {

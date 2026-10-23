@@ -27,17 +27,30 @@
         <h1>一群住在你桌面上的<br>像素貓咪、小狗</h1>
         <p class="lead">牠們走在視窗上緣、跳上跳下、互相追逐、吃飯睡覺；你打字時牠陪你拍桌，丟出去的球，狗會叼回來給你。</p>
         <div class="badges">
-          <span class="tag">Windows</span><span class="tag">免安裝</span><span class="tag">不登入也能玩</span><span class="tag you">最多 8 隻</span>
+          <span class="tag">Windows 電腦版</span><span class="tag">手機網頁</span><span class="tag">免安裝</span><span class="tag you">最多 8 隻</span>
         </div>
         <p class="actions">
           <a class="btn" data-download href="https://github.com/bemyselfstar/DeskCat-release/releases/latest/download/DeskCat.exe">⬇ 下載最新版</a>
+          <a class="btn ghost" href="app/">📱 打開手機版</a>
           <a class="btn ghost" href="guide.html">第一次使用？</a>
         </p>
-        <p class="small muted">最新版 <b class="ver" data-version>v4.16.0</b>・下載後放進一個資料夾，雙擊 <code>DeskCat.exe</code> 就能用，不用裝 Python。</p>
+        <p class="small muted">最新版 <b class="ver" data-version>v4.17.0</b>・電腦版下載後放進一個資料夾，雙擊 <code>DeskCat.exe</code> 就能用；手機打開網頁就能玩，不用下載 App。</p>
       </div>
       <div>
         <div class="stage tall px-box" data-scene="hero" aria-label="演出：貓咪在視窗上散步、跳到另一個視窗，柴犬在工作列上走來走去，黑貓在睡覺"></div>
         <p class="sim-note">畫面以遊戲實際影格重現的模擬演出（非錄影）。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="devices">
+    <div class="wrap">
+      <h2>電腦、手機都能玩</h2>
+      <p class="lead">同一個帳號、同一群毛孩。只有其中一種也能玩。</p>
+      <div class="grid c3">
+        <div class="card px-box pic-card"><canvas data-mini="橘虎斑" data-scale="3" data-seq='[["tap_left",150],["tap_right",150],["tap_left",150],["tap_right",150],["tap_idle",900]]'></canvas><h3>💻 電腦版</h3><p>毛孩住在桌面上：走在視窗上、陪你打字、叼回你丟的球。</p><p class="actions"><a class="btn sm" data-download href="https://github.com/bemyselfstar/DeskCat-release/releases/latest/download/DeskCat.exe">⬇ 下載</a><a class="btn sm ghost" href="guide.html">新手指南</a></p></div>
+        <div class="card px-box pic-card"><img class="shot crop" src="assets/phone/pocket.png" alt="手機版畫面：帶柴犬出門走在櫻花步道上" loading="lazy"><h3>📱 手機版</h3><p>不用電腦也能養：建立毛孩、帶出門散步、拍 AI 旅行照。</p><p class="actions"><a class="btn sm" href="app/">📱 打開</a><a class="btn sm ghost" href="phone.html">手機版介紹</a></p></div>
+        <div class="card px-box pic-card"><canvas data-mini="柴犬" data-scale="2" data-seq='[["walk",2400,9],["sit_wag",1600]]'></canvas><h3>🔗 兩個一起用</h3><p>手機按「叫來上班」，牠就從電腦螢幕邊走進來；電腦沒開也會餓，手機上餵就好。</p><p class="actions"><a class="btn sm ghost" href="phone.html#play">怎麼一起用</a></p></div>
       </div>
     </div>
   </section>
@@ -73,12 +86,12 @@
       <div class="grid bento">
         <a class="feature px-box" href="guide.html"><canvas data-mini="橘虎斑" data-seq='[["idle",1600],["sit_blink",300],["idle",1400]]'></canvas><h3>新手指南</h3><p>下載、第一次開啟、右鍵選單、摸摸和拎起來。</p><span class="go">看怎麼開始 →</span></a>
         <a class="feature px-box" href="modes.html"><canvas data-mini="橘虎斑" data-scale="2" data-seq='[["tap_left",150],["tap_right",150],["tap_left",150],["tap_right",150],["tap_idle",900]]'></canvas><h3>陪伴模式</h3><p>窗台、追滑鼠、拍桌、CPU 跑步、自動，每隻毛孩可以不一樣。</p><span class="go">在網頁上試玩 →</span></a>
-        <a class="feature px-box" href="pets.html"><canvas data-mini="柴犬" data-scale="2"></canvas><h3>貓狗圖鑑</h3><p>一般貓 9 種花色、5 種品種貓，加上 5 種狗、14 種毛色。</p><span class="go">認識每個品種 →</span></a>
         <a class="feature px-box" href="play.html"><canvas data-mini="三花" data-seq='[["inbox",2600,2],["inbox_sleep",2600,1.2]]'></canvas><h3>玩法介紹</h3><p>互動與照顧、家具、商店與收集、節日和生日。</p><span class="go">看可以做什麼 →</span></a>
-        <a class="feature px-box" href="events.html"><canvas data-mini="黑貓" data-seq='[["sit",2200],["sit_blink",300]]'></canvas><h3>主題活動</h3><p>萬聖節、聖誕節、你的生日，還有照真實天氣反應、雪橇三傻。什麼時候有什麼可以玩。</p><span class="go">看活動日曆 →</span></a>
-        <a class="feature px-box" href="friends.html"><canvas data-mini="賓士貓" data-seq='[["walk",2400,9],["sit",1400]]'></canvas><h3>好友與旅行</h3><p>（選用）好友的貓來你家玩、寄明信片、送貓去朋友家住一晚。</p><span class="go">看連線功能 →</span></a>
-        <a class="feature px-box" href="friends.html#faq"><canvas data-mini="黑貓" data-seq='[["sleep",3000,1.2],["tail_flick",900,3]]'></canvas><h3>常見問題</h3><p>擋到畫面、會不會記錄打字、換電腦、自動更新。</p><span class="go">看問題解答 →</span></a>
-        <a class="feature px-box" href="updates.html"><canvas data-mini="賓士貓" data-seq='[["mouse_idle",1800],["mouse_move",900,1],["mouse_click",300]]'></canvas><h3>更新日誌</h3><p>每一版新增了什麼、修好了什麼。</p><span class="go">看更新日誌 →</span></a>
+        <a class="feature px-box" href="pets.html"><canvas data-mini="柴犬" data-scale="2"></canvas><h3>貓狗圖鑑</h3><p>一般貓 9 種花色、5 種品種貓，加上 5 種狗、14 種毛色。</p><span class="go">認識每個品種 →</span></a>
+        <a class="feature px-box" href="friends.html"><canvas data-mini="賓士貓" data-seq='[["walk",2400,9],["sit",1400]]'></canvas><h3>好友</h3><p>（選用）好友的貓來你家玩、寄明信片、送貓去朋友家住一晚。</p><span class="go">看連線功能 →</span></a>
+        <a class="feature px-box" href="phone.html"><canvas data-mini="薩摩耶" data-scale="2" data-seq='[["sit_wag",2200],["sit",1600]]'></canvas><h3>📱 手機版</h3><p>不用電腦也能養：開帳號、建立毛孩、看牠長大；帶出門散步、拍 AI 旅行照，肚子餓了會通知你。</p><span class="go">看手機可以做什麼 →</span></a>
+        <a class="feature px-box" href="events.html"><canvas data-mini="黑貓" data-seq='[["sit",2200],["sit_blink",300]]'></canvas><h3>主題活動</h3><p>萬聖節、聖誕節、你的生日，還有照真實天氣反應、雪橇三傻。</p><span class="go">看活動日曆 →</span></a>
+        <a class="feature px-box" href="faq.html"><canvas data-mini="黑貓" data-seq='[["sleep",3000,1.2],["tail_flick",900,3]]'></canvas><h3>常見問題</h3><p>擋到畫面、會不會記錄打字、換電腦、手機版、通知、隱私說明。</p><span class="go">看問題解答 →</span></a>
       </div>
     </div>
   </section>
@@ -88,11 +101,12 @@
       <h2>最新版本</h2>
       <div class="grid tight">
         <article class="update px-box">
-          <h3>v4.16.2 <small>2026-10-20・最新</small></h3>
+          <h3>v4.17.0 <small>2026-10-23・最新</small></h3>
           <ul>
-            <li><b>👴 熟齡毛孩有自己的事</b>：☀ 曬太陽專家白天常找地方趴著曬太陽（陰天也會，狗狗也會），曬著曬著就睡著了。</li>
-            <li><b>📱 手機的家：家具跟著帳號</b>：手機網頁「🏠 家」的家具照你電腦有的擺（貓窩、貓跳台、沙發、飯碗水碗、紙箱、狗屋），擺好的位置跟著帳號，<b>換手機、清掉瀏覽器資料也還在</b>。</li>
-            <li><b>🎒 口袋：13 個地方散步</b>：帶毛孩出門時，每次隨機走到一個地方：公園、海邊、森林、河堤、老街、櫻花步道、雪地、鄉間小路、花田、港口、山上、夜市、校園。毛孩會在步道上走、背景跟著往後移，走一陣子停下來聞聞。</li>
+            <li><b>📱 沒有電腦也能養毛孩（手機網頁）</b>：在手機開帳號、建立貓狗（也能自己調顏色）、看牠長大；已經有的毛孩可以在手機換顏色；肚子餓了、口袋撿到東西會通知你。<a href="phone.html">看手機版 →</a></li>
+            <li><b>🍚 沒開電腦也會餓：請更新電腦版</b>：電腦沒開的時候，毛孩也會照時間變餓、心情會變；在手機餵飯、摸摸馬上算。</li>
+            <li><b>📸 AI 旅行照</b>：城市變成 10 個（新增台南、首爾、曼谷、倫敦、紐約），每個城市可以選街景或公園，也可以〔隨便逛逛〕。</li>
+            <li><b>🎀 品種專屬飾品多 5 件</b>：偵探帽（灰虎斑）、月牙額飾（藍灰貓）、秋葉髮夾（玳瑁）、蜂蜜罐（奶油貓）、縫線愛心胸針（布偶貓），一樣用友情點數 60 點買。</li>
           </ul>
         </article>
       </div>
