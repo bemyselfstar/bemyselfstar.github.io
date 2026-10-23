@@ -1,7 +1,7 @@
 // 離線快取（加到主畫面後打開更快、沒網路也開得起來）。
 // 只在 https 正式網址註冊（localhost、家裡 Wi-Fi 的 http 不註冊，開發時才不會看到舊檔案）。
 // 做法：程式先拿網路上的新檔（沒網路才用快取）、圖片快取優先。改了 mobile/ 的檔案跑 python -X utf8 mobile/tools/bump.py（版本號一起加 1）。
-const VERSION = 'deskcat-app-v59';
+const VERSION = 'deskcat-app-v60';
 const SHELL = ['./', 'index.html', 'app.css', 'lines.js', 'server.js', 'app.js', 'pocket.js', 'trip.js', 'scenes.js', 'mail.js', 'parts.js', 'adopt.js', 'notify.js', 'outdoor.js', 'manifest.webmanifest',
   'icons/apple-touch-icon.png', 'icons/icon-192.png', 'icons/icon-512.png', 'fake/sprites.js', 'fake/fake_data.js', 'fake/fake_mail.js'];
 

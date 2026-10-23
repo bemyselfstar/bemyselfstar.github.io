@@ -2,7 +2,7 @@
 //   dc_mail_mine() 一次讀完（friends、gifts_sent_today、mail、trips、feed、likes），mail.js 的 fromServer 換成這裡的格式；
 //   打開禮物＝dc_mail_claim、送禮物＝dc_mail_gift、按 🐾＝dc_mail_like、好友家的毛孩長相＝dc_friend_sprites。開發用 ?mock=1（tools/mock_server.js）
 // ago＝幾分鐘前（打開網頁時算）。伺服器只存「哪一種事＋數字、名字」，句子由 mail.js 照固定句型組（跟電腦版 social.py 一樣）。
-(window.DC_BUILD = window.DC_BUILD || {})['fake/fake_mail.js'] = 59;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['fake/fake_mail.js'] = 60;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 window.FAKE_MAIL = {
   friends: [
     { id: 'f1', nickname: '小美', pet: '三花' },

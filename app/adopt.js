@@ -9,7 +9,7 @@
 // 換顏色（P74 M2 剩下的，2026-10-22）：毛孩面板〔換顏色〕→ 同一個畫面、從牠現在的 cfg 開始；不能換貓狗、品種（伺服器規定），
 //   著色本照牠現在的年齡 → 毛孩圖、小圖傳上去 → dc_pet_look_set（🎮 019）。電腦打開會照「最後改的為準」換成手機選的。
 // 長大換著色本（2026-10-23）：手機建立、電腦還沒接的毛孩長大了（ageKeyOf 變了）→ 背景照同一份外觀重畫、傳上去（checkGrow）。
-(window.DC_BUILD = window.DC_BUILD || {})['adopt.js'] = 59;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['adopt.js'] = 60;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const SV = window.DCServer, P = window.DCParts, $ = id => document.getElementById(id);
