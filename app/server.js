@@ -13,7 +13,7 @@
 //     開新帳號＝信箱驗證碼 create_user: true（先用 false 試，沒有帳號才問要不要開）；暱稱＝profiles 表（001，自己的那一列可以改 nickname）；
 //     刪帳號 dc_account_delete（🎮 新的：現在的 delete_my_account 要電腦裝置，手機叫不了）；
 //     手機建立毛孩 dc_pet_create(p_cfg, p_sprite)（🎮 019）＋毛孩圖自己傳 Storage pet-sprites/<帳號>/<cid>-<指紋>.png／.json（權限 013 已經可以）
-(window.DC_BUILD = window.DC_BUILD || {})['server.js'] = 60;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['server.js'] = 63;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const SERVERS = {
@@ -301,6 +301,8 @@
     petCreate: (cfg, sprite, poses) => rpc('dc_pet_create', { p_cfg: cfg, p_sprite: sprite, p_poses: poses || {} }),
     // 換已經有的毛孩的外觀（🎮 019）：{ok, look_at}／{ok: false, reason: invalid／no_sprite／no_look（電腦舊版、伺服器沒有牠的外觀）／gone}
     petLookSet: (cid, look, sprite, poses) => rpc('dc_pet_look_set', { p_cid: cid, p_look: look, p_sprite: sprite, p_poses: poses || {} }),
+    // 衣櫃（🎮 029，P74 M5）：{items: [代號…], at: 秒或 null}＝電腦上傳的 ∪ 友情點數買的；look 帶 wear 時衣櫃沒有的 → {ok: false, reason: 'not_owned', items}
+    wardrobeMine: () => rpc('dc_wardrobe_mine'),
     get googleDone() { return googleDone; },          // 從 Google 跳回來、正在換登入資料（沒有＝null）
     onExpired: f => listeners.add(f),
     // 讀、寫（server/011～013；回傳格式見 docs/專案/P66_手機網頁版.md 第 8 節）

@@ -4,27 +4,14 @@
 //   產圖 SV.tripMake（Edge Function trip-photo）、相簿 SV.tripMine（dc_trip_photos_mine）、圖 SV.tripImage（Storage trip-photos）。
 // 全部玩家當天的額度用完（daily_total）：手機自己做風景照＝畫一張城市剪影＋毛孩坐著的那一格（不算今天的張數；伺服器沒有圖庫）。AI 畫失敗（ai_failed）＝同一個 key 再試。
 // 伺服器還沒有這些函式（讀相簿回 404）：口袋不顯示〔旅行照〕按鈕（不會有按了壞掉的按鈕）。
-(window.DC_BUILD = window.DC_BUILD || {})['trip.js'] = 60;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['trip.js'] = 63;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const D = window.DC, SV = window.DCServer, $ = id => document.getElementById(id);
-  // 代號跟 src/ai_prompt.py 的 CITIES／SCENES 同一組（伺服器照代號組提示字；改了以那邊為準）
-  // 2026-10-21 🎮 022：城市 5 → 10、每個城市 3 個街景＋1 個公園可以選（spot）；不選＝伺服器隨機抽一個街景（不抽公園），野餐固定公園
-  const CITIES = [['taipei', '台北'], ['tainan', '台南'], ['tokyo', '東京'], ['kyoto', '京都'], ['seoul', '首爾'],
-    ['bangkok', '曼谷'], ['paris', '巴黎'], ['london', '倫敦'], ['newyork', '紐約'], ['seaside', '海邊小鎮']];
-  const SCENES = [['walk', '散步'], ['cafe', '咖啡廳'], ['market', '逛市集'], ['picnic', '野餐'], ['rain', '雨中散步']];
-  const SPOTS = {                           // 每個城市：3 個街景＋公園（最後一個）
-    taipei: [['arcade', '騎樓巷子'], ['dihua', '迪化街'], ['alley', '老公寓巷弄'], ['park', '河濱公園']],
-    tainan: [['shennong', '神農街'], ['temple', '廟口'], ['anping', '安平老街'], ['park', '老榕樹公園']],
-    tokyo: [['sidestreet', '住宅小路'], ['shitamachi', '下町商店街'], ['tracks', '鐵道旁小巷'], ['park', '運河櫻花公園']],
-    kyoto: [['oldstreet', '石板老街'], ['gion', '祇園'], ['canal', '小運河步道'], ['park', '鴨川河岸']],
-    seoul: [['bukchon', '北村韓屋'], ['cafestreet', '咖啡小巷'], ['namsan', '南山腳下'], ['park', '漢江公園']],
-    bangkok: [['canal', '運河人家'], ['oldtown', '老城區'], ['soi', '熱鬧小巷'], ['park', '湖畔公園']],
-    paris: [['terrace', '咖啡座街道'], ['seine', '塞納河畔'], ['montmartre', '蒙馬特'], ['park', '公園噴泉']],
-    london: [['mews', '彩色小巷'], ['highstreet', '紅色巴士大街'], ['thames', '泰晤士河畔'], ['park', '大公園']],
-    newyork: [['brownstone', '褐石公寓街'], ['avenue', '黃色計程車大道'], ['dumbo', '大橋下的石板路'], ['park', '中央公園']],
-    seaside: [['promenade', '海濱步道'], ['harbor', '漁港'], ['hillside', '山坡小巷'], ['park', '海邊山丘']],
-  };
+  // 城市、街景、情境：shared_rules（來源 src/ai_prompt.py，伺服器 trip-photo 同一份）→ lines.js 的 DC_RULES.trip；手機不再自己寫一份
+  // （2026-10-21 🎮 022：城市 10 個、每個城市 3 個街景＋1 個公園；不選＝伺服器隨機抽一個街景，野餐固定公園）
+  const CITIES = window.DC_RULES.trip.cities, SCENES = window.DC_RULES.trip.scenes;
+  const SPOTS = window.DC_RULES.trip.spots;      // 每個城市：3 個街景＋公園（最後一個）
   const cityName = k => (CITIES.find(c => c[0] === k) || [k, k])[1];
   const sceneName = k => (SCENES.find(c => c[0] === k) || [k, k])[1];
   const spotName = (city, k) => (k && (SPOTS[city] || []).find(c => c[0] === k) || [k, ''])[1];   // 022 之前的照片 spot＝''

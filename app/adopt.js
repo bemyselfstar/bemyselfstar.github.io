@@ -8,14 +8,19 @@
 // 新帳號第一次進來（還沒有毛孩）時自動打開；「全家」頁沒有毛孩時也有〔建立毛孩〕。
 // 換顏色（P74 M2 剩下的，2026-10-22）：毛孩面板〔換顏色〕→ 同一個畫面、從牠現在的 cfg 開始；不能換貓狗、品種（伺服器規定），
 //   著色本照牠現在的年齡 → 毛孩圖、小圖傳上去 → dc_pet_look_set（🎮 019）。電腦打開會照「最後改的為準」換成手機選的。
+// 換衣服（P74 M5，2026-10-26）：毛孩面板〔換衣服〕→ 同一個畫面換成「衣櫃」：一個部位一排，只列衣櫃有的（🎮 dc_wardrobe_mine）、
+//   這隻能穿的（專屬看品種或花色，跟電腦 items.can_wear 一樣）、零件包有這個品種年齡的；狗拿南瓜提籃不戴頭臉脖子（DC_RULES.wear.clash）。
 // 長大換著色本（2026-10-23）：手機建立、電腦還沒接的毛孩長大了（ageKeyOf 變了）→ 背景照同一份外觀重畫、傳上去（checkGrow）。
-(window.DC_BUILD = window.DC_BUILD || {})['adopt.js'] = 60;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['adopt.js'] = 63;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const SV = window.DCServer, P = window.DCParts, $ = id => document.getElementById(id);
   const PARTS = 'parts/';
-  const NEW_MONTHS = 3;                          // 新領養＝3 個月大（電腦 new_cat_cfg 一樣）
-  const MONTH_SEC = 86400;                       // 遊戲裡 1 個月＝真實 1 天（src/life.py month_secs，params days_per_month＝1）
+  const AGE = window.DC_RULES.age, NEW = window.DC_RULES.new_stats, WEAR = window.DC_RULES.wear;   // shared_rules（電腦 life.py、伺服器 019 同一份）
+  const NEW_MONTHS = AGE.new_months;             // 新領養幾個月大
+  const MONTH_SEC = AGE.month_sec;               // 遊戲裡 1 個月＝真實幾秒
+  const KID_MONTHS = AGE.stages[0][1];           // 幼年到幾個月
+  const SENIOR_MONTHS = AGE.stages[AGE.stages.length - 1][1];   // 幾個月起是熟齡（最後一個階段的結束）
   const COLORS = [['fur', '毛色'], ['stripe', '條紋'], ['belly', '肚子'], ['eye', '眼睛']];
   const LOOK_KEYS = ['fur', 'stripe', 'belly', 'eye', 'patch1', 'patch2', 'point', 'point_soft'];
 
@@ -23,7 +28,7 @@
   const books = new Map();                       // 著色本名字 → Promise<pet>（一次只下載用到的那隻）
 
   function ageBook(months) {                     // 年齡 → 著色本（choices.json age_rule＝cat_art.age_look；幼年 6 個月內）
-    const g = Math.round(Math.trunc((0.78 + 0.22 * Math.min(1, months / 6)) / 0.04) * 0.04 * 100);
+    const g = Math.round(Math.trunc((0.78 + 0.22 * Math.min(1, months / KID_MONTHS)) / 0.04) * 0.04 * 100);
     return 'kit' + g;
   }
   const allCoats = () => {
@@ -33,14 +38,15 @@
   };
   const breedsOf = sp => choices.species[sp].breeds;
   const coatsOf = (sp, breed) => (breedsOf(sp).find(b => b.breed === breed) || breedsOf(sp)[0]).coats;
-  function bookName() {
-    const c = st.coat, seed = c.spotted ? `_s${st.seed}` : '';
-    return `${c.book}${seed}_${st.ageKey || ageBook(NEW_MONTHS)}`;
+  function bookName() {                          // 穿整套服裝＝換那套服裝的著色本（<範本>[_s斑]_<年齡>@<服裝>，零件包格式.md 第 8 節）
+    const c = st.coat, seed = c.spotted ? `_s${st.seed}` : '', cos = st.wear && st.wear.body;
+    return `${c.book}${seed}_${ageNow()}` + (cos ? `@${cos}` : '');
   }
+  const ageNow = () => st.ageKey || ageBook(NEW_MONTHS);
   // 換顏色：照牠現在的年齡選著色本（cat_art.age_look）。手機建立的 cfg 有生日；電腦的只有年齡階段（幼年就用 3 個月大的，電腦打開會換成自己畫的圖）
   function ageKeyOf(p) {
     const born = p.cfg && typeof p.cfg.born === 'number' ? p.cfg.born : null;
-    if (born != null) { const m = (Date.now() / 1000 - born) / MONTH_SEC; return m < 6 ? ageBook(m) : m >= 132 ? 'senior' : 'adult'; }
+    if (born != null) { const m = (Date.now() / 1000 - born) / MONTH_SEC; return m < KID_MONTHS ? ageBook(m) : m >= SENIOR_MONTHS ? 'senior' : 'adult'; }
     return /^幼/.test(p.age || '') ? ageBook(NEW_MONTHS) : p.age === '熟齡' ? 'senior' : 'adult';
   }
   function stateFrom(p) {                        // 換顏色：從牠現在的外觀開始；手機沒有這個品種／花色＝null
@@ -50,7 +56,8 @@
     if (!coat) return null;
     const colors = {}; for (const [k] of COLORS) if (cfg[k] || coat.fields[k]) colors[k] = cfg[k] || coat.fields[k];
     return { mode: 'look', target: p, sp, breed, coat, colors, custom: cfg.preset === '', stripes: typeof cfg.stripes === 'boolean' ? cfg.stripes : null,
-             seed: choices.seeds.includes(cfg.pattern_seed) ? cfg.pattern_seed : choices.seeds[0], ageKey: ageKeyOf(p), pet: null };
+             seed: choices.seeds.includes(cfg.pattern_seed) ? cfg.pattern_seed : choices.seeds[0], ageKey: ageKeyOf(p), pet: null,
+             wear: cfg.wear && typeof cfg.wear === 'object' ? { ...cfg.wear } : {} };   // 身上的衣服：換顏色、長大換圖都保留
   }
   function look() {                              // 零件包組圖用的顏色（parts_phone_ref 的 look）
     const f = st.coat.fields, lk = {};
@@ -65,6 +72,12 @@
   function getBook(name) {
     if (!books.has(name)) books.set(name, P.load(`${PARTS}${encodeURIComponent(name)}/`).catch(e => { books.delete(name); throw e; }));
     return books.get(name);
+  }
+  const packs = new Map();                       // 飾品（parts/dress/<飾品>@<品種>@<年齡>）：只載身上那幾件
+  function getPack(iid, group, age) {
+    const k = `${iid}@${group}@${age}`;
+    if (!packs.has(k)) packs.set(k, P.loadDress(PARTS + 'dress/', iid, group, age).catch(e => { packs.delete(k); throw e; }));
+    return packs.get(k);
   }
 
   // ---------- 畫面 ----------
@@ -83,7 +96,11 @@
     if (on && box.scrollWidth > box.clientWidth) box.scrollLeft = Math.max(0, on.offsetLeft - box.offsetLeft - (box.clientWidth - on.offsetWidth) / 2);
   }
   function renderForm() {
-    $('adSpecies').hidden = $('adBreed').hidden = st.mode === 'look';   // 換顏色不能換貓狗、品種
+    const wearMode = st.mode === 'wear';
+    $('adSpecies').hidden = $('adBreed').hidden = st.mode === 'look' || wearMode;   // 換顏色、換衣服不能換貓狗、品種
+    $('adCoat').parentElement.hidden = document.querySelector('#adopt .ad-colors').hidden = wearMode;
+    $('adWear').hidden = !wearMode;
+    if (wearMode) renderWear();
     seg($('adSpecies'), Object.entries(choices.species).map(([k, s]) => [k, s.label]), st.sp, v => { if (v !== st.sp) setBreed(v, breedsOf(v)[0].breed); });
     seg($('adBreed'), breedsOf(st.sp).map(b => [b.breed, b.breed]), st.breed, v => setBreed(st.sp, v));
     seg($('adCoat'), coatsOf(st.sp, st.breed).map(c => [c.coat, c.label, c.fields.fur]), st.coat.coat, v => setCoat(coatsOf(st.sp, st.breed).find(c => c.coat === v)));
@@ -109,22 +126,38 @@
       const pet = await getBook(want);
       if (bookName() !== want) return;         // 等的時候又換了
       st.pet = pet; st.bookName = want;
-      draw();
+      await draw();
+      if (bookName() !== want) return;
       renderForm();
-      say('');
+      say(st.note || ''); st.note = '';
     } catch (e) {
       console.warn('零件包讀不到', want, e);
       say('毛孩的圖讀不到，檢查網路再試', true);
     } finally { $('adStage').classList.remove('loading'); }
   }
   const SEQ = ['walk', 'sit_wag', 'idle'];
-  function paint() {                             // 照現在的顏色組整張圖表（st.sheet、st.rgba）
-    const rgba = P.compose(st.pet, look(), stripes());
-    st.sheet = P.toCanvas(st.pet, rgba); st.rgba = rgba;
+  // 照現在的顏色組整張圖表 → st.sheet（canvas）、st.rgba、st.sm（這張圖表的 meta：穿飾品時格子變大）、st.sw（寬）
+  // 穿了脖子／頭／臉／手上的飾品：切成每一格 → P.dress 疊上去 → 重排（格子＝最大那格，底部置中；上傳的 meta w、h 用這個）
+  async function paint() {
+    const pet = st.pet, lk = look(), stp = stripes(), wear = st.wear || {};
+    let rgba = P.compose(pet, lk, stp), meta = pet.meta, w = pet.width, h = pet.height;
+    const slots = P.DRESS_ORDER.filter(s => wear[s]);
+    if (slots.length) {
+      const age = ageNow(), got = {};
+      for (const s of slots) got[s] = await getPack(wear[s], st.breed, age);
+      const frames = P.dress(pet, P.framesOf(meta, rgba, w), lk, stp, got, wear.body || null);
+      const sh = P.sheetOf(meta, frames), size = {};
+      for (const [k, f] of Object.entries(frames)) size[k] = [f.w, f.h];
+      meta = { ...meta, w: sh.cw, h: sh.ch, frame_size: size };
+      rgba = sh.data; w = sh.w; h = sh.h;
+    }
+    const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+    cv.getContext('2d').putImageData(new ImageData(rgba, w, h), 0, 0);
+    st.sheet = cv; st.rgba = rgba; st.sm = meta; st.sw = w;
     return rgba;
   }
-  function draw() {                              // 組整張圖表 → 預覽輪流播「走路」「坐著搖尾巴」
-    const rgba = paint(), m = st.pet.meta, W = st.pet.width;
+  async function draw() {                        // 組整張圖表 → 預覽輪流播「走路」「坐著搖尾巴」
+    const rgba = await paint(), m = st.sm, W = st.sw;
     let x0 = m.w, y0 = m.h, x1 = -1, y1 = -1;     // 預覽只放毛孩那一塊（幼犬的格子很大、毛孩很小）：這幾個動作所有格子的範圍
     for (const a of SEQ.filter(k => m.anims[k])) for (let i = 0; i < m.anims[a][1]; i++) {
       const r = P.frameRect(m, a, i);
@@ -138,7 +171,7 @@
   }
   function tick() {
     if (!st || !st.pet || $('adopt').hidden) return;
-    const m = st.pet.meta, seq = SEQ.filter(a => m.anims[a]), b = st.box;
+    const m = st.sm, seq = SEQ.filter(a => m.anims[a]), b = st.box;
     const anim = seq[Math.floor(st.frame / 16) % seq.length], n = m.anims[anim][1];
     const r = P.frameRect(m, anim, st.frame % n), cv = $('adPreview');
     const z = Math.max(1, Math.min(5, Math.floor(130 / b.h), Math.floor(300 / b.w)));
@@ -154,7 +187,7 @@
   const POSES = { cat: ['sit', 'sleep', 'loaf', 'walk', 'groom', 'washface'], dog: ['sit', 'sleep', 'loaf', 'walk', 'wag', 'pant'] };
   const MID_FRAME = ['groom', 'washface'], AVATAR_K = 6, AVATAR_MAX = 24 * 1024;
   async function makePoses(rgba) {
-    const m = st.pet.meta, W = st.pet.width, out = {};
+    const m = st.sm, W = st.sw, out = {};
     for (const a of POSES[st.sp] || POSES.cat) {
       if (!m.anims[a]) continue;
       const [row, n] = m.anims[a], i = MID_FRAME.includes(a) ? Math.floor(n / 2) : 0;
@@ -192,23 +225,24 @@
     lk.preset = st.custom ? '' : c.coat;
     if (st.custom) { Object.assign(lk, st.colors); lk.stripes = stripes(); }
     if (c.spotted) lk.pattern_seed = st.seed;
+    if (st.wear && Object.keys(st.wear).length) lk.wear = { ...st.wear };   // 🎮 029 起伺服器收 wear（之前會被丟掉）
     return lk;
   }
   function buildCfg(name) {
     const now = Date.now() / 1000, cfg = { name, ...buildLook() };
-    Object.assign(cfg, { cid: cidNew(), born: now - NEW_MONTHS * MONTH_SEC, came_at: now, zest: 70, mood: 60, hunger: 80 });
+    Object.assign(cfg, { cid: cidNew(), born: now - NEW_MONTHS * MONTH_SEC, came_at: now, zest: NEW.zest, mood: NEW.mood, hunger: NEW.hunger });
     return cfg;
   }
   async function upload(cid) {                   // 整張圖表＋meta 傳 Storage、做小圖 → {file, poses}
-    const sig = hash12(JSON.stringify([st.bookName, look(), stripes(), choices.v]));
-    const file = `${cid}-${sig}`, m = st.pet.meta;
+    const sig = hash12(JSON.stringify([st.bookName, look(), stripes(), choices.v, st.wear || {}]));
+    const file = `${cid}-${sig}`, m = st.sm;
     const png = await new Promise(r => st.sheet.toBlob(r, 'image/png'));
     const meta = { v: 1, species: st.sp, breed: st.breed, coat: st.coat.coat, book: st.bookName, w: m.w, h: m.h, anims: m.anims, ticks: m.ticks || {} };   // book：長大換圖看這個
     await SV.spriteUpload(file, png, meta);
     return { file, poses: await makePoses(st.rgba) };   // 小工具、好友頭像的小圖（電腦版 dc_pet_poses_set 那份；sit＝avatar）
   }
   async function save() {
-    if (st.mode === 'look') return saveLook();
+    if (st.mode === 'look' || st.mode === 'wear') return saveLook();
     const name = $('adName').value.trim(), nick = $('adNick').value.trim();
     if (!st.pet) return;
     if (!$('adNickRow').hidden && !nick) { say('先取一個你的暱稱', true); $('adNick').focus(); return; }
@@ -228,7 +262,50 @@
     } finally { btn.disabled = false; }
   }
 
-  const LOOK_FAIL = { no_look: '電腦版更新後才能在這裡換', gone: '找不到牠了', no_sprite: '圖沒傳好，再試一次', invalid: '這個顏色存不了' };
+  const LOOK_FAIL = { no_look: '電腦版更新後才能在這裡換', gone: '找不到牠了', no_sprite: '圖沒傳好，再試一次', invalid: '這個顏色存不了',
+                      not_owned: '衣櫃裡沒有這件' };
+
+  // ---------- 換衣服（衣櫃） ----------
+  let dressIdx = null, owned = [];
+  function canWear(iid) {                        // 跟電腦 items.can_wear 一樣：專屬看品種或花色（preset）
+    const it = WEAR.items[iid];
+    return !!it && (!it.breeds.length || it.breeds.includes(st.breed) || it.breeds.includes(buildLook().preset));
+  }
+  function hasArt(iid, slot) {                   // 零件包有沒有這件（這個品種、年齡；整套服裝看這個花色有沒有那本）
+    if (slot === 'body') { const c = st.coat, seed = c.spotted ? `_s${st.seed}` : ''; return dressIdx.costume_books.some(b => b.book === `${c.book}${seed}_${ageNow()}@${iid}`); }
+    return dressIdx.packs.some(p => p.iid === iid && p.group === st.breed && p.age === ageNow());
+  }
+  function wearPick(slot, iid) {                 // shared_rules.wear_pick 照翻：換上 iid（null＝脫）→ 照 clash 自動脫掉衝突的
+    const w = {}; for (const [k, v] of Object.entries(st.wear || {})) if (v) w[k] = v;
+    if (iid) w[slot] = iid; else delete w[slot];
+    const off = [];
+    for (const r of WEAR.clash) {
+      if (r.species !== st.sp || w[r.slot] !== r.item) continue;
+      const busy = r.empty.filter(s => w[s]);
+      if (!busy.length) continue;
+      const drop = slot === r.slot ? busy : [r.slot];
+      for (const s of drop) { delete w[s]; off.push(s); }
+    }
+    return [w, off];
+  }
+  function renderWear() {
+    const box = $('adWear'); box.innerHTML = '';
+    for (const [slot, label] of WEAR.slots) {
+      const list = owned.filter(iid => WEAR.items[iid] && WEAR.items[iid].slot === slot && canWear(iid) && hasArt(iid, slot));
+      if (!list.length && !(st.wear || {})[slot]) continue;
+      const row = document.createElement('div'); row.className = 'ad-wrow';
+      const lab = document.createElement('span'); lab.className = 'ad-wlab'; lab.textContent = label;
+      const sc = document.createElement('div'); sc.className = 'ad-scroll'; sc.setAttribute('role', 'group'); sc.setAttribute('aria-label', label);
+      row.append(lab, sc); box.append(row);
+      seg(sc, [['', '不穿'], ...list.map(iid => [iid, WEAR.items[iid].name])], (st.wear || {})[slot] || '', v => {
+        const [w, off] = wearPick(slot, v || null);
+        st.wear = w;
+        st.note = off.length ? `${off.map(s => WEAR.slots.find(x => x[0] === s)[1]).join('、')}先脫掉了` : '';   // 畫好再說（refresh 會清掉提示）
+        refresh();
+      });
+    }
+    if (!box.childElementCount) { const n = document.createElement('p'); n.className = 'note'; n.textContent = '衣櫃還是空的：在電腦版買衣服，或用友情點數換專屬飾品'; box.append(n); }
+  }
   async function saveLook() {
     const p = st.target, btn = $('adGo');
     if (!st.pet) return;
@@ -238,7 +315,7 @@
       const r = await SV.petLookSet(p.id, buildLook(), file, poses);
       if (!r || r.ok === false) throw new SV.ServerError(LOOK_FAIL[r && r.reason] || '換不了，等一下再試', 'server', 0);
       close();
-      window.DC.toast(`${p.name}換好顏色了`);
+      window.DC.toast(st.mode === 'wear' ? `${p.name}換好衣服了` : `${p.name}換好顏色了`);
       if (window.DC.pullNow) window.DC.pullNow();
     } catch (e) {
       say(e.status === 404 ? '伺服器還沒準備好換顏色' : e.message || '換不了，等一下再試', true);
@@ -246,11 +323,11 @@
   }
 
   // ---------- 打開、關掉 ----------
-  async function open(target) {                  // target＝要換顏色的毛孩（HOME.pets 的一隻，有 cfg）；沒有＝領養新的
+  async function open(target, mode) {            // target＝要換顏色／換衣服（mode＝'wear'）的毛孩（HOME.pets 的一隻，有 cfg）；沒有＝領養新的
     while (growing) await new Promise(r => setTimeout(r, 200));   // 背景正在幫別隻換長大的圖（共用 st）：等它做完
-    const box = $('adopt'), recolor = !!(target && target.cfg);
+    const box = $('adopt'), recolor = !!(target && target.cfg), dressing = recolor && mode === 'wear';
     box.hidden = false; document.body.classList.add('login-open');
-    box.querySelector('.ad-head h2').textContent = recolor ? `幫${target.name}換顏色` : '領養你的毛孩';
+    box.querySelector('.ad-head h2').textContent = dressing ? `幫${target.name}換衣服` : recolor ? `幫${target.name}換顏色` : '領養你的毛孩';
     box.querySelector('.ad-names').hidden = recolor;
     $('adGo').textContent = recolor ? '換好了' : '就是牠了';
     say('讀取中…');
@@ -261,10 +338,17 @@
     if (recolor) {
       st = stateFrom(target);
       if (!st) { $('adClose').hidden = false; say('這個花色手機還不能換', true); return; }
+      if (dressing) {
+        try {
+          if (!dressIdx) dressIdx = await (await fetch(PARTS + 'dress/index.json', { cache: 'no-store' })).json();
+          owned = ((await SV.wardrobeMine()) || {}).items || [];
+        } catch (e) { say(e.status === 404 ? '伺服器還沒準備好換衣服' : '讀不到衣櫃，檢查網路再試', true); return; }
+        st.mode = 'wear';
+      }
       refresh();
       return;
     }
-    if (st && st.mode === 'look') st = null;     // 換過顏色：領養從頭開始
+    if (st && st.mode) st = null;                // 換過顏色、衣服：領養從頭開始
     let nick = 'x';
     try { const pf = await SV.profile(); nick = (pf && pf.nickname) || ''; } catch (_) { /* 讀不到就不問暱稱 */ }
     $('adNickRow').hidden = !!nick;
@@ -290,7 +374,7 @@
   // ---------- 長大換著色本（手機建立、電腦還沒接的毛孩；電腦接走後由電腦自己畫、自己傳） ----------
   // 傳上去的毛孩圖 meta.book 記著那時候的著色本（例：橘虎斑_kit88）；年齡那段跟 ageKeyOf(p) 不一樣 → 照同一份外觀重畫 → dc_pet_look_set。
   // 舊的圖（2026-10-23 以前）沒有 book：重畫一次補上。這次開著同一隻同一個年齡只試一次（失敗下次打開再說）。
-  const ageOfBook = b => String(b || '').split('_').pop();
+  const ageOfBook = b => String(b || '').split('@')[0].split('_').pop();   // 穿整套服裝的書名後面有 @服裝
   const growDone = new Set();
   let growing = false;
   async function checkGrow(list, infoOf) {      // list＝HOME.pets；infoOf(p)＝牠現在那張圖的說明（還沒下載好＝null）
@@ -309,7 +393,7 @@
           st = stateFrom(p);
           if (!st) continue;
           st.bookName = bookName(); st.pet = await getBook(st.bookName);
-          paint();
+          await paint();
           const { file, poses } = await upload(p.id);
           const r = await SV.petLookSet(p.id, buildLook(), file, poses);
           if (r && r.ok !== false) { if (window.DC.pullNow) window.DC.pullNow(); }

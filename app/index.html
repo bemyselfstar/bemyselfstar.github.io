@@ -16,8 +16,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="DeskCat">
-<link rel="stylesheet" href="app.css?v=60">
-<script>window.DC_BUILD = { 'index.html': 60 };</script>
+<link rel="stylesheet" href="app.css?v=63">
+<script>window.DC_BUILD = { 'index.html': 63 };</script>
 <!-- 每個檔的網址都帶 ?v=版本（mobile/tools/bump.py 一起改）：手機上舊的快取不會被拿來用（mobile/裝置規格.md 第 3 節） -->
 </head>
 <body>
@@ -266,6 +266,7 @@
       <div id="adSpecies" class="ad-row" role="group" aria-label="貓或狗"></div>
       <div id="adBreed" class="ad-row ad-scroll" role="group" aria-label="品種"></div>
       <div class="ad-row"><div id="adCoat" class="ad-scroll" role="group" aria-label="花色"></div><button id="adSeed" class="chip" type="button" hidden>換斑紋</button></div>
+      <div id="adWear" class="ad-wear" hidden></div>   <!-- 換衣服：一個部位一排（adopt.js renderWear） -->
       <div class="ad-colors">
         <label>毛色<input id="adC_fur" type="color"></label>
         <label id="adStripeColor">條紋<input id="adC_stripe" type="color"></label>
@@ -283,22 +284,22 @@
     </div>
   </section>
 </div>
-<script src="lines.js?v=60"></script>
-<script src="fake/sprites.js?v=60"></script>
-<script src="fake/fake_data.js?v=60"></script>
-<script src="fake/fake_mail.js?v=60"></script>
-<script src="server.js?v=60"></script>
+<script src="lines.js?v=63"></script>
+<script src="fake/sprites.js?v=63"></script>
+<script src="fake/fake_data.js?v=63"></script>
+<script src="fake/fake_mail.js?v=63"></script>
+<script src="server.js?v=63"></script>
 <script>   // 開發用：假的伺服器（只在本機、家裡 Wi-Fi 加 ?mock=1；mobile/tools/mock_server.js；2026-10-20 起 iPhone 也能用來試 P74）
   if (/[?&]mock=1/.test(location.search) && /^(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+)$/.test(location.hostname)) document.write('<script src="tools/mock_server.js"><\/script>');
 </script>
-<script src="app.js?v=60"></script>
-<script src="outdoor.js?v=60"></script>   <!-- 口袋的戶外場景、散步（2026-10-20） -->
-<script src="pocket.js?v=60"></script>
-<script src="trip.js?v=60"></script>
-<script src="scenes.js?v=60"></script>
-<script src="mail.js?v=60"></script>
-<script src="parts.js?v=60"></script>   <!-- 零件包換色組圖（P75） -->
-<script src="adopt.js?v=60"></script>   <!-- 在手機建立毛孩（P74 M2） -->
-<script src="notify.js?v=60"></script>   <!-- 通知（P74 M4） -->
+<script src="app.js?v=63"></script>
+<script src="outdoor.js?v=63"></script>   <!-- 口袋的戶外場景、散步（2026-10-20） -->
+<script src="pocket.js?v=63"></script>
+<script src="trip.js?v=63"></script>
+<script src="scenes.js?v=63"></script>
+<script src="mail.js?v=63"></script>
+<script src="parts.js?v=63"></script>   <!-- 零件包換色組圖（P75） -->
+<script src="adopt.js?v=63"></script>   <!-- 在手機建立毛孩（P74 M2） -->
+<script src="notify.js?v=63"></script>   <!-- 通知（P74 M4） -->
 </body>
 </html>

@@ -1,7 +1,7 @@
 // DeskCat 手機網頁「🎒 口袋」：毛孩跟你出門（只有手機有）。P66 新設計第 6 節：口袋、合照、順毛。
 // 口袋＝毛孩跟你出門、在戶外（不是真的口袋）：直式滿版的戶外場景（城市、公園、步道；照時間換天空、天氣先手動選，不要求位置權限），功能是右下的懸浮按鈕。
 // 合照：相機畫面疊上像素毛孩（可拖、放大、換姿勢、翻面），拍下來存到手機或分享；照片只留在手機、不上傳。
-(window.DC_BUILD = window.DC_BUILD || {})['pocket.js'] = 60;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['pocket.js'] = 63;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const D = window.DC, $ = id => document.getElementById(id);
@@ -15,7 +15,7 @@
   // 紀念品（2026-10-14 使用者選「口袋帶回紀念品」）：出門每 20 分鐘撿到一樣、一趟最多 3 樣；撿到什麼看天氣、時間（scenes.js 的 ITEMS）。
   // 撿到的時候東西出現在步道上（閃閃發亮），點一下收進包包（p.found）；〔放回家〕時帶回家擺上紀念品架（app.js bringSouvenirs）。
   // 撿過的（D.souvenirs()）跟著帳號存在伺服器（server/017，2026-10-17；app.js souvSync），這支手機只當暫存。
-  const FIND_EVERY = 20, FIND_MAX = 3;
+  const FIND_EVERY = window.DC_RULES.pocket.every_min, FIND_MAX = window.DC_RULES.pocket.max;   // shared_rules（伺服器 024 推播「撿到東西」也用同一份）
   let item = null, nextAt = 0;
   const outAt = () => pet.p.placeAt || since;   // 伺服器的 place_at 每次讀回來都會更新（剛帶出門時是這支手機的時間）
   const minsOut = () => (Date.now() - outAt()) / 60000;

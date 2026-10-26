@@ -4,7 +4,7 @@
 // 那兩支是美術線的、改了這裡要跟著改。對答案：python 不用，node mobile/tools/parts_check.js（320 份 check.json 全部 0 誤差）。
 // Qt 每個顏色存 16 位元、用 32 位元小數算 → 每一步都 Math.fround（f32）；兩個 f32 加減乘除先用 double 算再 fround＝跟 float32 一樣。
 // 用法（網頁）：const pet = await DCParts.load('parts/薩摩耶_adult/')；DCParts.compose(pet, look, stripes) → ImageData 大小的 RGBA。
-(window.DC_BUILD = window.DC_BUILD || {})['parts.js'] = 60;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['parts.js'] = 63;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const f32 = Math.fround, U = 65535;
@@ -229,6 +229,15 @@
         case 'paw': { const c2 = this.cream[2]; return lum(c2) > lum(this.fur[2]) - 10 ? c2 : c2.lighter(115); }
         case 'fix': return C.hex(lab[1]);
         case 'maj': return C.hex('#ff00ff');           // 補小洞的格子：先放洋紅，組圖最後照鄰居投票蓋掉
+        // P75 第 2 期衣服層（tools/parts_color.py 照翻，2026-10-26）
+        case 'MB': return ramp(this.fur[2].hslF()[2] < 0.78 ? '#f4e9d8' : lab[1])[lab[2]];   // 木乃伊繃帶第 n 階：毛色第 3 階亮度 < 0.78 用米白
+        case 'dk': return this.get(lab[2]).darker(lab[1]);   // 底下那個顏色壓暗
+        case 'qeq': {                                   // ['qeq', 底下, [比的代號…], 換成(, 不換時)]：底下跟其中一個 Qt 相等就換
+          const under = this.get(lab[1]), uk = qkey(under);
+          if (lab[2].some(t => qkey(this.get(t)) === uk)) return this.get(lab[3]);
+          return lab.length > 4 ? this.get(lab[4]) : under;
+        }
+        case 'vote': return vote(lab[1].map(L => this.get(L)));   // 補小洞的投票結果，給 qeq 當「底下」用
         case 'half': {
           const p = this.get(lab[1]).rgb8(), q = this.get(lab[2]).rgb8();
           return C.from8((p[0] + q[0]) >> 1, (p[1] + q[1]) >> 1, (p[2] + q[2]) >> 1);
@@ -364,11 +373,133 @@
     return { x: (i % n) * meta.w, y: r * meta.h, w: meta.w, h: meta.h };
   }
 
+  // ---------- 穿衣服（P75 第 2 期；tools/parts_dress_ref.py 照翻，格式 docs/美術/零件包格式.md 第 8 節；2026-10-26 手機線） ----------
+  // 整套服裝＝換一本著色本（<範本>[_s<斑>]_<年齡>@<服裝>/，用上面的 load／compose）；其他飾品＝抄的像素（parts/dress/）。
+  // 一格的圖＝{w, h, data: Uint8ClampedArray(w*h*4)}。
+  const DRESS_ORDER = ['neck', 'head', 'face', 'hold'];   // 脖子 → 頭 → 臉 → 手上（index.json 的 order）
+  const mkImg = (w, h) => ({ w, h, data: new Uint8ClampedArray(w * h * 4) });
+  const cloneImg = im => ({ w: im.w, h: im.h, data: im.data.slice() });
+  const isClear = L => Array.isArray(L) && L.length === 1 && L[0] === 'clear';
+
+  function packFrom(meta, img, ids) {     // 一件：json＋抄的像素 img＋殘留代號 ids（{w, h, data}，沒有＝null）
+    for (const e of meta.entries) {       // same＝跟第幾筆一樣
+      if ('same' in e) { const src = meta.entries[e.same]; e.stripes_matter = src.stripes_matter; e.legend = src.legend; e.frames = src.frames; }
+    }
+    return { meta, entries: meta.entries, img, ids };
+  }
+  async function loadDress(base, iid, group, age) {   // base＝'parts/dress/'；手機只載身上那幾件、自己那個年齡
+    const meta = await (await fetch(base + encodeURIComponent(`${iid}@${group}@${age}`) + '.json')).json();
+    const png = await readPng(base + encodeURIComponent(meta.png));
+    let ids = null;
+    if (meta.rpng) { const r = await readPng(base + encodeURIComponent(meta.rpng)); ids = { w: r.w, h: r.h, data: idsFromRgba(r.rgba) }; }
+    return packFrom(meta, { w: png.w, h: png.h, data: png.rgba }, ids);
+  }
+  function pickEntry(pack, preset, seed, costume) {   // 三花玳瑁先找『範本_s斑』再找範本；under＝身上那套服裝（沒穿＝null）
+    const keys = (seed != null ? [`${preset}_s${seed}`] : []).concat([preset]), cos = costume ?? null;
+    for (const k of keys) for (const e of pack.entries) if ((e.under ?? null) === cos && e.presets.includes(k)) return e;
+    return null;
+  }
+  function blit(o, oy, ox, src, sx, sy, sw, sh) {     // src 那一塊不透明的像素貼到 o 的 (oy, ox)，超出的切掉
+    for (let y = 0; y < sh; y++) {
+      const ty = oy + y;
+      if (ty < 0 || ty >= o.h) continue;
+      for (let x = 0; x < sw; x++) {
+        const tx = ox + x;
+        if (tx < 0 || tx >= o.w) continue;
+        const si = ((sy + y) * src.w + sx + x) * 4;
+        if (!src.data[si + 3]) continue;
+        const ti = (ty * o.w + tx) * 4;
+        o.data[ti] = src.data[si]; o.data[ti + 1] = src.data[si + 1]; o.data[ti + 2] = src.data[si + 2]; o.data[ti + 3] = src.data[si + 3];
+      }
+    }
+  }
+  function dressFrame(img, ents, fk, pal) {           // 一格：身體 → 照順序疊每件（抄的像素＋殘留）；畫布＝最大那件
+    const recs = [];
+    let best = null;
+    for (const [p, e, cols, k] of ents) {
+      const f = e.frames[`${k}|${fk}`];
+      if (!f) continue;
+      recs.push([p, e, cols, f]);
+      const [W, H, dx, dy] = f, r = [-dy, -dx, H - dy, W - dx];
+      if (!best || (r[2] - r[0]) * (r[3] - r[1]) >= (best[2] - best[0]) * (best[3] - best[1])) best = r;
+    }
+    const [top, left, bot, right] = best || [0, 0, img.h, img.w];
+    const o = mkImg(right - left, bot - top);
+    blit(o, -top, -left, img, 0, 0, img.w, img.h);
+    const body = cloneImg(o);                         // 身體（穿服裝＝服裝著色本）放進畫布的樣子
+    for (const [p, e, cols, f] of recs) {
+      const [W, H, dx, dy, fs, fr, ff] = f, oy = -top - dy, ox = -left - dx;
+      const ref = cloneImg(body);                     // 「身體＋這件抄的像素」：殘留只蓋跟它不一樣的格子
+      if (fs) { const [ax, ay, sw, sh, bx, by] = fs; blit(o, oy + by, ox + bx, p.img, ax, ay, sw, sh); blit(ref, oy + by, ox + bx, p.img, ax, ay, sw, sh); }
+      const res = new Uint8ClampedArray(W * H * 4), m = new Uint8Array(W * H);
+      let any = false;
+      if (fr) {
+        const [ax, ay, rw, rh, bx, by] = fr;
+        for (let y = 0; y < rh; y++) for (let x = 0; x < rw; x++) {
+          const id = p.ids.data[(ay + y) * p.ids.w + ax + x], q = (by + y) * W + bx + x, c = cols[id];
+          res[q * 4] = c[0]; res[q * 4 + 1] = c[1]; res[q * 4 + 2] = c[2]; res[q * 4 + 3] = c[3];
+          m[q] = id > 0 ? 1 : 0; if (id > 0) any = true;
+        }
+      }
+      for (const [x, y, lids] of ff || []) {        // 補針孔（投票，跟身體一樣）
+        const [cr, cg, cb] = vote(lids.map(l => pal.get(e.legend[l - 1]))).rgb8(), q = y * W + x;
+        res[q * 4] = cr; res[q * 4 + 1] = cg; res[q * 4 + 2] = cb; res[q * 4 + 3] = 255; m[q] = 1; any = true;
+      }
+      if (!any) continue;
+      for (let y = 0; y < H; y++) {                   // 只蓋跟「身體＋這件 s」（ref）不一樣的格子；ref 在畫布外＝透明
+        const ty = oy + y;
+        if (ty < 0 || ty >= o.h) continue;
+        for (let x = 0; x < W; x++) {
+          const tx = ox + x, q = y * W + x;
+          if (tx < 0 || tx >= o.w || !m[q]) continue;
+          const ti = (ty * o.w + tx) * 4;
+          if (res[q * 4] === ref.data[ti] && res[q * 4 + 1] === ref.data[ti + 1] && res[q * 4 + 2] === ref.data[ti + 2] && res[q * 4 + 3] === ref.data[ti + 3]) continue;
+          o.data[ti] = res[q * 4]; o.data[ti + 1] = res[q * 4 + 1]; o.data[ti + 2] = res[q * 4 + 2]; o.data[ti + 3] = res[q * 4 + 3];
+        }
+      }
+    }
+    return o;
+  }
+  function dress(pet, frames, look, stripes, packs, costume = null) {   // pet＝身體（或服裝）著色本；frames＝framesOf 切好的；packs＝{部位: 一件}
+    const meta = pet.meta, bk = pickBook(meta, look, stripes), pal = palette(meta, look);
+    const preset = meta.preset, seed = meta.pattern_seed ?? null, ents = [];
+    for (const slot of DRESS_ORDER) {
+      const p = packs[slot], e = p && pickEntry(p, preset, seed, costume);
+      if (!e) continue;
+      const cols = [[0, 0, 0, 0]].concat(e.legend.map(L => isClear(L) ? [0, 0, 0, 0] : [...pal.rgb(L), 255]));
+      ents.push([p, e, cols, e.stripes_matter ? bk : '0']);
+    }
+    const out = {};
+    for (const fk of Object.keys(frames)) out[fk] = dressFrame(frames[fk], ents, fk, pal);
+    return out;
+  }
+  function framesOf(meta, rgba, width) {             // 組好的身體圖表 → {'動作:格': 圖}（tools/parts_items_ref.frames_of）
+    const out = {};
+    for (const [a, [r, n]] of Object.entries(meta.anims)) for (let i = 0; i < n; i++) {
+      const fk = `${a}:${i}`, [w, h] = meta.frame_size[fk], x0 = i * meta.w + Math.floor((meta.w - w) / 2), y0 = r * meta.h + (meta.h - h);
+      const im = mkImg(w, h);
+      for (let y = 0; y < h; y++) im.data.set(rgba.subarray(((y0 + y) * width + x0) * 4, ((y0 + y) * width + x0 + w) * 4), y * w * 4);
+      out[fk] = im;
+    }
+    return out;
+  }
+  function sheetOf(meta, frames) {                    // 排成圖表：一個動作一列、格子＝最大的寬高、底部置中（parts_items_ref.sheet_of）
+    const fs = Object.values(frames), cw = Math.max(...fs.map(f => f.w)), ch = Math.max(...fs.map(f => f.h));
+    const rows = Object.keys(meta.anims).length, cols = Math.max(...Object.values(meta.anims).map(v => v[1]));
+    const sh = mkImg(cols * cw, rows * ch);
+    for (const [a, [r, n]] of Object.entries(meta.anims)) for (let i = 0; i < n; i++) {
+      const f = frames[`${a}:${i}`], x0 = i * cw + Math.floor((cw - f.w) / 2), y0 = r * ch + (ch - f.h);
+      for (let y = 0; y < f.h; y++) sh.data.set(f.data.subarray(y * f.w * 4, (y + 1) * f.w * 4), ((y0 + y) * sh.w + x0) * 4);
+    }
+    return { ...sh, cw, ch };
+  }
+
   // ---------- 建立毛孩的小規則（零件包格式.md 4-1、choices.json 的 cfg_rule；年齡怎麼對到著色本等 P74 建立毛孩一起做） ----------
   const fixWhite = hex => (/^#?ffffff$/i.test(hex) ? '#fefefe' : hex);   // 毛色存成 #ffffff 時改存 #fefefe
 
   const api = { C, fromHslF, ramp, creamRamp, outline, mixHex, mixRgb, lum, qkey, vote, seniorFade, isPink, Palette,
-    stripeOn, pickBook, palette, legendRgb, compose, idsFromRgba, load, toCanvas, frameRect, fixWhite };
+    stripeOn, pickBook, palette, legendRgb, compose, idsFromRgba, load, toCanvas, frameRect, fixWhite,
+    DRESS_ORDER, packFrom, loadDress, pickEntry, dress, framesOf, sheetOf };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;   // node mobile/tools/parts_check.js 用
   else window.DCParts = api;
 })();

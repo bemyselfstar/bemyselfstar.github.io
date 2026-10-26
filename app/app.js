@@ -2,7 +2,7 @@
 // 斜上往下看的房間（W×H 像素，比螢幕大），整數倍放大（不糊）；拖曳移動鏡頭、兩指縮放。
 // 電腦網頁＝橫版（分頁列在左邊）、手機網頁＝直版（分頁列在下面）（2026-10-14 使用者）。
 // 家具先用程式畫的簡單版（之後換成正式美術）；毛孩用遊戲的側面影格，前後只靠遮擋表現、不縮放。
-(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 60;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 63;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   // 資料：範例（假資料）或伺服器（server.js；登入後 dc_pets_mine 每 10 秒讀一次，見下面「伺服器同步」）。
@@ -33,7 +33,11 @@
     pocket: { icon: 'pocket', label: '跟你出門（口袋）' },
     friend: { icon: 'paw', label: '在好友家' },
   };
-  const MOOD = ['😿', '😐', '🙂', '😊'];
+  // 心情：表情和分界跟電腦一樣（src/life.py MOOD_FACES／MOOD_GOOD／MOOD_BAD → export_lines.py 寫進 lines.js 的 DC_LEVELS；P80 2026-10-23）
+  // 不留後備值（後備值＝第二份規則）：lines.js 跟其他檔一起換版本（bump.py），讀不到＝手機有舊檔，?info=1 看得到
+  const LV = window.DC_LEVELS;
+  const R = window.DC_RULES;             // 電腦、手機、伺服器共用的規則（src/shared_rules.py → export_lines.py；使用者 2026-10-23「我需要都是一致的」）
+  const MOOD = LV.mood_faces;            // 0＝差、1＝普通、2＝好
   const $ = id => document.getElementById(id);
   const rnd = (a, b) => a + Math.random() * (b - a);
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -598,7 +602,7 @@
     pet.set(pet.dog() ? ['sit_wag', 'wag'] : ['knead', 'sit_blink'], pet.dog() ? 6 : 4);
     pet.until = focusedPet && focusedPet() === pet ? Infinity : now + 2600; addHearts(pet);
     say(pet, line(pet, 'pet'));
-    pet.p.mood = Math.min(3, pet.p.mood + 1); pet.p.moodHold = Date.now() + 60000;
+    pet.p.mood = Math.min(MOOD.length - 1, pet.p.mood + 1); pet.p.moodHold = Date.now() + 60000;
     remote(pet.p, 'pet');
   }
   function stroke(pet, dx, dy = 0) {        // 手指滑的方向（dx, dy）跟「頭 → 尾巴」比：同方向＝順毛
@@ -1024,6 +1028,8 @@
     else if (p.where === 'pocket') b.push(['home', '放回家', 'callhome', true]);
     else if (p.where === 'friend') b.push(['home', '叫回家', 'callhome']);
     if (more && LIVE && SV.p74 && p.cfg && window.DCAdopt) b.push(['edit', '換顏色', 'recolor']);   // P74：在手機換顏色（adopt.js）
+    // P74 M5 換衣服：v4.18 才開給玩家（shared_rules PHONE_WEAR → DC_RULES.wear.on）；dev 先開著試
+    if (more && LIVE && SV.p74 && p.cfg && window.DCAdopt && (R.wear.on || SV.which === 'dev')) b.push(['gift', '換衣服', 'dress']);
     return b;
   }
   function act(p, what) {
@@ -1031,6 +1037,7 @@
     if (what === 'pocket') { toPocket(p); return; }
     if (what === 'feed') { feed(p); return; }
     if (what === 'recolor') { closeSheet(); DCAdopt.open(p); return; }
+    if (what === 'dress') { closeSheet(); DCAdopt.open(p, 'wear'); return; }
     if (what === 'pet') {                    // 在桌面的：送一個摸摸給電腦（電腦上的牠冒愛心、說話）
       if (cooling(p, 'pet')) { toast(`${p.name}剛被摸過了`); return; }
       remote(p, 'pet', true); toast(LIVE && !deskOn() ? `電腦開了${p.name}就收到` : `摸摸送到桌面了`);
@@ -1103,7 +1110,7 @@
   // 寫：摸摸、餵飯、叫來上班、叫回家＝dc_action_add（電腦拿走照做）；帶出門、放回家＝dc_pet_move（馬上換）。
   // 位置一律照伺服器的：讀到換地方了才演走出門／走進來（moved），按的那一刻只先走到門口等。
   let deskAt = null, booted = !LIVE, pullTimer = 0, pulling = false, netError = '';
-  const COOL = { pet: 20000, feed: 60000 };   // 同一隻多久送一次（跟電腦 pet_sync.COOL 一樣：一直按不會一直加）
+  const COOL = R.cool_ms;                     // 同一隻多久送一次（shared_rules：電腦 pet_sync、伺服器 027 同一份；一直按不會一直加）
   const REASON = { pocket_full: '口袋已經有一隻了', not_home: '牠現在不在家', no_pet: '伺服器找不到牠', too_many: '待辦太多了，等一下', invalid: '這個沒辦法做' };
   const RESULT = { full: '桌面滿了', away: '牠出門了', gone: '電腦找不到牠', busy: '牠在忙', lost: '電腦沒回應', expired: '電腦一天沒開' };
   const cooling = (p, kind) => Date.now() - (p[kind + 'At'] || 0) < COOL[kind];
@@ -1179,7 +1186,8 @@
   document.addEventListener('visibilitychange', () => { if (!document.hidden && SV.mode === 'live') { souvReady = false; homeReady = false; pull(); watchActions(); } });   // 回到畫面：紀念品、家具也再讀一次（別支手機可能加了、電腦可能買了）
 
   // 伺服器 0～100 → 畫面的 0～3（MOOD 表情、foodBar）
-  const lvl = v => v == null ? 2 : v >= 75 ? 3 : v >= 50 ? 2 : v >= 25 ? 1 : 0;
+  const lvl = v => v == null ? 2 : R.food_bars.filter(t => v >= t).length;   // 飽足格 0～3（shared_rules food_bars：第 1 條以下＝餓了，跟電腦一樣）
+  const moodLvl = v => v == null ? 1 : v >= LV.mood_good ? 2 : v >= LV.mood_bad ? 1 : 0;   // 心情：跟電腦 life.mood_face 同一個分界
   function backText(iso) {                   // 好友家回來的時間：「10:00」「明天 10:00」「10/18 10:00」
     if (!iso) return '';
     const d = new Date(iso), hm = d.toTimeString().slice(0, 5);
@@ -1207,7 +1215,7 @@
         origin: s.origin || 'desk', adopted: s.adopted !== false,   // 019：phone＝手機建立；adopted＝電腦接走了沒（長大換圖只管還沒接的）
       });
       // 剛在這邊摸過、餵過：電腦還沒算進去之前，不要被舊的數字蓋回去
-      p.mood = Math.max(lvl(s.mood), p.moodHold > t ? p.mood : 0);
+      p.mood = Math.max(moodLvl(s.mood), p.moodHold > t ? p.mood : 0);
       p.food = Math.max(lvl(s.food), p.foodHold > t ? p.food : 0);
       // 毛孩圖：有傳過的用牠自己的（下載好之前先用範例裡同花色的）
       p.spriteWant = s.sprite || '';
