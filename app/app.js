@@ -2,7 +2,7 @@
 // 斜上往下看的房間（W×H 像素，比螢幕大），整數倍放大（不糊）；拖曳移動鏡頭、兩指縮放。
 // 電腦網頁＝橫版（分頁列在左邊）、手機網頁＝直版（分頁列在下面）（2026-10-14 使用者）。
 // 家具先用程式畫的簡單版（之後換成正式美術）；毛孩用遊戲的側面影格，前後只靠遮擋表現、不縮放。
-(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 63;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 74;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   // 資料：範例（假資料）或伺服器（server.js；登入後 dc_pets_mine 每 10 秒讀一次，見下面「伺服器同步」）。
@@ -85,14 +85,24 @@
   const host = $('view-home'), stage = $('stage'), cv = $('cv');   // stage＝房間那一塊（上下的名單、工具列不算）
   let ctx = cv.getContext('2d');           // 畫圖小工具都畫在 ctx 上；口袋（pocket.js）畫的時候暫時換成自己的
   const roomCtx = ctx;
-  const cam = { x: 0, y: 0, z: 2, zMin: 2, zMax: 4 };
-  let viewW = 0, viewH = 0;
+  // 縮放檔位（2026-10-27 美術體檢：縮到最小只看得到三分之一寬、書櫃狗屋要左右拖才找到）：
+  //   第 0 檔＝整個房間放得下（看全家）；再來＝填滿畫面的整數倍（打開時用這檔）、再 +1、+2。
+  //   整個房間那檔照「實體像素」取整數（iPhone DPR 3：375 寬＝每格 2 實體像素，不糊）；取整數會小太多才用剛好的（SE 會有一點糊，裝置規格第 5 節）
+  const cam = { x: 0, y: 0, z: 2, zMin: 2, zMax: 4, lv: -1, levels: [2], cover: 0 };   // lv -1：一打開＝整個房間那檔（使用者 2026-10-27 選「直接看整個房間」）
+  let viewW = 0, viewH = 0, camTouched = false;   // camTouched：使用者自己移過、縮放過鏡頭（之後讀到資料不再自動對準）
+  function zoomLevels(vw, vh) {
+    const dpr = window.devicePixelRatio || 1, whole = Math.min(vw / W, vh / H), snap = Math.floor(whole * dpr) / dpr;
+    const all = snap >= whole * .85 ? snap : whole, cover = Math.max(2, Math.ceil(Math.max(vw / W, vh / H)));
+    return all < cover - .2 ? [all, cover, cover + 1, cover + 2] : [cover, cover + 1, cover + 2];
+  }
   function fit() {
     const vw = stage.clientWidth, vh = stage.clientHeight;
     if (!vw || !vh) return;
-    cam.zMin = Math.max(2, Math.ceil(Math.max(vw / W, vh / H)));
-    cam.zMax = cam.zMin + 2;
-    cam.z = clamp(cam.z, cam.zMin, cam.zMax);
+    const lv = cam.levels.length ? cam.lv - cam.cover : 0;   // 換畫面大小：留在「相對於填滿那檔」同一檔
+    cam.levels = zoomLevels(vw, vh); cam.cover = cam.levels.length - 3;
+    cam.lv = clamp(cam.cover + lv, 0, cam.levels.length - 1);
+    cam.zMin = cam.levels[0]; cam.zMax = cam.levels[cam.levels.length - 1];
+    cam.z = cam.levels[cam.lv];
     viewW = Math.ceil(vw / cam.z); viewH = Math.ceil(vh / cam.z);
     cv.width = viewW; cv.height = viewH;
     cv.style.width = viewW * cam.z + 'px'; cv.style.height = viewH * cam.z + 'px';
@@ -103,14 +113,33 @@
     cam.x = viewW >= W ? (W - viewW) / 2 : clamp(cam.x, 0, W - viewW);
     cam.y = viewH >= H ? (H - viewH) / 2 : clamp(cam.y, 0, H - viewH);
   }
-  function setZoom(nz, ax, ay) {          // ax, ay：螢幕上不動的那一點（CSS px）
-    nz = clamp(nz, cam.zMin, cam.zMax);
-    if (nz === cam.z) return;
+  function setZoom(lv, ax, ay) {          // lv：第幾檔（cam.levels）；ax, ay：螢幕上不動的那一點（CSS px）
+    lv = clamp(lv, 0, cam.levels.length - 1);
+    if (lv === cam.lv) return;
     const wx = cam.x + ax / cam.z, wy = cam.y + ay / cam.z;
-    cam.z = nz; fit();
+    cam.lv = lv; fit();
     cam.x = wx - ax / cam.z; cam.y = wy - ay / cam.z; clampCam();
   }
+  const zoomBy = (d, ax, ay) => { camTouched = true; setZoom(cam.lv + d, ax, ay); };
   function lookAt(wx, wy) { cam.x = wx - viewW / 2; cam.y = wy - viewH / 2; clampCam(); }
+  // 打開時對準在家的毛孩；沒有在家的 → 家具最集中的地方（2026-10-27：第一眼只看到窗戶、空地板、一整塊地毯）
+  function cozySpot() {                    // 客廳（茶几下面那塊大地毯：沙發、茶几、單人沙發圍著）；沒有的話＝家具最多的地方
+    const rug = HOME.rugs.map(rugAt).find(r => r && !r.round);
+    if (rug) return [rug.x + rug.w / 2, rug.y + rug.h / 2];
+    let best = [W / 2, WALL_Y + 100], most = -1;
+    for (const f of furn) {
+      const n = furn.filter(q => Math.abs(q.x - f.x) < 100 && Math.abs(q.y - f.y) < 90).length;
+      if (n > most) { most = n; best = [f.x, clamp(f.y, FLOOR.y0 + 40, FLOOR.y1 - 60)]; }
+    }
+    return best;
+  }
+  function frameHome() {
+    if (camTouched || !viewW) return;
+    const home = pets.filter(p => !p.held);
+    if (!home.length) { const [x, y] = cozySpot(); lookAt(x, y - 30); return; }
+    const x = home.reduce((s, p) => s + p.x, 0) / home.length, y = home.reduce((s, p) => s + p.y, 0) / home.length;
+    lookAt(x, y - 24);
+  }
   function keepVisible(pet) {              // 毛孩整隻都在畫面裡（面板打開、房間變矮時用）
     const m = 6, h = pet.d.h, w = pet.d.w * .7;
     if (pet.x - w / 2 < cam.x + m || pet.x + w / 2 > cam.x + viewW - m || pet.y - h < cam.y + m || pet.y > cam.y + viewH - m) lookAt(pet.x, pet.y - h / 2);
@@ -148,6 +177,7 @@
     for (let x = 4; x < W; x += 12) rect(x, 6, 2, WALL_Y - 16, 'rgba(150,100,70,.10)');
     rect(0, 0, W, 6, '#6b4a33'); rect(0, 6, W, 2, '#8a5e40');
     rect(0, WALL_Y - 10, W, 6, '#dcbf9c'); rect(0, WALL_Y - 4, W, 4, '#8f5f40');
+    drawWainscot(tod);
     // 窗戶
     const wx = 196, wy = WALL_Y - 112, ww = 70, wh = 60, sky = SKY[tod];
     rect(wx - 3, wy - 3, ww + 6, wh + 6, '#7a4f33');
@@ -165,6 +195,7 @@
     rect(wx - 6, wy + wh + 3, ww + 12, 3, '#a8734d');
     rect(wx - 10, wy - 5, 7, wh + 9, '#e8a0a0'); rect(wx + ww + 3, wy - 5, 7, wh + 9, '#e8a0a0');
     drawBoard();
+    drawWallDeco(tod);
     // 掛畫（以後：照片變掛畫）
     const px = 394, py = WALL_Y - 100;
     rect(px, py, 30, 22, '#7a4f33'); rect(px + 2, py + 2, 26, 18, '#f4f1e8');
@@ -183,6 +214,52 @@
       rect(dx + 6, dy + 6, dw - 12, 44, '#a8734d'); rect(dx + 6, dy + 58, dw - 12, 54, '#a8734d');
       rect(dx + dw - 11, dy + 62, 4, 4, '#f2d27a');
     }
+  }
+  // 牆的生活感（2026-10-27 美術體檢「牆太空」＋使用者給的溫馨房間參考圖）：木頭牆裙、照手機時間走的掛鐘、吊盆、窗邊的乾燥花、
+  // 軟木板上的小旗子、掛畫上面兩個小相框、紀念品架兩端的小擺飾、門邊的電燈開關。都畫在牆上，不擋毛孩走路、不影響佈置
+  const WOOD = { morning: '#c99a6c', day: '#cc9e70', evening: '#b98a62', night: '#a2805f' };
+  function drawWainscot(tod) {
+    const top = WALL_Y - 44, x1 = DOOR.x - 31, h = WALL_Y - 10 - top, wd = WOOD[tod];
+    rect(0, top, x1, h, wd);
+    for (let x = 0; x < x1; x += 28) {                    // 一格一格的木板：凹下去的框、亮暗兩邊
+      rect(x, top, 1, h, 'rgba(90,50,25,.35)');
+      rect(x + 5, top + 6, 18, h - 12, 'rgba(90,50,25,.18)'); rect(x + 5, top + 6, 18, 1, 'rgba(90,50,25,.3)'); rect(x + 5, top + h - 7, 18, 1, 'rgba(255,240,210,.25)');
+      rect(x + 6, top + 7, 16, h - 14, wd);
+    }
+    rect(0, top - 3, x1, 3, '#a8734d'); rect(0, top - 3, x1, 1, '#d9b48a'); rect(0, top, x1, 1, 'rgba(60,30,10,.25)');
+  }
+  function drawWallDeco(tod) {
+    // 掛鐘（照手機現在的時間走）
+    const cx = 140, cy = 30, d = new Date(), hh = (d.getHours() % 12 + d.getMinutes() / 60) / 12, mm = d.getMinutes() / 60;
+    ellipse(cx + 1, cy + 1, 9, 9, 'rgba(60,30,10,.18)'); ellipse(cx, cy, 9, 9, '#7a4f33'); ellipse(cx, cy, 7, 7, '#f6efe0');
+    for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; rect(cx + Math.round(Math.sin(a) * 6), cy - Math.round(Math.cos(a) * 6), 1, 1, i % 3 ? '#c9b89a' : OL); }
+    const hand = (f, len, col) => { for (let k = 0; k <= len; k++) rect(cx + Math.round(Math.sin(f * Math.PI * 2) * k), cy - Math.round(Math.cos(f * Math.PI * 2) * k), 1, 1, col); };
+    hand(hh, 3, OL); hand(mm, 5, '#5a4030'); rect(cx, cy, 1, 1, '#d9483b');
+    // 書櫃上面的吊盆（從天花板垂下來的藤）
+    const px = 32;
+    for (const ox of [-4, 4]) for (let k = 0; k < 12; k++) rect(px + Math.round(ox * k / 12), 8 + k, 1, 1, '#8a6a4a');
+    rect(px - 6, 20, 13, 7, '#c9734f'); rect(px - 6, 20, 13, 1, '#e09a6f'); rect(px + 5, 21, 1, 6, '#9a5a3a');
+    ellipse(px, 19, 7, 3, '#5a9a4a'); ellipse(px - 2, 18, 4, 2, '#7ab85a');
+    [[-7, 9], [-3, 13], [2, 10], [6, 15], [9, 7]].forEach(([dx, len]) => { for (let k = 0; k < len; k++) rect(px + dx + (k % 4 === 3 ? 1 : 0), 24 + k, 1, 1, k % 3 ? '#5a9a4a' : '#7ab85a'); });
+    // 窗戶左邊的乾燥花束（倒掛）
+    const fx = 180;
+    rect(fx, 34, 1, 4, '#8a6a4a'); rect(fx - 2, 38, 5, 2, '#c9955e');
+    for (let k = 0; k < 7; k++) { rect(fx - 2 + (k % 5), 40 + k * 2, 1, 2, '#a89060'); if (k % 2) rect(fx - 3 + (k % 6), 41 + k * 2, 2, 1, ['#e8b0a0', '#f2d39a', '#d9c0e0'][k % 3]); }
+    // 軟木板上面一串小旗子
+    for (let x = BOARD.x - 2; x <= BOARD.x + BOARD.w + 2; x++) {
+      const sag = Math.round(Math.sin((x - BOARD.x + 2) / (BOARD.w + 4) * Math.PI) * 3);
+      rect(x, BOARD.y - 10 + sag, 1, 1, '#8a6a4a');
+      if ((x - BOARD.x + 2) % 9 === 3) { const col = ['#e8807a', '#f2c96b', '#8fc7a8', '#8fb0e0'][((x - BOARD.x) / 9 | 0) % 4]; for (let k = 0; k < 4; k++) rect(x - 2 + Math.ceil(k / 2), BOARD.y - 9 + sag + k, 5 - Math.ceil(k / 2) * 2, 1, col); }
+    }
+    // 掛畫上面兩個小相框（左邊一隻貓、右邊小房子）
+    rect(393, 26, 13, 16, '#7a4f33'); rect(395, 28, 9, 12, '#f4f1e8'); rect(397, 33, 5, 5, '#c9a070'); rect(397, 31, 1, 2, '#c9a070'); rect(401, 31, 1, 2, '#c9a070'); rect(402, 36, 2, 1, '#c9a070');
+    rect(410, 30, 16, 13, '#a8734d'); rect(412, 32, 12, 9, '#cfe3ee'); rect(414, 36, 6, 5, '#e8807a'); rect(413, 35, 8, 1, '#b8483a'); rect(416, 38, 2, 3, '#7a4f33'); rect(420, 33, 3, 2, '#ffffff');
+    // 紀念品架下層兩端的小擺飾（中間的位置留給紀念品）：左邊小仙人掌、右邊一排書
+    const sy = SHELF.y + 30;
+    rect(SHELF.x + 1, sy - 4, 5, 4, '#c9734f'); rect(SHELF.x + 2, sy - 10, 3, 6, '#5a9a4a'); rect(SHELF.x + 1, sy - 8, 1, 2, '#5a9a4a'); rect(SHELF.x + 3, sy - 9, 1, 1, '#f28fb0');
+    [['#3f7fc8', 10], ['#d9483b', 9], ['#f2c531', 8]].forEach(([c, h], i) => { rect(SHELF.x + SHELF.w - 8 + i * 2, sy - h, 2, h, c); rect(SHELF.x + SHELF.w - 8 + i * 2, sy - h + 2, 2, 1, 'rgba(255,255,255,.4)'); });
+    // 門邊的電燈開關
+    rect(DOOR.x - 40, 84, 5, 8, '#f4efe6'); rect(DOOR.x - 40, 84, 5, 1, '#ffffff'); rect(DOOR.x - 38, 86, 1, 3, '#c9c2b4');
   }
   // 軟木板：釘著收到的明信片（最新 3 張；mail.js 用 DC.setBoard 給）。點一下＝打開信箱的那張（2026-10-14 使用者選「明信片貼在家裡牆上」）
   const BOARD = { x: 282, y: WALL_Y - 104, w: 64, h: 32 };   // 窗戶（186～276）和立燈（354～390）中間
@@ -329,12 +406,52 @@
         ellipse(r.x + r.w / 2, r.y + r.h / 2, r.w / 2 + 1, r.h / 2 + 1, OL);
         ellipse(r.x + r.w / 2, r.y + r.h / 2, r.w / 2, r.h / 2, r.c1);
         ellipse(r.x + r.w / 2, r.y + r.h / 2, r.w / 2 - 4, r.h / 2 - 3, r.c2);
-      } else {
-        rect(r.x - 1, r.y - 1, r.w + 2, r.h + 2, OL); rect(r.x, r.y, r.w, r.h, r.c1);
-        rect(r.x + 4, r.y + 4, r.w - 8, r.h - 8, r.c2);
-        for (let x = r.x + 8; x < r.x + r.w - 8; x += 10) rect(x, r.y + r.h / 2 - 1, 4, 2, r.c1);
-      }
+        ellipse(r.x + r.w / 2, r.y + r.h / 2, r.w / 2 - 8, r.h / 2 - 6, LT); ellipse(r.x + r.w / 2, r.y + r.h / 2, r.w / 2 - 11, r.h / 2 - 8, r.c2);
+        ellipse(r.x + r.w / 2, r.y + r.h / 2, r.w / 2 - 15, r.h / 2 - 11, r.c1); ellipse(r.x + r.w / 2, r.y + r.h / 2, r.w / 2 - 18, r.h / 2 - 13, LT);
+      } else drawRug(r);
     }
+    drawFloorDeco();
+  }
+  // 地毯（2026-10-27「一大塊平塗鮭魚紅＋一條虛線」）：左右兩端的流蘇、外框一排小方塊、細框線、裡面菱形格子、中間一個大菱形
+  const LT = 'rgba(255,240,220,.22)', DK = 'rgba(80,20,10,.16)';
+  function diamond(cx, cy, rx, ry, col, fill) {
+    for (let k = -ry; k <= ry; k++) { const w = Math.round(rx * (1 - Math.abs(k) / ry)); if (fill) rect(cx - w, cy + k, w * 2 + 1, 1, col); else { rect(cx - w, cy + k, 1, 1, col); rect(cx + w, cy + k, 1, 1, col); } }
+  }
+  function drawRug(r) {
+    for (let y = r.y + 3; y < r.y + r.h - 2; y += 3) { rect(r.x - 4, y, 4, 1, '#efe2c8'); rect(r.x + r.w, y, 4, 1, '#efe2c8'); rect(r.x - 4, y, 1, 1, '#d9c8a8'); rect(r.x + r.w + 3, y, 1, 1, '#d9c8a8'); }
+    rect(r.x - 1, r.y - 1, r.w + 2, r.h + 2, OL); rect(r.x, r.y, r.w, r.h, r.c1);
+    for (let x = r.x + 4; x < r.x + r.w - 4; x += 8) { rect(x, r.y + 1, 3, 2, LT); rect(x + 4, r.y + r.h - 3, 3, 2, LT); }
+    for (let y = r.y + 6; y < r.y + r.h - 6; y += 7) { rect(r.x + 1, y, 2, 3, LT); rect(r.x + r.w - 3, y, 2, 3, LT); }
+    rect(r.x + 4, r.y + 4, r.w - 8, r.h - 8, r.c2);
+    rect(r.x + 7, r.y + 7, r.w - 14, 1, DK); rect(r.x + 7, r.y + r.h - 8, r.w - 14, 1, DK); rect(r.x + 7, r.y + 7, 1, r.h - 14, DK); rect(r.x + r.w - 8, r.y + 7, 1, r.h - 14, DK);
+    const cx = Math.round(r.x + r.w / 2), cy = Math.round(r.y + r.h / 2);
+    for (let y = r.y + 14, i = 0; y < r.y + r.h - 12; y += 12, i++) for (let x = r.x + 16 + (i % 2) * 12; x < r.x + r.w - 14; x += 24) {
+      if (Math.abs(x - cx) < 40 && Math.abs(y - cy) < 22) continue;   // 中間留給大菱形
+      diamond(x, y, 5, 4, DK); rect(x, y, 1, 1, LT);
+    }
+    diamond(cx, cy, 34, 18, r.c1, true); diamond(cx, cy, 34, 18, OL); diamond(cx, cy, 24, 12, r.c2, true); diamond(cx, cy, 14, 7, LT, true); diamond(cx, cy, 5, 3, r.c1, true);
+  }
+  const shadeHex = c => '#' + [1, 3, 5].map(i => Math.round(parseInt(c.slice(i, i + 2), 16) * .8).toString(16).padStart(2, '0')).join('');
+  // 地上的生活感小東西（平的、畫在地板上：毛孩走過去、佈置都不受影響）：門口的地墊、拖鞋、傘桶；地毯邊的坐墊；貓窩旁的玩具老鼠；貓跳台旁的逗貓棒
+  function drawFloorDeco() {
+    const mx = DOOR.x - 22, my = WALL_Y + 5;
+    rect(mx - 1, my - 1, 46, 10, 'rgba(60,30,10,.2)'); rect(mx, my, 44, 8, '#e8a0a0'); rect(mx + 2, my + 2, 40, 4, '#f2b8b0');
+    for (let x = mx + 4; x < mx + 41; x += 4) rect(x, my + 3, 2, 2, '#e8a0a0');
+    [[DOOR.x - 50, '#7a9ad0'], [DOOR.x - 40, '#e8829e']].forEach(([x, c]) => { for (const ox of [0, 4]) { ellipse(x + ox, WALL_Y + 9, 2, 4, OL); ellipse(x + ox, WALL_Y + 9, 1, 3, c); rect(x + ox - 1, WALL_Y + 6, 3, 2, shadeHex(c)); } });
+    const ux = DOOR.x - 62, uy = WALL_Y + 4;                    // 傘桶＋兩把傘
+    rect(ux + 1, uy - 22, 1, 16, '#3f7fc8'); rect(ux, uy - 23, 3, 2, '#3f7fc8'); rect(ux - 1, uy - 24, 1, 2, '#5a4030');
+    rect(ux + 5, uy - 20, 1, 14, '#d9483b'); rect(ux + 4, uy - 21, 3, 2, '#d9483b'); rect(ux + 6, uy - 22, 1, 2, '#5a4030');
+    rect(ux - 2, uy - 8, 11, 10, OL); rect(ux - 1, uy - 7, 9, 8, '#c9c2b4'); rect(ux - 1, uy - 7, 9, 1, '#e8e2d6'); rect(ux + 6, uy - 6, 1, 7, '#a8a29a');
+    const big = HOME.rugs.map(rugAt).find(r => r && !r.round);
+    if (big) [[big.x + 34, big.y + big.h - 10, '#f2c96b'], [big.x + big.w - 40, big.y + big.h - 9, '#8fb0e0']].forEach(([x, y, c]) => {   // 坐墊
+      ellipse(x, y + 1, 9, 4, 'rgba(60,30,10,.2)'); ellipse(x, y, 9, 4, OL); ellipse(x, y, 8, 3, c); rect(x - 1, y - 1, 2, 2, 'rgba(80,40,20,.25)'); rect(x - 6, y - 2, 5, 1, 'rgba(255,255,255,.35)');
+    });
+    const bed = HOME.rugs.map(rugAt).find(r => r && r.round);
+    if (bed) { const x = bed.x + bed.w + 10, y = bed.y + bed.h - 6;   // 玩具老鼠
+      ellipse(x, y, 4, 2, OL); ellipse(x, y, 3, 1, '#b8b0a8'); rect(x - 3, y - 3, 2, 2, '#f2a0b0'); rect(x - 4, y, 1, 1, OL); for (let k = 0; k < 6; k++) rect(x + 4 + k, y + (k % 3 === 1 ? -1 : 0), 1, 1, '#e8829e'); }
+    const tree = furn.find(f => f.kind === 'cattree');
+    if (tree) { const x = tree.x + 34, y = tree.y + 22;                // 逗貓棒
+      for (let k = 0; k < 18; k++) rect(x + k, y - Math.round(k / 4), 1, 1, '#c9955e'); rect(x + 18, y - 6, 2, 3, '#f2c96b'); rect(x + 20, y - 7, 2, 2, '#e8807a'); rect(x + 19, y - 9, 1, 3, '#8fb0e0'); }
   }
   // 地毯跟著它下面那件家具走（r.under＝家具種類；2026-10-16）：佈置搬了茶几、貓窩，地毯一起移過去，相對位置照預設的擺法。
   // 只算出畫的位置，不另外存（家具位置存了，地毯就跟著）；整塊留在地板上。那件家具不在家裡（P78：帳號沒有）＝null，不畫
@@ -382,6 +499,8 @@
       ellipse(x, y - 3, 5, 3, OL); ellipse(x, y - 3, 4, 2, '#78b7d8'); rect(x + 5, y - 6, 2, 6, OL); rect(x + 5, y - 5, 1, 4, '#78b7d8'); rect(x - 3, y - 4, 1, 1, OL);
     } },
   };
+  // 一打開就先下載全部家具圖（以前畫到才下載：第一眼只看到空地板，2026-10-27）
+  ['shelf', 'cattree', 'sofa', 'armchair', 'table', 'lamp', 'plant', 'catbed', 'food', 'water', 'box', 'doghouse', 'ball'].forEach(furnImg);
   // 家具＝假資料的家具＋放進家裡的伴手禮（伴手禮先記在這台裝置的瀏覽器，之後改存伺服器）
   // 2026-10-15 家具改實際比例：房間 480×390 → 560×484、牆腳 56 → 150。舊版（v1）存的位置換算到新房間，
   // 不然手機上之前佈置過的家具會跑到牆上（使用者：「手機上我的家具都飛起來了」）
@@ -414,12 +533,13 @@
   function blocked(x, y) {
     return furn.some(f => f.k.fp && Math.abs(x - f.x) < f.k.fp[0] / 2 + 6 && y <= f.y + 3 && y >= f.y - f.k.fp[1] - 3);
   }
-  function freeSpot() {
+  function freeSpot(cx, cy, r) {            // 有給 cx, cy, r：在那附近找（閒逛多半在附近，不會一下就走出畫面）
     for (let i = 0; i < 30; i++) {
-      const x = rnd(FLOOR.x0 + 10, FLOOR.x1 - 10), y = rnd(FLOOR.y0, FLOOR.y1);
+      const x = r ? clamp(cx + rnd(-r, r), FLOOR.x0 + 10, FLOOR.x1 - 10) : rnd(FLOOR.x0 + 10, FLOOR.x1 - 10);
+      const y = r ? clamp(cy + rnd(-r * .7, r * .7), FLOOR.y0, FLOOR.y1) : rnd(FLOOR.y0, FLOOR.y1);
       if (!blocked(x, y)) return [x, y];
     }
-    return [W / 2, H - 20];
+    return r ? freeSpot() : [W / 2, H - 20];
   }
 
   // ---------- 毛孩 ----------
@@ -453,7 +573,7 @@
       if (r < .32) { const b = spot('eat'); if (b) return this.walkTo(b.x + (Math.random() < .5 ? -16 : 16), b.y + 4, () => { this.flip = this.x > b.x; this.set('eat', 3); this.until = now + rnd(3000, 5000); }); }
       if (r < .4 && !dog) { const b = spot('toy'); if (b) return this.walkTo(b.x - 12, b.y + 2, () => { this.flip = false; this.set(['crouch', 'knead'], 3); this.until = now + rnd(2500, 4000); }); }
       if (r < .4 && dog) { const b = spot('ball'); if (b) return this.walkTo(b.x - 14, b.y + 2, () => { this.flip = false; this.set(['play_bow', 'wag'], 5); this.until = now + rnd(2500, 4000); }); }
-      if (r < .72) { const [x, y] = freeSpot(); return this.walkTo(x, y); }
+      if (r < .72) { const [x, y] = Math.random() < .65 ? freeSpot(this.x, this.y, 70) : freeSpot(); return this.walkTo(x, y); }
       const idle = dog ? [['sit_wag', 5], ['pant', 4], ['sit', 1], ['loaf', 1.5], ['sniff', 4], ['yawn', 2]]
                        : [['sit', 1], ['loaf', 1.5], ['groom', 3], ['yawn', 2], ['tail_flick', 4], ['idle', 1], ['washface', 3]];
       const [a, f] = idle[Math.floor(Math.random() * idle.length)];
@@ -497,12 +617,16 @@
   }
 
   const pets = [];
-  function spawnHome() {
+  function spawnHome() {                     // 在家的擠在一起（像信箱明信片裡的房間），鏡頭對準牠們（一打開是整個房間；放大時牠們在中間）
+    const [ax, ay] = cozySpot();
     for (const p of HOME.pets.filter(q => q.where === 'home')) {
-      const [x, y] = freeSpot(), pet = new Pet(p, x, y);
-      pet.until = now + rnd(0, 2500); pet.set(timeOfDay() === 'night' ? 'sleep' : 'sit', 1.2);
+      let [x, y] = freeSpot(ax, ay, 56);
+      for (let i = 0; i < 20 && pets.some(o => Math.abs(o.x - x) < 26 && Math.abs(o.y - y) < 14); i++) [x, y] = freeSpot(ax, ay, 56 + i * 4);   // 擠在一起但不疊在一起
+      const pet = new Pet(p, x, y);
+      pet.until = now + rnd(3000, 7000); pet.set(timeOfDay() === 'night' ? 'sleep' : 'sit', 1.2);
       pets.push(pet);
     }
+    frameHome();
   }
 
   // ---------- 愛心、說話泡泡 ----------
@@ -848,10 +972,10 @@
       const [a, b] = [...pts.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]);
       const r = cv.getBoundingClientRect(), mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
       if (d / g.d0 > 1.35 || d / g.d0 < .74) {
-        setZoom(cam.z + (d > g.d0 ? 1 : -1), mx - r.left, my - r.top);
+        zoomBy(d > g.d0 ? 1 : -1, mx - r.left, my - r.top);
         Object.assign(g, { d0: d, mx, my, cx: cam.x, cy: cam.y });
       } else {
-        cam.x = g.cx - (mx - g.mx) / cam.z; cam.y = g.cy - (my - g.my) / cam.z; clampCam();
+        cam.x = g.cx - (mx - g.mx) / cam.z; cam.y = g.cy - (my - g.my) / cam.z; clampCam(); camTouched = true;
         if (Math.hypot(mx - g.mx, my - g.my) > 8 && sheetPet) sheetPet.free = true;   // 自己移開了：不要再把鏡頭拉回那隻
       }
       return;
@@ -865,6 +989,7 @@
       else g.mode = 'pan';                             // 平常：滑一律是移動畫面
     }
     if (g.mode === 'pan') {
+      camTouched = true;
       cam.x = g.cx - (e.clientX - g.sx) / cam.z; cam.y = g.cy - (e.clientY - g.sy) / cam.z; clampCam();
       cv.style.cursor = 'grabbing';
     } else if (g.mode === 'stroke') {
@@ -910,10 +1035,10 @@
   stage.addEventListener('wheel', e => {
     e.preventDefault();
     const r = cv.getBoundingClientRect();
-    if (Math.abs(e.deltaY) > 4) setZoom(cam.z + (e.deltaY < 0 ? 1 : -1), e.clientX - r.left, e.clientY - r.top);
+    if (Math.abs(e.deltaY) > 4) zoomBy(e.deltaY < 0 ? 1 : -1, e.clientX - r.left, e.clientY - r.top);
   }, { passive: false });
-  $('zoomIn').onclick = () => setZoom(cam.z + 1, stage.clientWidth / 2, stage.clientHeight / 2);
-  $('zoomOut').onclick = () => setZoom(cam.z - 1, stage.clientWidth / 2, stage.clientHeight / 2);
+  $('zoomIn').onclick = () => zoomBy(1, stage.clientWidth / 2, stage.clientHeight / 2);
+  $('zoomOut').onclick = () => zoomBy(-1, stage.clientWidth / 2, stage.clientHeight / 2);
   // 操作提示（製作規則第 2 節）：手機一行 15 字內、照裝置用詞；第一次操作過就不再出現（記在瀏覽器）
   $('hint').textContent = coarse ? '點毛孩選牠，再滑動幫牠順毛' : '拖曳移動・滾輪縮放・點毛孩摸摸';
   let hintSeen = false;
@@ -943,6 +1068,7 @@
       ].sort((a, b) => a.y - b.y);
       things.forEach(o => o.draw());
       drawPicked();
+      drawMotes(tod, t);
       pets.forEach(p => drawHearts(p, dt));
       if (sheetPet && sheetPet.room && !sheetPet.free && pets.includes(sheetPet.room)) keepVisible(sheetPet.room);
       shade(tod);
@@ -963,6 +1089,14 @@
       b.el.style.left = l + 'px'; b.el.style.top = tp + dy + 'px';
     }
     requestAnimationFrame(loop);
+  }
+  function drawMotes(tod, t) {                // 早上、白天：窗戶照進來的光裡，小灰塵慢慢飄（使用者 2026-10-27 給的房間參考圖）
+    if (tod !== 'day' && tod !== 'morning') return;
+    for (let i = 0; i < 14; i++) {
+      const k = ((t / 1000 * (3 + i % 4) + i * 37) % 150) / 150, y = WALL_Y - 40 + k * 140, x = 206 + (i * 23) % 56 + k * 46 + Math.sin(t / 1300 + i) * 3;
+      const a = Math.sin(k * Math.PI) * (Math.sin(t / 700 + i * 2) * .25 + .55);
+      if (a > .15) { ctx.fillStyle = `rgba(255,250,225,${a.toFixed(2)})`; ctx.fillRect(Math.round(x), Math.round(y), 1, 1); }
+    }
   }
   function shade(tod) {
     if (tod !== 'night' && tod !== 'evening') return;
@@ -1357,6 +1491,12 @@
     }
     const say = (t, bad) => { $('loginMsg').textContent = t; $('loginMsg').classList.toggle('bad', !!bad); };
     say(msg, !!msg);
+    // P83：上次是伺服器說登入不能用了 → 寫出時間（再遇到就知道原因）；自己按登出、刪帳號不寫。沒這行、信箱也要重打＝iPhone 清了資料
+    const out = SV.lastLogout;
+    if (!msg && out && out.why === 'gone' && Date.now() - out.at < 7 * 86400000) {
+      const t = new Date(out.at), p2 = n => String(n).padStart(2, '0');
+      say(`${t.getMonth() + 1}/${t.getDate()} ${p2(t.getHours())}:${p2(t.getMinutes())} 登入失效了`);
+    }
     let email = '';
     try { email = localStorage.getItem('deskcat_login_email') || ''; } catch (_) { /* 不記也沒關係 */ }
     $('loginEmail').value = email;
@@ -1433,14 +1573,14 @@
     }
     $('sheet').hidden = false; document.body.classList.add('sheet-open');
     const pet = pets.find(o => o.p === p);   // 面板開著＝選中：牠停在原地、鏡頭對著牠
-    const prevZoom = sheetPet ? sheetPet.prevZoom : cam.z;
+    const prevZoom = sheetPet ? sheetPet.prevZoom : cam.lv;
     if (sheetPet && sheetPet.room && sheetPet.room !== pet) release(sheetPet.room);   // 換選中別隻：前一隻放開
     sheetPet = { p, room: pet || null, prevZoom, free: false };
     $('sheetTip').hidden = !(isPhone && pet);
     if (pet) {
       pet.target = null; pet.after = null; pet.until = Infinity; if (pet.anim === 'walk') pet.set('sit', 1);
       if (isPhone) {                          // 手機：放大對準牠，提示順毛方向（摸對一次才消失）
-        setZoom(Math.min(cam.zMax, cam.zMin + 1), stage.clientWidth / 2, stage.clientHeight / 2);
+        setZoom(cam.cover + 1, stage.clientWidth / 2, stage.clientHeight / 2);
         lookAt(pet.x, pet.y - pet.d.h / 2);
         strokeHint(pet, 60000);
       }
@@ -1455,7 +1595,7 @@
     $('sheet').hidden = true; document.body.classList.remove('sheet-open');
     if (sheetPet) {
       if (sheetPet.room) release(sheetPet.room);
-      if (isPhone && sheetPet.room && sheetPet.prevZoom !== cam.z) setZoom(sheetPet.prevZoom, stage.clientWidth / 2, stage.clientHeight / 2);
+      if (isPhone && sheetPet.room && sheetPet.prevZoom !== cam.lv) setZoom(sheetPet.prevZoom, stage.clientWidth / 2, stage.clientHeight / 2);
     }
     sheetPet = null;
   }
@@ -1647,8 +1787,7 @@
 
   setPhone(isPhone);
   showInstall();
-  spawnHome();
-  fit(); lookAt(260, 120);
+  fit(); spawnHome();
   render(); renderAccount(); tick(); setInterval(tick, 30000);
   setInterval(() => { if (!$('view-family').hidden) renderAccount(); }, 30000);   // 「電腦 3 分鐘前連過」跟著走
   if (SV.mode === 'login') showLogin(); else if (LIVE) pull();

@@ -13,7 +13,7 @@
 //     開新帳號＝信箱驗證碼 create_user: true（先用 false 試，沒有帳號才問要不要開）；暱稱＝profiles 表（001，自己的那一列可以改 nickname）；
 //     刪帳號 dc_account_delete（🎮 新的：現在的 delete_my_account 要電腦裝置，手機叫不了）；
 //     手機建立毛孩 dc_pet_create(p_cfg, p_sprite)（🎮 019）＋毛孩圖自己傳 Storage pet-sprites/<帳號>/<cid>-<指紋>.png／.json（權限 013 已經可以）
-(window.DC_BUILD = window.DC_BUILD || {})['server.js'] = 63;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['server.js'] = 74;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const SERVERS = {
@@ -103,12 +103,33 @@
     saveSession(asSession(d)); store(MODE_KEY, null); mode = 'live';
     return session;
   }
+  // 換新的登入鑰匙（每小時一次）。P83（2026-10-27）：以前換的時候伺服器忙、太多次也當成被登出 → 隔幾天打開常要重新登入
+  //   （正式伺服器查過：那幾段登入其實都還有效＝手機自己忘掉的）。現在只有伺服器明確說「這段登入不能用了」（400／401／403）才登出；
+  //   斷線、伺服器忙 5 秒內再試（Supabase 舊鑰匙約 10 秒內再用會拿到同一把新的，超過就整段作廢）；還是不行就保留登入、下次要用時再換。
+  const dead = e => e.code === 'auth' && [400, 401, 403].includes(e.status);
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  async function refreshTry(rt) {
+    for (const pause of [0, 1500, 3500]) {
+      if (pause) await wait(pause);
+      try { return await http('POST', '/auth/v1/token?grant_type=refresh_token', { refresh_token: rt }); } catch (e) {
+        if (pause === 3500 || !(e.code === 'offline' || e.status >= 500)) throw e;
+      }
+    }
+  }
   let refreshing = null;
   function refresh() {
     if (!refreshing) {
-      refreshing = http('POST', '/auth/v1/token?grant_type=refresh_token', { refresh_token: session.refresh_token })
-        .then(d => { saveSession({ ...asSession(d), uid: (d.user && d.user.id) || session.uid, email: (d.user && d.user.email) || session.email }); })
-        .catch(e => { if (e.code !== 'offline') expired(); throw e; })
+      const was = session;
+      refreshing = refreshTry(was.refresh_token)
+        .then(d => {
+          if (!d || !d.access_token) throw new ServerError('伺服器有狀況，等一下再試', 'server', 0);
+          if (session !== was) return;                // 換的時候按了登出、或登入了別的帳號：不要蓋回去
+          saveSession({ ...asSession(d), uid: (d.user && d.user.id) || was.uid, email: (d.user && d.user.email) || was.email });
+        })
+        .catch(e => {
+          if (dead(e)) { if (session === was) expired('gone'); throw e; }
+          throw e.code === 'auth' ? new ServerError('伺服器有狀況，等一下再試', 'server', e.status) : e;   // 429 這類：不是登入壞了
+        })
         .finally(() => { refreshing = null; });
     }
     return refreshing;
@@ -118,8 +139,22 @@
     if (session.expires_at - 60 < Date.now() / 1000) await refresh();
     return session.access_token;
   }
+  // 從背景回來、鑰匙 5 分鐘內要過期：先安靜換好（P83），不要等畫面讀資料時才換
+  if (typeof document !== 'undefined') document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && session && session.expires_at - 300 < Date.now() / 1000) refresh().catch(() => { /* 下次要用時再換 */ });
+  });
+  // 登出紀錄（P83 M1）：照伺服器記最近 5 次 {at, why}；why＝gone（伺服器說這段登入不能用了）／user（自己按登出）／deleted（刪帳號）。
+  // 登入畫面顯示最近一次被伺服器登出的時間；沒有紀錄、連信箱都要重打＝iPhone 把這個網頁的資料清掉了
+  const OUT_KEY = 'deskcat_logout_log_v1';
+  function noteOut(why) {
+    let all = load(OUT_KEY, {});
+    if (!all || typeof all !== 'object' || Array.isArray(all)) all = {};
+    const list = Array.isArray(all[which]) ? all[which] : [];
+    all[which] = [{ at: Date.now(), why }, ...list].slice(0, 5); store(OUT_KEY, all);
+  }
   const listeners = new Set();
-  function expired() {                    // 登入不能用了（被登出、換密碼…）：清掉，畫面回到登入
+  function expired(why) {                 // 登入不能用了（被登出、換密碼…）：清掉，畫面回到登入
+    noteOut(why || 'gone');
     saveSession(null); mode = 'login';
     listeners.forEach(f => { try { f('expired'); } catch (_) { /* 一個壞了不影響別的 */ } });
   }
@@ -135,6 +170,7 @@
   const rpc = (fn, args = {}) => authed('POST', '/rest/v1/rpc/' + fn, args);
   async function logout() {
     const t = session && session.access_token;
+    if (session) noteOut('user');
     saveSession(null); mode = 'login';
     if (t) try { await http('POST', '/auth/v1/logout?scope=local', {}, t); } catch (_) { /* 伺服器那邊失敗也沒關係：這台已經忘了 */ }
   }
@@ -148,6 +184,7 @@
   const setNickname = nick => authed('PATCH', `/rest/v1/profiles?id=eq.${session.uid}`, { nickname: String(nick).trim().slice(0, 20) });
   async function accountDelete() {         // 伺服器上這個帳號的東西全部刪掉（電腦版也是同一個帳號）→ 這台登出
     await rpc('dc_account_delete');
+    noteOut('deleted');
     saveSession(null); mode = 'login';
   }
   // 毛孩圖自己傳上去（手機建立的毛孩：零件包組好的圖表，格式跟電腦 src/pet_sprites.py 一樣）。file＝<cid>-<指紋>
@@ -305,6 +342,7 @@
     wardrobeMine: () => rpc('dc_wardrobe_mine'),
     get googleDone() { return googleDone; },          // 從 Google 跳回來、正在換登入資料（沒有＝null）
     onExpired: f => listeners.add(f),
+    get lastLogout() { const l = load(OUT_KEY, {})[which]; return Array.isArray(l) && l[0] || null; },   // 最近一次登出 {at, why}（P83）
     // 讀、寫（server/011～013；回傳格式見 docs/專案/P66_手機網頁版.md 第 8 節）
     petsMine: () => rpc('dc_pets_mine'),
     actionsMine: () => rpc('dc_actions_mine'),

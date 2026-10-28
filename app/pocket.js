@@ -1,7 +1,7 @@
 // DeskCat 手機網頁「🎒 口袋」：毛孩跟你出門（只有手機有）。P66 新設計第 6 節：口袋、合照、順毛。
 // 口袋＝毛孩跟你出門、在戶外（不是真的口袋）：直式滿版的戶外場景（城市、公園、步道；照時間換天空、天氣先手動選，不要求位置權限），功能是右下的懸浮按鈕。
 // 合照：相機畫面疊上像素毛孩（可拖、放大、換姿勢、翻面），拍下來存到手機或分享；照片只留在手機、不上傳。
-(window.DC_BUILD = window.DC_BUILD || {})['pocket.js'] = 63;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['pocket.js'] = 74;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const D = window.DC, $ = id => document.getElementById(id);
@@ -80,11 +80,13 @@
   // 戶外（outdoor.js）：口袋＝毛孩跟你出門（2026-10-14 使用者「口袋版的意思是戶外，不是真的口袋」）。
   // 2026-10-20 使用者「感覺可以多種樣式，另外可以讓寵物有出門散步的感覺」：13 個場景（outdoor.js ORDER）每次出門隨機一個，
   // 散步＝毛孩在畫面左邊走、背景一層一層往後捲（遠的慢、近的快）；走一陣子會停下來聞聞、坐一下，摸牠、撿到東西也會停。
-  const PATH_BOT = .88, FEET = .8;
+  const PATH_BOT = .86, FEET = .8;        // 步道下緣（outdoor.js 的 p1）、腳踩的高度
   const WALK_V = 14;                       // 散步時步道每秒捲幾格（遊戲的像素）
+  const BG_ZOOM = 2;                       // 背景放大幾倍（2026-10-27 使用者看示意圖選「背景放大一倍」：毛孩看起來小一半）；背景用細格子畫，格子跟毛孩一樣細
   let scene = null, sceneKey = '', scroll = 0;
   let forceScene = new URLSearchParams(location.search).get('scene');   // 預覽、測試用：網址 &scene=beach…；window.__pocketScene('snow') 不用重新整理
   window.__pocketScene = n => { forceScene = n; };
+  window.__pocketFrame = t => frame(.016, t);   // 測試用：畫一格（預覽視窗沒顯示時瀏覽器不跑動畫）
   function sceneName() {                   // 這一趟在哪：照「哪一隻＋放進口袋的時間」挑（重新整理、關掉再開還是同一個）
     const s = `${pet.p.id}|${Math.round(outAt() / 60000)}`, O = window.DCOutdoor.ORDER;
     if (forceScene && O.includes(forceScene)) return forceScene;
@@ -93,11 +95,15 @@
     return O[h % O.length];
   }
   function drawScene(dt, t) {
-    const tod = D.timeOfDay(), c = D.ctx(), wet = weather === 'rain', night = tod === 'night', lit = night || tod === 'evening';
-    const name = sceneName(), key = [name, tod, weather, PW, PH].join('|');
-    if (key !== sceneKey) { scene = window.DCOutdoor.build(name, PW, PH, tod, weather); sceneKey = key; }
-    if (pet.walking && !item && !g.on) scroll += WALK_V * dt;
-    const glow = window.DCOutdoor.draw(c, scene, scroll, t);
+    const tod = D.timeOfDay(), c = D.ctx(), wet = weather === 'rain';
+    const name = sceneName(), key = [name, tod, weather, PW, PH, window.DCOutdoor.artVer].join('|');   // artVer：AI 建築圖讀好了就重畫
+    if (key !== sceneKey) {
+      const moved = !scene || scene.name !== name;
+      scene = window.DCOutdoor.build(name, PW, PH, tod, weather, BG_ZOOM, true); sceneKey = key;   // true＝背景的格子跟毛孩一樣細（2026-10-27 使用者選試版 A）
+      if (moved) render();                   // 換了場景（測試切換、伺服器的出門時間讀回來）：上面的地點名稱一起換
+    }
+    if (pet.walking && !item && !g.on) scroll += WALK_V / BG_ZOOM * dt;   // scroll 是背景的格子：畫面上一樣快
+    const glow = window.DCOutdoor.paint(c, scene, scroll, t, pet.x);
     // 毛孩（整隻在步道上）
     pet.step(dt); pet.draw(); D.drawHearts(pet, dt);
     // 撿到的東西：毛孩前面、比牠的腳更靠近你的步道上（畫在毛孩前面，不會被擋住），一閃一閃
@@ -106,17 +112,7 @@
       const on = Math.floor(t / 350) % 2;
       [[-6, -11], [6, -9], [0, -14]].forEach(([dx, dy], i) => { if ((i + on) % 2) { D.rect(item.x + dx, item.y + dy - 1, 1, 3, '#fff6c8'); D.rect(item.x + dx - 1, item.y + dy, 3, 1, '#fff6c8'); } });
     }
-    if (lit) {                               // 晚上：暗一點，路燈、燈籠、螢火蟲的光
-      c.save(); c.globalCompositeOperation = 'multiply'; c.fillStyle = night ? '#7c7ab0' : '#e2c6b5'; c.fillRect(0, 0, PW, PH);
-      c.globalCompositeOperation = 'lighter';
-      for (const L of window.DCOutdoor.lightsOnScreen(scene, scroll)) {
-        const gr = c.createRadialGradient(L.sx, L.y, 2, L.sx, L.y + (L.warm || L.col ? 0 : 32), L.r), col = L.col || (L.warm ? '255,150,110' : '255,214,140');
-        gr.addColorStop(0, `rgba(${col},${night ? .5 : .2})`); gr.addColorStop(1, `rgba(${col},0)`);
-        c.fillStyle = gr; c.fillRect(L.sx - L.r, L.y - L.r, L.r * 2, L.r * 2 + 40);
-      }
-      for (const [x, y, r] of glow) { const gr = c.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(220,255,140,.45)'); gr.addColorStop(1, 'rgba(220,255,140,0)'); c.fillStyle = gr; c.fillRect(x - r, y - r, r * 2, r * 2); }
-      c.restore();
-    }
+    window.DCOutdoor.light(c, scene, scroll, glow);   // 傍晚、晚上：暗一點，路燈、燈籠、螢火蟲的光（outdoor.js）
     if (wet && !scene.snowy) {             // 雪地下雨＝下大雪（outdoor.js 的 fx），不畫雨
       const off = (t / 6) % PH;
       for (const [x, y] of drops) D.rect((x + off * .3) % PW, (y + off) % PH, 1, 3, 'rgba(200,220,255,.7)');
