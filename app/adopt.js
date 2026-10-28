@@ -11,7 +11,7 @@
 // 換衣服（P74 M5，2026-10-26）：毛孩面板〔換衣服〕→ 同一個畫面換成「衣櫃」：一個部位一排，只列衣櫃有的（🎮 dc_wardrobe_mine）、
 //   這隻能穿的（專屬看品種或花色，跟電腦 items.can_wear 一樣）、零件包有這個品種年齡的；狗拿南瓜提籃不戴頭臉脖子（DC_RULES.wear.clash）。
 // 長大換著色本（2026-10-23）：手機建立、電腦還沒接的毛孩長大了（ageKeyOf 變了）→ 背景照同一份外觀重畫、傳上去（checkGrow）。
-(window.DC_BUILD = window.DC_BUILD || {})['adopt.js'] = 74;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['adopt.js'] = 78;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const SV = window.DCServer, P = window.DCParts, $ = id => document.getElementById(id);

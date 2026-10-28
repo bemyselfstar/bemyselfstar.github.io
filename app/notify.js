@@ -7,7 +7,7 @@
 // 測試：假伺服器 ?mock=1 的 &pushenv=ok（預設）／notinstalled（還沒加到主畫面）／nosupport（收不到通知的瀏覽器）／denied（按過不允許）、&pushkey=0（伺服器還沒有鑰匙）、
 //   &pushtest=none／too_soon／no_key／gone（〔送我一則〕的各種回覆）。
 // 真的推播只在 https 正式網址（sw.js 只在那裡註冊）：用 dev 試＝正式網址加 ?server=dev（會記住；manifest-dev 讓加到主畫面的也連 dev）。
-(window.DC_BUILD = window.DC_BUILD || {})['notify.js'] = 74;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['notify.js'] = 78;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const SV = window.DCServer, D = window.DC, $ = id => document.getElementById(id);

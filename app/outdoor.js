@@ -8,7 +8,7 @@
 //         天空加遠山、一群鳥、熱氣球、風箏、飛機（照場景）；
 //   不重複：樹、房子、攤位的大小、顏色、間距用亂數排（每個場景固定的亂數，這一趟看到的一樣），一層 480 寬（以前 240）才繞回來，每個場景有一個特別的地標；
 //   路面：樹影、水窪（下雨更多）、落葉、裂縫，少一點平均的小雜點；偶爾經過鴿子（毛孩走近會飛走）、路人（下雨撐傘）、遛狗的人、腳踏車。
-(window.DC_BUILD = window.DC_BUILD || {})['outdoor.js'] = 74;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['outdoor.js'] = 78;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const D = window.DC;
@@ -475,7 +475,7 @@
 
   // ---------- AI 建築圖（2026-10-27 使用者選「甲：混合」：建築用本機 FLUX 產的圖，天空、路面、路人、燈光照舊用程式畫） ----------
   // 圖在 art/outdoor/<場景>_<種類>_<n>.png（mobile/tools/outdoor_facades.py：對齊格子、去白底、一棟一張），1 像素＝毛孩的 1 像素（細格子 K＝2 時才用）
-  const FACADES = { beach: { boat: 5, castle: 4, cloud: 4, deck: 1, isle: 1, lighthouse: 2, moon: 2, palm: 10, palmm: 10, rope: 1, sand: 1, sea: 1, shore: 1, stuff: 6, sun: 2, tower: 2, umbrella: 5 }, campus: { city: 1, cloud: 4, fence: 1, fg: 1, field: 1, moon: 2, school: 1, stuff: 6, sun: 2, track: 1, tree: 4, treem: 4 }, country: { banyan: 1, cloud: 4, fg: 1, hill: 1, house: 1, moon: 2, paddy: 1, path: 1, scare: 3, stuff: 6, sun: 2 }, flowers: { bed: 1, cloud: 4, fg: 1, field: 1, front: 5, hill: 1, moon: 2, path: 1, sun: 2, sunf: 10, sunfm: 10, windmill: 1 }, forest: { cabin: 2, cloud: 4, far: 1, fg: 1, floor: 1, moon: 2, path: 1, stuff: 6, sun: 2, tree: 8, treem: 8 }, harbor: { boat: 8, boats: 8, chain: 1, cloud: 4, dock: 1, light: 1, moon: 2, quay: 1, stuff: 6, sun: 2, town: 1, water: 1 }, mountain: { cloud: 4, fg: 1, marker: 5, moon: 2, pavilion: 1, peaks: 1, pine: 3, pinem: 2, rock: 5, slope: 1, steps: 1, sun: 2 }, nightmarket: { bulbs: 1, city: 1, cloud: 4, fg: 1, moon: 2, road: 1, stall: 9, stuff: 6, sun: 2 }, park: { city: 1, cloud: 4, fg: 1, fountain: 2, lawn: 1, moon: 2, path: 1, stuff: 6, sun: 2, tree: 4, treem: 4, trees: 4 }, river: { bank: 1, boat: 7, bridge: 3, cloud: 4, grass: 1, hill: 1, moon: 2, path: 1, reed: 6, sun: 2, water: 1, willow: 3, willowm: 3 }, sakura: { cloud: 4, fg: 1, hill: 1, lawn: 1, moon: 2, path: 1, stuff: 6, sun: 2, torii: 1, tree: 5, treem: 5, trees: 6 }, snow: { bank: 1, bush: 5, cabin: 2, cloud: 4, fence: 1, field: 1, forest: 1, moon: 2, mountain: 1, path: 1, pine: 10, pinem: 10, pines: 10, snowman: 3, sun: 2 }, street: { city: 1, cloud: 4, fg: 1, front: 6, house: 9, lantern: 1, moon: 2, road: 1, sun: 2, temple: 2 } };   // 幾張（mobile/tools/outdoor_facades.py 切出來的數量）
+  const FACADES = { beach: { boat: 5, castle: 4, cloud: 4, deck: 1, isle: 1, lighthouse: 2, moon: 2, palm: 10, palmm: 10, rope: 1, sand: 1, sea: 1, shore: 1, stuff: 6, sun: 2, tower: 2, umbrella: 5 }, campus: { city: 1, cloud: 4, fence: 1, fg: 1, field: 1, moon: 2, school: 1, stuff: 6, sun: 2, track: 1, tree: 4, treem: 4 }, country: { banyan: 1, cloud: 4, fg: 1, hill: 1, house: 1, moon: 2, paddy: 1, path: 1, scare: 3, stuff: 6, sun: 2 }, flowers: { bed: 1, cloud: 4, fg: 1, field: 1, front: 5, hill: 1, moon: 2, path: 1, sun: 2, sunf: 10, sunfm: 10, windmill: 1 }, forest: { cabin: 2, cloud: 4, far: 1, fg: 1, floor: 1, moon: 2, path: 1, stuff: 6, sun: 2, tree: 8, treem: 8 }, harbor: { boat: 8, boats: 8, chain: 1, cloud: 4, dock: 1, light: 1, moon: 2, quay: 1, stuff: 6, sun: 2, town: 1, water: 1 }, mountain: { cloud: 4, fg: 1, marker: 5, moon: 2, pavilion: 1, peaks: 1, pine: 3, pinem: 2, rock: 5, slope: 1, steps: 1, sun: 2 }, nightmarket: { bulbs: 1, city: 1, cloud: 4, fg: 1, moon: 2, road: 1, stall: 9, stuff: 6, sun: 2 }, park: { city: 1, cloud: 4, fg: 1, fountain: 2, lawn: 1, moon: 2, path: 1, stuff: 6, sun: 2, tree: 4, treem: 4, trees: 4 }, river: { bank: 1, boat: 7, bridge: 3, cloud: 4, grass: 1, hill: 1, moon: 2, path: 1, reed: 6, sun: 2, water: 1, willow: 3, willowm: 3 }, sakura: { cloud: 4, fg: 1, hill: 1, lawn: 1, moon: 2, path: 1, stuff: 5, sun: 2, torii: 1, tree: 3, treem: 3, trees: 3 }, snow: { bank: 1, bush: 5, cabin: 2, cloud: 4, fence: 1, field: 1, forest: 1, moon: 2, mountain: 1, path: 1, pine: 10, pinem: 10, pines: 10, snowman: 3, sun: 2 }, street: { city: 1, cloud: 4, fg: 1, front: 6, house: 9, lantern: 1, moon: 2, road: 1, sun: 2, temple: 2 } };   // 幾張（mobile/tools/outdoor_facades.py 切出來的數量）
   const ART = {}, artWait = {};
   let artVer = 0;                                         // 每讀好一張 +1（pocket.js 換新的才會重畫場景）
   function artLoad(sc) {                                  // 出門到這個場景才下載它的圖（不是一打開網頁就全部下載）；回傳全部讀好的 Promise
@@ -523,6 +523,11 @@
     return out;
   }
   const pickArt = (rnd, list) => list[Math.floor(rnd() * list.length)];
+  function horizonHaze(c, g, top, depth) {                 // 地平線那邊的地面、東西淡淡蓋一層天空色，往近處慢慢變清楚（2026-10-28 使用者「沒有過度」：遠景和地面中間一條硬直線）
+    const gr = c.createLinearGradient(0, top, 0, top + depth), [r, gg, b] = [1, 3, 5].map(i => parseInt(g.skyLow.slice(i, i + 2), 16));   // skyLow＝#rrggbb
+    gr.addColorStop(0, `rgba(${r},${gg},${b},.6)`); gr.addColorStop(1, `rgba(${r},${gg},${b},0)`);
+    c.save(); c.globalCompositeOperation = 'source-atop'; c.fillStyle = gr; c.fillRect(0, top, TW, depth); c.restore();
+  }
   function artStrip(c, im, base, tod, x0 = 0) {            // 長條（雪山、松林、柵欄…）：一段接一段鋪滿整層，底邊在 base；寬度整除 TW 才接得起來（outdoor_facades.py --strip 會挑）
     const src = artImg(im, tod), w = im.width / K, h = im.height / K, off = ((x0 % w) + w) % w;
     for (let x = off - w; x < TW; x += w) c.drawImage(src, snap(x), snap(base - h), w, h);
@@ -604,6 +609,7 @@
     const shoreTop = p0 - BEACH_SHORE;                                              // 沙灘（浪花以下）從這裡開始
     const sea = layer(PH), sc = sea.getContext('2d');
     artFill(sc, A('sea')[0], gy, shoreTop + 2, tod);                               // 海面（底對齊：靠岸的淺藍一定看得到）
+    horizonHaze(sc, g, gy - 2, Math.round((shoreTop - gy) * .5) + 2);
     for (const x of spots(rnd, 90, 190)) artAt(sc, pickArt(rnd, A('boat')), x, ri(rnd, gy + 8, Math.round(gy + (shoreTop - gy) * .55)), tod);   // 帆船、漁船、浮球（離岸遠一點）
     artFill(sc, A('shore')[0], shoreTop - BEACH_FOAM, p0 + 1, tod, 'bottom');    // 浪花打上沙灘
     out.push({ cv: sea, v: .35 });
@@ -659,8 +665,8 @@
       { v: 1, path: true, ops: [['fill', 'path', g => g.p0, g => g.p1, 'top']] },
       { v: 1.25, ops: [['fill', 'grass', g => g.p1, g => g.PH, 'top']] },
       { front: 'reed', gap: [40, 90] }] },
-    flowers: { layers: [
-      { v: .05, ops: [['strip', 'hill', g => g.gy + 2]] },
+    flowers: { snug: 'field', layers: [
+      { v: .05, ops: [['strip', 'hill', g => g.gy + 6]] },   // 遠山最下面幾排是平的淡綠，往下塞到向日葵田後面
       { v: .3, ops: [['fill', 'field', g => g.gy + 1, g => g.p0 + 1], ['mark', 'windmill', gyAt(.5), {}], ['row', 'sunfm', gyAt(.75), { gap: [20, 45], p: .7, clear: 6 }]] },
       { v: .7, ops: [['row', 'sunf', g => g.p0 - 1, { gap: [26, 60], p: .8 }], ['strip', 'bed', g => g.p0 + 1]] },
       { v: 1, path: true, ops: [['fill', 'path', g => g.p0, g => g.p1, 'top']] },
@@ -699,7 +705,7 @@
       { v: 1.25, ops: [['fill', 'fg', g => g.p1, g => g.PH, 'top']] }] },
     nightmarket: { layers: [
       { v: .05, ops: [['strip', 'city', g => g.gy + 2]] },
-      { v: .5, ops: [['solid', g => g.p0 - 34, g => g.p0, '#3b3346'], ['houses', 'stall', g => g.p0 + .5, null], ['strip', 'bulbs', g => g.p0 - 30], ['glow', g => g.p0 - 33, { gap: 16, r: 10, col: '255,210,140' }]] },
+      { v: .5, ops: [['solid', g => g.p0 - 22, g => g.p0, '#3b3346'], ['houses', 'stall', g => g.p0 + .5, null], ['strip', 'bulbs', g => g.p0 - 25], ['glow', g => g.p0 - 28, { gap: 16, r: 10, col: '255,210,140' }]] },   // 10-28 攤位縮成 52 小格（26 格）：底色、燈泡跟著攤位頂，不然底色上半截露出來
       { v: 1, path: true, ops: [['fill', 'road', g => g.p0, g => g.p1, 'top'], ['row', 'stuff', g => g.p0 + 5, { gap: [50, 110], p: .6 }]] },
       { v: 1.25, ops: [['fill', 'fg', g => g.p1, g => g.PH, 'top']] }],
       fx: (g, at) => (c, a) => (at.stall || []).forEach((b, i) => {        // 攤位冒煙
@@ -726,7 +732,14 @@
     cfg.need = [...need];
   }
   function kitScene(g, name, cfg) {
-    const { PH, tod, lit } = g, rnd = rng(g.seed + 5), A = k => artOf(name, k), out = [], lights = [], marks = [], at = {};
+    const A = k => artOf(name, k);
+    if (cfg.snug) {                                          // snug＝這種地面長條不夠高時，不墊平平的一條顏色，整個地平線往下移貼著它（2026-10-28 花田遠山和向日葵田中間那條）
+      const f = cfg.layers.flatMap(L => L.ops || []).find(op => op[0] === 'fill' && op[1] === cfg.snug), h = A(cfg.snug)[0].height / K;
+      const gap = f[3](g) - f[2](g) - h;
+      if (gap > 0) g = { ...g, gy: g.gy + Math.ceil(gap) };
+    }
+    const { PH, tod, lit } = g, rnd = rng(g.seed + 5), out = [], lights = [], marks = [], at = {};
+    let hazed = false;
     for (const L of cfg.layers) {
       if (L.front) {
         out.push(frontLayer(g, (c, r, b) => {
@@ -742,6 +755,7 @@
         else if (t === 'fill') {                            // 頂對齊（地面、前景）：先鋪長條最下面那排的顏色，長條上面透明的地方（蕨類、花叢的頂）才不會露出天空
           if (op[4] === 'top') R(c, 0, op[2](g), TW, op[3](g) - op[2](g), artEdge(A(k)[0], tod, 'bottom'));
           artFill(c, A(k)[0], op[2](g), op[3](g), tod, op[4]);
+          if (!hazed && L.v > .05 && L.v < 1 && !L.path) { horizonHaze(c, g, op[2](g) - 2, Math.round((g.p0 - g.gy) * .45) + 2); hazed = true; }   // 最遠那塊地面：畫完地面、還沒放樹和房子前蓋（蓋在樹上會變一塊方框）
         }
         else if (t === 'mark') {
           const o = op[3] || {}, x = ri(rnd, ...(o.x || [40, TW - 40])), base = op[2](g), b = artAt(c, pickArt(rnd, A(k)), x, base, tod);
@@ -757,6 +771,7 @@
         else if (t === 'solid') R(c, 0, op[1](g), TW, op[2](g) - op[1](g), T(op[3], tod));
         else if (t === 'glow' && lit) { const o = op[2]; for (let x = o.gap / 2; x < TW; x += o.gap) lights.push({ x, y: op[1](g), v: L.v, r: o.r, col: o.col }); }
       }
+      if (L.v <= .05) { c.save(); c.globalCompositeOperation = 'source-atop'; c.globalAlpha = .35; c.fillStyle = g.skyLow; c.fillRect(0, 0, TW, PH); c.restore(); }   // 最遠那層蓋一層天空色的霧（2026-10-28「遠景的層級有點怪」：遠山、遠處城市要淡，才看得出是遠的）
       out.push({ cv, v: L.v, ...(L.path ? { path: true } : {}) });
     }
     return { layers: out, lights, fx: cfg.fx ? cfg.fx(g, at) : null };
@@ -1633,7 +1648,7 @@
       return { layers: out, lights: [] };
     } },
 
-    nightmarket: { label: '夜市', geo: { gy: .22 }, passers: ['person', 'person', 'dogwalk', 'person', 'person'], build(g) {   // 夜市：遠處的摩天輪（地標）、寬窄顏色不一的攤位（招牌、遮棚、食物、冒煙）、一串串燈泡、柏油路、停著的機車、塑膠椅
+    nightmarket: { label: '夜市', geo: { gy: .38 }, passers: ['person', 'person', 'dogwalk', 'person', 'person'], build(g) {   // 夜市：遠處的摩天輪（地標）、寬窄顏色不一的攤位（招牌、遮棚、食物、冒煙）、一串串燈泡、柏油路、停著的機車、塑膠椅
       const { PH, gy, p0, p1, tod, night, lit } = g, rnd = rng(133), out = [], lights = [];
       const far = layer(PH), fc = far.getContext('2d'), bld = mix(T('#6a6a80', tod), g.skyLow, .2);
       const wheel = ri(rnd, 40, TW - 40);
@@ -1760,6 +1775,9 @@
   const ORDER = ['park', 'beach', 'forest', 'river', 'street', 'sakura', 'snow', 'country', 'flowers', 'harbor', 'mountain', 'nightmarket', 'campus'];   // 13 個（2026-10-20 使用者再挑 8 個、老街重畫）
 
   // Z＝背景放大幾倍（2026-10-27 使用者選「背景放大一倍」＝2；毛孩、鴿子不放大）：PW、PH 是畫面大小，場景畫在 PW／Z × PH／Z 上
+  // 2026-10-28 使用者「背景先不要路人，還有很像熱氣球的東西」：人（路人、遛狗、騎車、登山、學生、農夫）、熱氣球、風箏（像小熱氣球）先不出來；鴿子、海鷗、小狗、鳥群、飛機照舊。
+  //   程式和設定都留著，之後要回來把這兩個清單清空就好
+  const WALKERS_OFF = new Set(['person', 'dogwalk', 'cyclist', 'hiker', 'student', 'farmer']), SKY_OFF = new Set(['balloon', 'kite']);
   function build(name, PW0, PH0, tod, w, Z = 1, fine = false) {   // fine：背景格子跟毛孩一樣細（K＝Z）
     const PW = Math.ceil(PW0 / Z), PH = Math.ceil(PH0 / Z);
     K = fine ? Z : 1;
@@ -1789,7 +1807,7 @@
     const sky = paintSky(PW, gy, tod, w, skyArt), clouds = cloudSprites(tod, w, artOf(name, 'cloud')), sK = K; K = 1;   // 天空、雲也用細格子畫完才把 K 放回 1
     return { name, label: sc.label, TW, PW, PH, Z, K: sK, gy, p0, p1, tod, w, sky, clouds, layers: r.layers, lights: r.lights || [],
       anim: r.anim || null, animAt: r.animAt ?? 1, fx: r.fx || null, snowy: !!sc.snowy, pathAt: r.layers.findIndex(L => L.path),
-      skyThings: sc.sky || [], balloon: sc.balloon, passers: passersOf(sc.passers || [], g) };
+      skyThings: (sc.sky || []).filter(k => !SKY_OFF.has(k)), balloon: sc.balloon, passers: passersOf((sc.passers || []).filter(k => !WALKERS_OFF.has(k)), g) };
   }
   const STARS = Array.from({ length: 22 }, (_, i) => [(i * 0.618034) % 1, ((i * 0.381966 * 7) % 1) * .62, i % 5]);
   // 每一格：天空 → 星星 → 雲 → 天空裡會動的 → 一層一層（照 scroll 往左移、左右接；路面那層上面畫路人）。scroll＝走了多遠（步道的格數）、petX＝毛孩站的位置（鴿子看到牠走近會飛走）
