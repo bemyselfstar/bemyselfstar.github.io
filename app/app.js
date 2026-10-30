@@ -2,7 +2,7 @@
 // 斜上往下看的房間（W×H 像素，比螢幕大），整數倍放大（不糊）；拖曳移動鏡頭、兩指縮放。
 // 電腦網頁＝橫版（分頁列在左邊）、手機網頁＝直版（分頁列在下面）（2026-10-14 使用者）。
 // 家具先用程式畫的簡單版（之後換成正式美術）；毛孩用遊戲的側面影格，前後只靠遮擋表現、不縮放。
-(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 78;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 81;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   // 資料：範例（假資料）或伺服器（server.js；登入後 dc_pets_mine 每 10 秒讀一次，見下面「伺服器同步」）。
@@ -551,17 +551,28 @@
       this.x = x; this.y = y; this.flip = Math.random() < .5;
       this.anim = 'idle'; this.t0 = 0; this.fps = 4; this.until = 0;
       this.target = null; this.after = null; this.busy = false; this.held = false; this.hearts = [];
+      this.soc = null; this.nextSoc = now + rnd(10000, 30000); this.lift = 0; this.fast = false; this.sniffed = {};   // P89 毛孩之間的互動
+      this.perch = null; this.treeCd = 0;                                                                            // 停在貓跳台哪一層（P89 第二批）
+      this.follow = null; this.ride = null; this.lastTouch = now;                                                     // 跟屁蟲、坐在大狗背上、上次被摸（狼嚎）（P89 第三批）
     }
     set(anim, fps = 4) { anim = animOf(this.d, anim); if (anim !== this.anim) { this.anim = anim; this.t0 = now; } this.fps = fps; }
-    walkTo(x, y, then) {
+    walkTo(x, y, then, run = false) {        // run：跑（追著玩、嚇跑）
+      if (this.lift || pets.some(q => q.pileOn === this)) getDown(this);   // 疊在別隻身上、在貓跳台上的：先下來；下面那隻走了：上面的跟著下來（不會浮在半空）
       this.target = [clamp(x, FLOOR.x0, FLOOR.x1), clamp(y, FLOOR.y0 - 8, FLOOR.y1)]; this.after = then || null;
-      this.set('walk', 8);
+      this.fast = run; this.set(run ? ['run', 'walk'] : 'walk', run ? 10 : 8);
     }
     dog() { return isDog(this.p); }
     think() {                                   // 閒著的時候決定下一件事
+      if (this.lift) {                            // 疊著睡醒了、在貓跳台上待夠了：跳下來
+        const tree = this.perch && this.perch.f;
+        getDown(this);
+        this.x = clamp(this.x + (tree ? (this.x < tree.x ? -18 : 18) : (this.flip ? -16 : 16)), FLOOR.x0, FLOOR.x1); if (tree) this.y = tree.y + 6;
+      }
       const night = timeOfDay() === 'night', r = Math.random(), dog = this.dog();
       const spot = s => furn.find(f => f.k.spot === s);
       if (night && r < .7) { this.set('sleep', 1.2); this.until = now + rnd(8000, 16000); return; }
+      if (dog && SOC && Math.random() < .005) return zoomies(this);   // 暴衝（P89 第三批：興奮傳染要有源頭；手機的狗本來不會）。一隻約 15 分鐘一次（.015 試過：5 隻狗 90 秒衝 3 次，太吵）
+      if (!dog && Math.random() < .08 && now >= this.treeCd) { const t = furn.find(f => f.kind === 'cattree'); if (t) return climbTree(this, t); }   // 爬貓跳台（P89 第二批：搶頂層要先會爬）
       if (r < .05 && boardCards.length) return this.walkTo(BOARD.x + BOARD.w / 2 + rnd(-24, 24), FLOOR.y0 + 2, () => {
         this.set('sit', 1); this.until = now + rnd(3000, 5000); if (Math.random() < .6) say(this, line(this, 'home_board'));
       });
@@ -570,9 +581,9 @@
       });
       if (r < .12 && !dog) { const b = spot('bed'); if (b) return this.walkTo(b.x, b.y - 4, () => { this.set('sleep', 1.2); this.until = now + rnd(6000, 12000); }); }
       if (r < .22 && !dog) { const b = spot('box'); if (b) return this.walkTo(b.x, b.y + 2, () => { this.set(['inbox', 'sit'], 2); this.until = now + rnd(4000, 8000); }); }
-      if (r < .32) { const b = spot('eat'); if (b) return this.walkTo(b.x + (Math.random() < .5 ? -16 : 16), b.y + 4, () => { this.flip = this.x > b.x; this.set('eat', 3); this.until = now + rnd(3000, 5000); }); }
+      if (r < .32) { const b = spot('eat'); if (b) return this.walkTo(b.x + (Math.random() < .5 ? -16 : 16), b.y + 4, () => { this.flip = this.x > b.x; if (foodFight(this, b)) return; this.set('eat', 3); this.until = now + rnd(3000, 5000); }); }
       if (r < .4 && !dog) { const b = spot('toy'); if (b) return this.walkTo(b.x - 12, b.y + 2, () => { this.flip = false; this.set(['crouch', 'knead'], 3); this.until = now + rnd(2500, 4000); }); }
-      if (r < .4 && dog) { const b = spot('ball'); if (b) return this.walkTo(b.x - 14, b.y + 2, () => { this.flip = false; this.set(['play_bow', 'wag'], 5); this.until = now + rnd(2500, 4000); }); }
+      if (r < .4 && dog) { const b = spot('ball'); if (b) return this.walkTo(b.x - 14, b.y + 2, () => { this.flip = false; if (tugStart(this, b)) return; this.set(['play_bow', 'wag'], 5); this.until = now + rnd(2500, 4000); }); }
       if (r < .72) { const [x, y] = Math.random() < .65 ? freeSpot(this.x, this.y, 70) : freeSpot(); return this.walkTo(x, y); }
       const idle = dog ? [['sit_wag', 5], ['pant', 4], ['sit', 1], ['loaf', 1.5], ['sniff', 4], ['yawn', 2]]
                        : [['sit', 1], ['loaf', 1.5], ['groom', 3], ['yawn', 2], ['tail_flick', 4], ['idle', 1], ['washface', 3]];
@@ -581,11 +592,18 @@
     }
     step(dt) {
       if (this.held) return;
+      if (this.ride && rideTick(this)) return;    // 坐在大狗背上：跟著狗（P89 第三批）
+      if (this.follow) followTick(this);          // 跟屁蟲：跟在媽媽後面（P89 第三批）
+      if (this.perch) {                           // 在貓跳台上：跟著跳台（佈置時搬了跳台也跟著走；跳台收掉了就下來）
+        const pf = this.perch;
+        if (!furn.includes(pf.f)) { this.perch = null; this.lift = 0; }
+        else { this.x = pf.f.x + (pf.f.flip ? -pf.dx : pf.dx); this.y = pf.f.y + .5; }
+      }
       if (this.target) {
         const [tx, ty] = this.target, dx = tx - this.x, dy = ty - this.y, dist = Math.hypot(dx, dy);
-        const v = (this.dog() ? 26 : 20) * dt;
+        const v = (this.dog() ? 26 : 20) * (this.fast ? 2.4 : 1) * dt;
         if (dist <= v) {
-          this.x = tx; this.y = ty; this.target = null;
+          this.x = tx; this.y = ty; this.target = null; this.fast = false;
           const a = this.after; this.after = null;
           if (a) a(); else this.until = 0;
         } else {
@@ -600,8 +618,8 @@
       if (!(this.im.complete && this.im.naturalWidth)) return;
       const { w, h } = this.d, [row, n] = this.d.anims[this.anim];
       const f = Math.floor((now - this.t0) / 1000 * this.fps) % n;
-      const x = Math.round(this.x - w / 2), y = Math.round(this.y - h);
-      if (!this.held) ellipse(this.x, this.y - 1, Math.round(w * .22), 2, 'rgba(40,20,10,.22)');   // 影子
+      const x = Math.round(this.x - w / 2), y = Math.round(this.y - this.lift - h);   // lift：疊在別隻身上（P89）
+      if (!this.held && !this.lift) ellipse(this.x, this.y - 1, Math.round(w * .22), 2, 'rgba(40,20,10,.22)');   // 影子
       else ellipse(this.x, (this.landY || this.ground()) - 1, Math.round(w * .2), 2, 'rgba(40,20,10,.3)');   // 拎著：影子＝放手會落下的地方
       ctx.save();
       if (this.flip) { ctx.translate(x + w, y); ctx.scale(-1, 1); ctx.drawImage(this.im, f * w, row * h, w, h, 0, 0, w, h); }
@@ -609,10 +627,10 @@
       ctx.restore();
     }
     ground() { return clamp(this.y + this.d.h * .3, FLOOR.y0, FLOOR.y1); }
-    headY() { return this.y - this.d.h * .78; }
+    headY() { return this.y - this.lift - this.d.h * .78; }
     hit(px, py) {
-      const hw = this.d.w * .32;
-      return px > this.x - hw && px < this.x + hw && py > this.y - this.d.h * .85 && py < this.y + 3;
+      const hw = this.d.w * .32, y = this.y - this.lift;
+      return px > this.x - hw && px < this.x + hw && py > y - this.d.h * .85 && py < y + 3;
     }
   }
 
@@ -721,6 +739,7 @@
 
   // ---------- 摸摸、順毛、拎起來 ----------
   function petPet(pet) {
+    quitSoc(pet); pet.lastTouch = now;
     if (pet.anim === 'sleep' && Math.random() < .5) { say(pet, line(pet, 'home_sleepy')); return; }
     pet.target = null; pet.after = null; pet.busy = false;
     pet.set(pet.dog() ? ['sit_wag', 'wag'] : ['knead', 'sit_blink'], pet.dog() ? 6 : 4);
@@ -768,8 +787,8 @@
       pet.walkTo(clamp(x, 380, 520), y, () => {
         pet.busy = false; pet.set('sit', 1); pet.until = now + 2500; say(pet, line(pet, 'home_back'));
         if (items.length) setTimeout(() => bringSouvenirs(pet, items), 1400);
-        const o = pets.filter(q => q !== pet && !q.busy && !q.held)[0];       // 一隻過去聞聞牠
-        if (o) o.walkTo(pet.x + (o.x < pet.x ? -26 : 26), pet.y, () => { o.flip = o.x > pet.x; o.set(o.dog() ? 'sniff' : 'nuzzle', 4); o.until = now + 2500; });
+        const o = pets.filter(q => q !== pet && !q.busy && !q.held && !q.soc)[0];   // 一隻過去迎接：狗聞一聞、貓蹭蹭（P89：兩邊都有反應）
+        if (o) socStart(o.dog() ? 'sniff' : 'nuzzle', o, pet);
       });
       setTimeout(() => { door.want = 0; }, 900);
     }, 400);
@@ -933,6 +952,7 @@
   const furnAt = (wx, wy) => [...furn].sort((a, b) => b.y - a.y).find(f => Math.abs(wx - f.x) < f.k.hit[0] / 2 && wy <= f.y + 2 && wy >= f.y - f.k.hit[1]);
   function startCarry(pet) {
     bubbles.filter(b => b.pet === pet && b.hint).forEach(b => { b.until = 0; });
+    quitSoc(pet); getDown(pet);              // 從貓跳台、別隻身上、狗背上拎起來：放下時不會又跳回去
     g.mode = 'carry'; pet.held = true; pet.busy = true; pet.target = null; pet.after = null;
     pet.set(['held', 'idle'], 4); say(pet, line(pet, 'held'));
     if (navigator.vibrate) navigator.vibrate(15);
@@ -1050,8 +1070,721 @@
     try { localStorage.setItem('deskcat_hint_seen', '1'); } catch (_) { /* 存不了就算了 */ }
   }
 
+  // ---------- 毛孩之間的互動（P89，2026-10-30 使用者「手機玩家一樣也能看到…動物跟動物之互動嗎」→ 三批都做）----------
+  // 照電腦版 desk_cat.py 搬過來：social_check（狗聞、蹭蹭／理毛、閒聊、追著玩、靠過去睡／拍醒）、sleep_contagion、狗邀玩。
+  // 機率、狗聞的個性反應、對話間隔、閒聊話題＝window.DC_SOCIAL（export_lines.py 從 src/params.py、desk_cat.py、lines.py 匯出，手機不另外寫數字）。
+  // 每秒看一次；一次只開始一組；演完各自冷卻（跟電腦版一樣 40～80 秒）。只在家裡（口袋一次一隻）。
+  const SOC = window.DC_SOCIAL || null;
+  const NEAR = W / 3;                          // 多近算靠近：電腦是同一個平台 340 像素內（桌面寬的 1/4～1/3）→ 房間寬的 1/3
+  const SLEEPS = new Set(['sleep', 'pile_sleep', 'front_sleep']);
+  const asleep = p => SLEEPS.has(p.anim);
+  const freeForSoc = p => pets.includes(p) && !p.busy && !p.held && !p.target && !p.soc && !p.gone && !p.follow && !pets.some(q => q.pileOn === p || q.ride === p);   // 有別隻疊在身上、騎在背上的：不拉去互動（不然上面那隻會浮在半空）
+  let socNext = 0;
+  function socEnd(tok, ...ps) {                // 收尾：各自冷卻、回到平常
+    for (const p of ps) if (p.soc === tok) { p.soc = null; p.busy = false; p.nextSoc = now + rnd(40000, 80000); if (p.until < now + 1500) p.until = now + rnd(1500, 3000); }
+  }
+  function quitSoc(pet) {                      // 被摸、被拎起來：這一組停下來（另一隻也放開）
+    const tok = pet.soc;
+    if (!tok) return;
+    for (const p of pets) if (p.soc === tok) { p.soc = null; p.busy = false; p.fast = false; p.nextSoc = now + rnd(20000, 40000); if (p !== pet && !asleep(p)) { p.target = null; p.until = now + 1500; p.set('sit', 1); } }
+  }
+  const alive = (tok, ps) => ps.every(p => p.soc === tok && pets.includes(p) && !p.held);
+  function later(tok, ps, ms, fn) { setTimeout(() => { if (alive(tok, ps)) fn(); else socEnd(tok, ...ps); }, ms); }   // 中途有一隻不在了：另一隻也放開
+  function convo(turns, gap = (SOC ? SOC.convoGap : 2) * 1000) {   // [(誰, 情況, 對方)]：一句一句說（電腦 convo）
+    turns.forEach(([who, k, other], i) => setTimeout(() => { if (pets.includes(who)) { const t = line(who, k, { other: other ? other.p.name : '' }); if (t) say(who, t, gap * .95); } }, i * gap));
+  }
+  const face = (a, b) => { a.flip = b.x < a.x; b.flip = a.x < b.x; };
+  function beside(x, y, gap) {                 // x 要站的位置：y 旁邊（靠近 x 那一邊，站不下就換邊）
+    const side = x.x < y.x ? -1 : 1;
+    const bad = x0 => x0 < FLOOR.x0 + 8 || x0 > FLOOR.x1 - 8 || blocked(x0, y.y);
+    let tx = y.x + side * gap;
+    if (bad(tx) && !bad(y.x - side * gap)) tx = y.x - side * gap;   // 那一邊站不下（牆、家具）：從另一邊過去
+    return [tx, y.y];
+  }
+  const gapOf = (a, b, k) => (a.d.w + b.d.w) / 2 * k;   // 面對面的距離（照兩隻的圖寬，大狗站遠一點）
+  function socStart(kind, a, b, opt = {}) {    // a 主動、b 被找；回傳 false＝不能開始
+    if (!SOC || !pets.includes(a) || !pets.includes(b) || a.held || b.held) return false;
+    const tok = { kind, t0: now };
+    for (const p of [a, b]) { p.soc = tok; p.busy = true; if (!(kind === 'cuddle' || kind === 'wake') || p === a) { p.target = null; p.after = null; } }
+    const ps = [a, b];
+    LOGS.push(`${a.p.name} → ${b.p.name}：${kind}`);
+    if (kind === 'nuzzle' || kind === 'groom') {          // 蹭蹭／理毛：a 走過去，兩隻面對面
+      b.set('sit', 1);
+      const [tx, ty] = beside(a, b, gapOf(a, b, kind === 'nuzzle' ? .42 : .38));
+      a.walkTo(tx, ty, () => {
+        if (!alive(tok, ps)) return socEnd(tok, a, b);
+        face(a, b);
+        const dur = rnd(4500, 7000);
+        if (kind === 'nuzzle') { a.set('nuzzle', 4); b.set(['nuzzle', 'sit_blink'], 4); addHearts(a, 2); addHearts(b, 2); convo([[a, 'nuzzle', b], [b, 'nuzzle_reply', a]]); }
+        else { a.set(a.dog() ? 'nuzzle' : 'groom_other', 3); b.set(b.dog() ? ['sit_wag', 'sit'] : ['sit_blink', 'loaf'], 2); addHearts(b, 2); convo([[a, 'groom_give', b], [b, 'groom_get', a]]); }
+        later(tok, ps, dur, () => { a.set(!a.dog() && Math.random() < .4 ? 'groom' : 'sit', 2); b.set('sit', 1); socEnd(tok, a, b); });
+      });
+      return true;
+    }
+    if (kind === 'chat') {                     // 閒聊：面對面坐著，你一句我一句（話題照時段、肚子：電腦 chat_script）
+      b.set('sit', 1);
+      const [tx, ty] = beside(a, b, gapOf(a, b, .55));
+      a.walkTo(tx, ty, () => {
+        if (!alive(tok, ps)) return socEnd(tok, a, b);
+        face(a, b); a.set('sit', 1); b.set('sit', 1);
+        const h = new Date().getHours(), opts = [['misc', 1]];
+        if (Math.min(a.p.hunger ?? 100, b.p.hunger ?? 100) < 45) opts.push(['food', 3]);
+        if (timeOfDay() === 'night' || timeOfDay() === 'evening') opts.push(['nap', 2]);
+        if (h >= 23 || h < 4) opts.push(['night', 3]);
+        let r = Math.random() * opts.reduce((n, o) => n + o[1], 0), topic = opts[opts.length - 1][0];
+        for (const [k, w] of opts) { r -= w; if (r <= 0) { topic = k; break; } }
+        const who = { A: a, B: b }, turns = SOC.chat[topic].map(([sp, ev]) => [who[sp], ev, sp === 'A' ? b : a]);
+        if (Math.random() < .5) turns.push([a, 'chat_bye', b]);
+        convo(turns);
+        later(tok, ps, turns.length * SOC.convoGap * 1000 + 1500, () => socEnd(tok, a, b));
+      });
+      return true;
+    }
+    if (kind === 'play') {                     // 追著玩：a 追、b 逃，抓到了換人追（電腦 play）
+      const until = now + rnd(6000, 12000);
+      convo([[a, 'play_start', b], [b, 'play_reply', a]], 1200);
+      const leg = (chaser, runner) => {
+        if (!alive(tok, ps)) return socEnd(tok, a, b);
+        if (now > until) { for (const p of ps) { p.target = null; p.set(p.dog() ? ['pant', 'sit'] : ['sit', 'loaf'], 3); } return socEnd(tok, a, b); }
+        const away = runner.x < chaser.x ? -1 : 1;
+        let fx = runner.x, fy = runner.y;
+        for (let k = 0; k < 12; k++) {             // 往遠離追的那邊逃；被逼到牆邊就往另一邊；不要停在家具上（沙發、櫃子）
+          const dir = k < 6 ? away : -away;
+          const x = runner.x + dir * rnd(90, 170), y = clamp(runner.y + rnd(-34, 34), FLOOR.y0, FLOOR.y1);
+          if (x > FLOOR.x0 + 10 && x < FLOOR.x1 - 10 && !blocked(x, y)) { fx = x; fy = y; break; }
+        }
+        runner.walkTo(fx, fy, null, true);
+        chaser.walkTo(fx - away * 14, fy, () => {          // 追到了：撲一下，換牠追
+          if (!alive(tok, ps)) return socEnd(tok, a, b);
+          chaser.target = null; face(chaser, runner); chaser.set(chaser.dog() ? ['play_stomp', 'play_bow'] : ['jump', 'crouch'], 6);
+          runner.target = null; runner.set(runner.dog() ? 'play_bow' : 'crouch', 6);
+          later(tok, ps, 700, () => leg(runner, chaser));
+        }, true);
+      };
+      leg(a, b);
+      return true;
+    }
+    if (kind === 'sniff') {                    // 狗聞一聞：對方照個性反應（電腦 _sniff_react／_sniff_start／_sniff_done）
+      b.set('sit', 1);
+      const [tx, ty] = beside(a, b, gapOf(a, b, .5));
+      a.walkTo(tx, ty, () => {
+        if (!alive(tok, ps)) return socEnd(tok, a, b);
+        face(a, b); a.sniffed[b.p.id || b.p.name] = now;
+        const per = b.p.personality || '普通';
+        // 狗被狗聞：高冷 (好 .6, 玩 .1, 嚇 0, 凶 .3)、其他 (.45, .55, 0, 0)＝desk_cat._sniff_react 裡寫的（跨線需求 10-30：請 🎮 搬進 shared_rules）
+        const w = b.dog() ? (per === '高冷' ? [.6, .1, 0, .3] : [.45, .55, 0, 0]) : (SOC.sniffReact[per] || SOC.sniffReact['普通']);
+        let r = Math.random() * w.reduce((n, v) => n + v, 0), react = 'ok';
+        for (const [k, v] of [['ok', w[0]], ['play', w[1]], ['scared', w[2]], ['grumpy', w[3]]]) { r -= v; if (r <= 0) { react = k; break; } }
+        a.set('sniff', 4);
+        const dur = rnd(2200, 3400);
+        if (react === 'grumpy') {
+          b.set(b.dog() ? ['bark', 'sit'] : ['hiss', 'arch'], 4); if (b.dog()) excite(b, 'bark');
+          convo([[a, 'sniff', b], [b, 'sniffed_grumpy', a], [a, 'sniff_sorry', b]], 1000);
+          later(tok, ps, 1200, () => { a.set(a.dog() ? 'sulk' : 'sit', 2); later(tok, ps, 2200, () => socEnd(tok, a, b)); });
+        } else if (react === 'scared') {
+          b.set(['arch', 'crouch'], 4);
+          convo([[a, 'sniff', b], [b, 'sniffed_scared', a]], 1000);
+          later(tok, ps, 1400, () => { const away = b.x < a.x ? -1 : 1; b.walkTo(b.x + away * rnd(120, 200), b.y + rnd(-20, 20), () => { b.set('sit', 1); socEnd(tok, a, b); }, true); a.set('sit', 1); });
+        } else if (react === 'play') {
+          convo([[a, 'sniff', b], [b, 'sniffed_ok', a]], 1000);
+          later(tok, ps, dur, () => { socEnd(tok, a, b); socStart('play', a, b); });
+        } else {
+          b.set(b.dog() ? ['sit_wag', 'sit'] : ['sit_blink', 'sit'], 3); addHearts(b, 1);
+          convo([[a, 'sniff', b], [b, 'sniffed_ok', a]], 1000);
+          later(tok, ps, dur, () => { a.set('sit', 2); socEnd(tok, a, b); });
+        }
+      });
+      return true;
+    }
+    if (kind === 'invite') {                   // 狗邀玩（狗對狗）：趴低、踏步；柴犬多半拒絕（電腦 start_invite／_invite_react）
+      b.set('sit', 1);
+      const [tx, ty] = beside(a, b, gapOf(a, b, .7));
+      a.walkTo(tx, ty, () => {
+        if (!alive(tok, ps)) return socEnd(tok, a, b);
+        face(a, b); a.set('play_bow', 6); say(a, line(a, 'play_bow'));
+        later(tok, ps, 700, () => a.set(['play_stomp', 'play_bow'], 8));
+        later(tok, ps, 1500, () => a.set('play_bow', 6));
+        later(tok, ps, 2300, () => {
+          const shiba = b.d.breed === '柴犬' || b.p.sprite === '柴犬';
+          const pr = shiba ? SOC.p.shiba_refuse : (b.p.personality === '高冷' ? .45 : .1);   // 高冷 .45、其他 .1＝desk_cat._invite_react
+          if (Math.random() < pr) {
+            b.flip = a.x > b.x; b.set(['sit', 'loaf'], 1); say(b, line(b, 'invite_no', { other: a.p.name }));   // 背對坐下
+            later(tok, ps, 1300, () => { a.set('sulk', 2); say(a, line(a, 'invite_refused', { other: b.p.name })); later(tok, ps, 2200, () => socEnd(tok, a, b)); });
+          } else {
+            b.set('play_bow', 6); say(b, line(b, 'invite_yes', { other: a.p.name }));
+            later(tok, ps, 900, () => { socEnd(tok, a, b); socStart('play', a, b); });
+          }
+        });
+      });
+      return true;
+    }
+    if (kind === 'cuddle' || kind === 'wake') {   // 醒著的走到睡著的旁邊：一起睡（可能疊上去）或把牠拍醒
+      const n = pileSize(b), on = topOf(b);                  // b 已經有一隻疊在上面：爬到最上面那隻身上（第三隻，可能崩塌）
+      const pile = kind === 'cuddle' && opt.pile && !b.lift && n < 3 && now >= noPileUntil;   // 最多疊三隻；崩塌過 pile_crash_cd 秒內不疊
+      const [tx, ty] = pile ? [b.x + (a.x < b.x ? -4 : 4), b.y] : beside(a, b, gapOf(a, b, .5));
+      a.walkTo(tx, ty, () => {
+        if (!alive(tok, ps) || !asleep(b) || (pile && (topOf(b) !== on || !asleep(on)))) return socEnd(tok, a, b);
+        a.flip = b.x < a.x;
+        if (kind === 'cuddle') {
+          // 疊羅漢崩塌（電腦 _pile_crash_roll）：第三隻以上、幼貓或敏捷低的有機率沒踩穩；手機沒有天生敏捷 → 一半算笨手笨腳
+          if (pile && n >= 2 && (opt.crash || ((isKit(a) || Math.random() < .5) && Math.random() < SOC.p.pile_crash_chance))) return pileCrash(a, b, tok);
+          const dur = Math.max(12000, Math.min(90000, b.until - now + rnd(0, 10000)));
+          a.set(pile && !a.dog() ? ['pile_sleep', 'sleep'] : 'sleep', 1.2); a.until = now + dur; addHearts(a, 1);
+          if (pile) { a.y = on.y + .5; a.lift = on.lift + Math.round(on.d.h * .3); a.pileOn = on; convo([[a, 'pile_on', on], [on, 'pile_under', a]]); }   // 疊上去：畫在牠身上（y 多 .5 才會畫在後面＝上面）
+          else convo([[a, 'cuddle', b]].concat(Math.random() < .4 ? [[b, 'sleep_talk', a]] : []));
+          if (pile && on !== b) on.until = Math.max(on.until, a.until + 2000);
+          b.until = Math.max(b.until, (pile ? on : a).until + 2000);    // 下面那隻比上面的晚醒（上面的先下來）
+          a.soc = null; a.busy = false; a.nextSoc = now + rnd(40000, 80000);
+          if (b.soc === tok) { b.soc = null; b.busy = false; }
+        } else {
+          a.set(['nuzzle', 'sit'], 4);
+          later(tok, ps, 1000, () => {
+            b.set(b.dog() ? ['shake', 'yawn'] : ['stretch', 'yawn'], 3); b.until = now + 2500;
+            convo([[a, 'wake_other', b], [b, 'woken', a]]);
+            later(tok, ps, 1600, () => { socEnd(tok, a, b); if (Math.random() < .5) { a.nextSoc = b.nextSoc = 0; socStart('play', a, b); } });
+          });
+        }
+      });
+      return true;
+    }
+    socEnd(tok, a, b);
+    return false;
+  }
+  const LOGS = [];                              // 開發用：最近開始了哪些互動（window.__social.log）
+  function socialCheck() {                      // 電腦 social_check＋sleep_contagion：每秒一次，最多開始一組
+    if (!SOC || editMode || host.hidden || pets.length < 2) return;
+    for (const p of pets) if (p.soc && now - p.soc.t0 > 40000) socEnd(p.soc, p);   // 保險：卡住超過 40 秒（另一隻中途被帶去口袋…）就放開
+    if (boxAmbushCheck() || followCheck() || rideCheck() || howlCheck() || herdCheck()) return;
+    const P = SOC.p, energy = { morning: .6, day: .7, evening: .4, night: .15 }[timeOfDay()] || .5;   // 電腦照時段 ENERGY[hour]
+    const cand = pets.filter(p => freeForSoc(p) && (now >= p.nextSoc || asleep(p)));
+    for (let i = cand.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [cand[i], cand[j]] = [cand[j], cand[i]]; }
+    if (pileCheck(cand)) return;
+    for (let i = 0; i < cand.length; i++) for (let j = i + 1; j < cand.length; j++) {
+      const a = cand[i], b = cand[j];
+      if (Math.abs(a.x - b.x) > NEAR || Math.abs(a.y - b.y) > NEAR * .6 || a.lift || b.lift) continue;
+      const aw = !asleep(a) && now >= a.nextSoc, bw = !asleep(b) && now >= b.nextSoc;
+      if (aw && bw) {
+        if (a.dog() || b.dog()) {
+          const [x, y] = a.dog() && (!b.dog() || Math.random() < .5) ? [a, b] : [b, a];
+          const met = x.sniffed[y.p.id || y.p.name] || -1e9;
+          if (Math.random() < P.sniff_chance * (now - met > 600000 ? 6 : 1)) return socStart('sniff', x, y);   // 10 分鐘沒聞過：多半先聞
+        }
+        if (a.dog() && b.dog() && Math.random() < P.invite_chance * .1) return socStart('invite', ...(Math.random() < .5 ? [a, b] : [b, a]));
+        const aff = ((a.p.affection ?? 50) + (b.p.affection ?? 50)) / 200;
+        if (Math.random() < P.nuzzle_chance * (.5 + aff)) { const [x, y] = Math.random() < .5 ? [a, b] : [b, a]; return socStart(Math.random() < .45 ? 'groom' : 'nuzzle', x, y); }
+        if (Math.random() < P.chat_chance) { const [x, y] = Math.random() < .5 ? [a, b] : [b, a]; return socStart('chat', x, y); }
+        if (Math.random() < .1 + .3 * energy) return socStart('play', a, b);
+        continue;
+      }
+      for (const [x, y] of [[a, b], [b, a]]) {
+        if (!asleep(x) && now >= x.nextSoc && asleep(y) && Math.random() < P.cuddle_chance) {
+          const kind = Math.random() < (energy < .5 ? .7 : .5) ? 'cuddle' : 'wake';
+          return socStart(kind, x, y, { pile: kind === 'cuddle' && Math.random() < P.pile_chance });
+        }
+      }
+    }
+    for (const x of cand) {                     // 睡意傳染：附近有在睡的，醒著的打個哈欠、過去一起睡
+      if (asleep(x) || now < x.nextSoc) continue;
+      const near = pets.filter(k => k !== x && asleep(k) && !k.lift && !pets.some(q => q.pileOn === k) && Math.abs(k.x - x.x) < NEAR * 1.3 && Math.abs(k.y - x.y) < NEAR);
+      if (!near.length || Math.random() >= P.sleep_catch_chance * 1.2) continue;   // 電腦 × max(.3, 1.5 − 精力)：手機沒有精力 → 取中間 1.2
+      const y = near.sort((p, q) => Math.abs(p.x - x.x) - Math.abs(q.x - x.x))[0];
+      x.set('yawn', 2); say(x, line(x, 'yawn_catch')); x.busy = true;
+      y.until = Math.max(y.until, now + 25000);
+      setTimeout(() => { if (pets.includes(x) && !x.held) { x.busy = false; socStart('cuddle', x, y, { pile: Math.random() < P.pile_chance }); } }, 1800);
+      return;
+    }
+  }
+  // ---------- 第二批：跟家具（P89 M2）----------
+  // 貓跳台三層：離地多高、離跳台中心多遠（量 art/furniture/cattree.png 69×94：頂層碗、中間、下面）
+  const TREE_LV = [[76, 1], [42, -10], [21, 16]];
+  const perchAt = (t, lv) => pets.find(p => p.perch && p.perch.f === t && p.perch.lv === lv);
+  function perchOn(pet, t, lv) {               // 跳上去、待一陣子（趴、坐、睡）
+    const [h, dx] = TREE_LV[lv];
+    pet.set('jump', 8); pet.busy = true;
+    setTimeout(() => {
+      if (!pets.includes(pet) || pet.held || !furn.includes(t)) { pet.busy = false; return; }
+      pet.perch = { f: t, lv, dx }; pet.lift = h; pet.busy = false; pet.flip = Math.random() < .5;
+      pet.set(Math.random() < .35 ? 'sleep' : ['loaf', 'sit'], 1.2); pet.until = now + rnd(8000, 20000);
+    }, 350);
+  }
+  function climbTree(pet, t) {                 // 貓都想去頂層：有貓佔著 → 搶（電腦 CatTree.SHOVE_P）或換一層
+    const top = perchAt(t, 0), lv = [0, 1, 2].find(l => !perchAt(t, l));
+    if (lv === undefined) return pet.walkTo(...freeSpot(t.x, t.y, 50));   // 三層都滿了：在旁邊晃
+    const want = top ? lv : 0, [, dx] = TREE_LV[want];
+    pet.walkTo(t.x + (t.flip ? -dx : dx), t.y + 2, () => {
+      const occ = perchAt(t, 0);
+      if (occ && occ !== pet && !occ.soc && treeShove(pet, occ, t)) return;
+      const l2 = [0, 1, 2].find(l => !perchAt(t, l));
+      if (l2 === undefined) { pet.set('sit', 1); pet.until = now + 2000; return; }
+      perchOn(pet, t, l2);
+    });
+  }
+  function treeShove(pet, top, t) {            // 搶頂層：爬上來的贏 → 把頂層的擠下去；輸 → 自己掉下來（電腦 _tree_shove）
+    if (!SOC || now < (t.shoveUntil || 0) || Math.random() >= SOC.p.shove_p) return false;
+    t.shoveUntil = now + 20000;
+    const tough = ['高冷', '好動'].includes(top.p.personality);
+    const win = Math.random() < SOC.p.shove_win[tough ? 1 : 0];
+    pet.set('jump', 8); pet.busy = true;
+    setTimeout(() => {
+      if (!pets.includes(pet) || !pets.includes(top)) { pet.busy = false; return; }
+      const [winner, loser] = win ? [pet, top] : [top, pet];
+      if (win) { pet.busy = false; top.perch = null; top.lift = 0; pet.perch = { f: t, lv: 0, dx: TREE_LV[0][1] }; pet.lift = TREE_LV[0][0]; pet.set('sit', 1); pet.until = now + rnd(8000, 16000); }
+      else pet.busy = false;
+      const d = loser.x >= t.x ? 1 : -1;       // 往外掉下去、落地弓背生氣
+      loser.target = null; loser.x = clamp(t.x + d * 30, FLOOR.x0, FLOOR.x1); loser.y = t.y + 6;
+      loser.flip = d > 0; loser.set(['arch', 'crouch'], 4); loser.until = now + 2500; loser.treeCd = now + 60000;   // 輸的 1 分鐘內不再爬
+      winner.flip = d < 0;
+      setTimeout(() => convo([[winner, win ? 'tree_shove_win' : 'tree_hold', loser], [loser, 'tree_shoved', winner]]), 500);
+    }, 350);
+    return true;
+  }
+  function foodFight(pet, bowl, force = false) {              // 搶飯：碗前面有一隻在吃 → 一掌把牠推開（電腦 0.5 × 好玩程度；手機沒有花色、個性倍數 → 0.5；同一個碗 25 秒一次）
+    const rival = pets.find(k => k !== pet && k.anim === 'eat' && !k.soc && !k.held && Math.abs(k.x - bowl.x) < 30 && Math.abs(k.y - bowl.y) < 14);
+    if (!rival || now < (bowl.fightCd || 0) || (!force && Math.random() >= .5)) return false;
+    bowl.fightCd = now + 25000;
+    face(pet, rival); pet.set(pet.dog() ? ['play_stomp', 'bark'] : ['jump', 'crouch'], 7); pet.until = now + 1200;
+    say(pet, line(pet, 'fight_win'));
+    const d = rival.x > pet.x ? 1 : -1;
+    rival.walkTo(rival.x + d * 30, rival.y + rnd(-6, 6), () => { rival.flip = d > 0; rival.set(rival.dog() ? 'sulk' : ['arch', 'sit'], 3); rival.until = now + 2500; }, true);
+    setTimeout(() => { if (pets.includes(rival)) say(rival, line(rival, 'fight_lose')); }, 1100);
+    setTimeout(() => { if (pets.includes(pet) && !pet.target && !pet.held && !pet.soc) { pet.flip = pet.x > bowl.x; pet.set('eat', 3); pet.until = now + rnd(3000, 5000); } }, 900);
+    return true;
+  }
+  function boxAmbushCheck() {                  // 紙箱埋伏：箱子裡有貓、有毛孩走過旁邊 → 縮進去再冒出來伸爪，對方嚇一跳跳開（電腦 _box_ambush、Box.AMBUSH_P）
+    const box = furn.find(f => f.k.spot === 'box');
+    if (!SOC || !box || now < (box.ambushUntil || 0)) return false;
+    const cat = pets.find(p => p.anim === 'inbox' && !p.soc && !p.held && Math.abs(p.x - box.x) < 8 && Math.abs(p.y - box.y) < 8);
+    const reach = box.k.hit[0] / 2 + 14;
+    const v = cat && pets.find(k => k !== cat && k.target && !k.soc && !k.held && !k.lift && Math.abs(k.x - box.x) < reach && Math.abs(k.y - box.y) < 16);
+    if (!v) return false;
+    box.ambushUntil = now + 4000;              // 這次路過只擲一次
+    if (Math.random() >= SOC.p.ambush_p) return false;
+    box.ambushUntil = now + 45000;             // 冷卻：不要太吵
+    const tok = { kind: 'ambush', t0: now };
+    for (const p of [cat, v]) { p.soc = tok; p.busy = true; }
+    LOGS.push(`${cat.p.name} → ${v.p.name}：ambush`);
+    cat.set(['inbox_sleep', 'inbox'], 2); cat.until = now + 8000;   // 縮進去
+    later(tok, [cat, v], 450, () => {
+      cat.set('inbox', 4); say(cat, line(cat, 'box_swat'));     // 冒出來伸爪
+      v.target = null; face(v, cat); v.set(['jump', 'crouch'], 8); say(v, '！');
+      later(tok, [cat, v], 600, () => {
+        const away = v.x < box.x ? -1 : 1;
+        v.walkTo(v.x + away * 60, v.y + rnd(-10, 10), () => { v.set(v.dog() ? 'sulk' : ['arch', 'sit'], 3); v.until = now + 2500; }, true);
+        socEnd(tok, cat, v);
+      });
+    });
+    return true;
+  }
+  function tugStart(a, ball) {                 // 搶球拔河（狗對狗）：另一隻也在球旁邊 → 面對面咬住拉來拉去，贏的搖尾巴、輸的往後滑或翻滾（電腦 _tug_*）
+    const b = SOC && pets.find(k => k !== a && k.dog() && !k.soc && !k.held && !k.target && !k.lift && Math.abs(k.x - ball.x) < 30 && Math.abs(k.y - ball.y) < 14);
+    if (!b || Math.random() >= SOC.p.tug_chance) return false;
+    const tok = { kind: 'tug', t0: now }, ps = [a, b];
+    for (const p of ps) { p.soc = tok; p.busy = true; }
+    LOGS.push(`${a.p.name} → ${b.p.name}：tug`);
+    const side = b.x < ball.x ? 1 : -1, g = gapOf(a, b, .3);
+    b.walkTo(ball.x - side * g, ball.y + 2);
+    a.walkTo(ball.x + side * g, ball.y + 2, () => {
+      if (!alive(tok, ps)) return socEnd(tok, a, b);
+      b.target = null; face(a, b); a.set('play_bow', 9); b.set('play_bow', 9);
+      const xa = a.x, xb = b.x, t0 = now, dur = rnd(3000, 5000), ph = Math.random() * 6;
+      let nextSay = 0;
+      const tick = () => {
+        if (!alive(tok, ps)) return socEnd(tok, a, b);
+        const k = Math.sin((now - t0) / 1000 * 9 + ph) * 2.2;   // 一來一往
+        a.x = xa + side * Math.max(0, k); b.x = xb - side * Math.max(0, -k);
+        if (now > nextSay) { nextSay = now + rnd(1200, 1800); const w = Math.random() < .5 ? a : b; say(w, line(w, 'tug')); }
+        if (now - t0 < dur) return setTimeout(tick, 50);
+        const [win, lose] = Math.random() < .5 ? [a, b] : [b, a];
+        win.set(['wag', 'sit_wag'], 6); win.until = now + 3000; addHearts(win, 2);
+        say(win, line(win, 'tug_win', { other: lose.p.name }));
+        const away = lose.x < ball.x ? -1 : 1, roll = Math.random() < SOC.p.tug_roll;
+        socEnd(tok, a, b);
+        lose.walkTo(lose.x + away * (roll ? 26 : 36), lose.y + rnd(-4, 4), () => { lose.set(roll ? ['belly', 'sulk'] : 'sulk', 3); lose.until = now + 2500; }, true);
+      };
+      tick();
+    });
+    return true;
+  }
+
+  // ---------- 第三批：特別的（P89 M3）----------
+  // 疊羅漢崩塌、興奮傳染、哈士奇狼嚎、幼貓跟屁蟲＋熟齡教幼貓、邊牧趕貓、大狗載貓（睡意傳染第一批就有了）。
+  // 距離：電腦 340 像素＝NEAR（房間寬 1/3）照比例換；只有邊牧「離群多遠」電腦 600 像素≈螢幕寬 1/3 → 房間寬 .3（照比例換房間太小，永遠趕不到）。
+  const pxR = px => NEAR * px / 340;
+  const isKit = p => !p.dog() && /^幼/.test(p.p.age || '');          // 年齡＝伺服器給的階段名（幼貓／青年／壯年／熟齡）
+  const isSenior = p => p.p.age === '熟齡';
+  const breedOf = p => p.d.breed || p.p.sprite || '';
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  const calm = p => pets.includes(p) && !p.held && !p.soc && !p.busy && !p.gone && !p.lift && !asleep(p);   // 醒著、閒著（走路中也算）
+  let noPileUntil = 0, nextHowl = 0, nextHerd = 0;
+  function getDown(p) {                         // 從別隻身上、貓跳台、狗背上下來；疊在牠身上的也跟著下來（不會浮在半空）
+    p.lift = 0; p.pileOn = null; p.perch = null; p.ride = null;
+    for (const q of pets) if (q.pileOn === p) { getDown(q); q.set('sit', 1); q.until = now + 1500; }
+  }
+  const topOf = p => { let t = p; for (let q; (q = pets.find(k => k.pileOn === t));) t = q; return t; };
+  const pileSize = p => { let n = 1; for (let t = p, q; (q = pets.find(k => k.pileOn === t)); t = q) n++; return n; };
+
+  function pileCheck(cand) {                    // 兩隻疊著睡：醒著的貓也想爬上去當第三隻（電腦 pile_onto）
+    if (now < noPileUntil) return false;
+    for (const x of cand) {
+      if (x.dog() || asleep(x) || now < x.nextSoc) continue;
+      const base = pets.find(b => b !== x && !b.lift && asleep(b) && pileSize(b) === 2 && asleep(topOf(b)) && Math.abs(b.x - x.x) < NEAR && Math.abs(b.y - x.y) < NEAR * .6);
+      if (base && Math.random() < SOC.p.cuddle_chance * SOC.p.pile_chance) return socStart('cuddle', x, base, { pile: true });
+    }
+    return false;
+  }
+  function pileCrash(a, b, tok) {               // 疊羅漢崩塌（電腦 pile_crash）：臉朝下砸上去 → 整疊往兩邊彈開「！」，落地後各自走到角落背對著生悶氣
+    noPileUntil = now + SOC.p.pile_crash_cd * 1000;
+    const mem = [b];
+    for (let q; (q = pets.find(k => k.pileOn === mem[mem.length - 1]));) mem.push(q);
+    const top = mem[mem.length - 1];
+    LOGS.push(`${a.p.name} → ${b.p.name}：pile_crash（${mem.length + 1} 隻）`);
+    a.y = top.y + .5; a.lift = top.lift + Math.round(top.d.h * .3); a.set('jump', 8);   // 跳到最上面那一刻
+    setTimeout(() => {
+      const all = [a, ...mem].filter(k => pets.includes(k) && !k.held);
+      for (const k of all) { k.lift = 0; k.pileOn = null; if (k.soc === tok) k.soc = null; k.busy = true; k.target = null; }
+      all.forEach((k, i) => {
+        const d = i % 2 ? 1 : -1;
+        k.set(['jump', 'crouch'], 8);
+        if (k !== a && k !== b) say(k, '！', 900);
+        k.walkTo(clamp(k.x + d * rnd(40, 70) * (1 + i * .3), FLOOR.x0 + 8, FLOOR.x1 - 8), clamp(k.y + rnd(-14, 14), FLOOR.y0, FLOOR.y1), () => sulkCorner(k), true);
+      });
+      convo([[a, 'pile_crash', b], [b, 'pile_crash_hit', a]], 1000);
+    }, 300);
+    return true;
+  }
+  function sulkCorner(k) {                      // 落地：弓背一下，走到自己那一邊的角落，背對大家坐著生悶氣
+    k.set(k.dog() ? 'sulk' : ['arch', 'crouch'], 4);
+    setTimeout(() => {
+      if (!pets.includes(k) || k.held) { k.busy = false; return; }
+      const left = k.x < W / 2;
+      let spot = null;                          // 自己那一邊的牆邊（角落被家具佔了就沿著牆往上找；都沒有才在附近）
+      for (let i = 0; i < 40 && !spot; i++) { const x = left ? FLOOR.x0 + rnd(10, 70) : FLOOR.x1 - rnd(10, 70), y = FLOOR.y1 - (i / 40) * (FLOOR.y1 - FLOOR.y0) - rnd(0, 12); if (!blocked(x, y)) spot = [x, clamp(y, FLOOR.y0, FLOOR.y1)]; }
+      const [x, y] = spot || freeSpot(k.x, k.y, 50);
+      k.walkTo(x, y, () => {
+        k.flip = left; k.set(k.dog() ? 'sulk' : ['loaf', 'sit'], 1.5); say(k, line(k, 'pile_sulk'));
+        k.busy = false; k.until = now + rnd(8000, 14000); k.nextSoc = now + rnd(60000, 90000);
+      });
+    }, 1200);
+  }
+
+  function zoomies(d, ms = rnd(4000, 7000), caught = false) {   // 狗暴衝：在房間裡衝來衝去；不是被傳染的才傳出去（電腦 zoom_until、excite_contagion）
+    if (!SOC || !pets.includes(d) || d.held || d.soc) return;
+    getDown(d);
+    const tok = { kind: 'zoom', t0: now }, until = now + ms;
+    d.soc = tok; d.busy = true;
+    LOGS.push(`${d.p.name}：zoom${caught ? '（被傳染）' : ''}`);
+    const leg = () => {
+      if (d.soc !== tok || !pets.includes(d) || d.held) return;
+      if (now > until) { d.set(['pant', 'sit'], 4); d.until = now + rnd(2000, 3500); return socEnd(tok, d); }
+      d.walkTo(...freeSpot(), leg, true);
+    };
+    leg();
+    if (caught) say(d, line(d, 'excite_catch'));
+    else { if (breedOf(d) === '哈士奇') say(d, line(d, 'husky_zoom')); excite(d, 'zoom'); }
+  }
+  function excite(src, how) {                    // 興奮傳染（電腦 excite_contagion）：附近醒著的狗跟著跑、跟著叫；被傳染的不會再傳出去
+    const rng = pxR(SOC.p.excite_range);
+    for (const x of pets) {
+      if (x === src || !x.dog() || !calm(x) || now < (x.exciteCd || 0) || Math.abs(x.x - src.x) > rng || Math.abs(x.y - src.y) > rng) continue;
+      if (Math.random() >= Math.min(.95, SOC.p.excite_chance)) continue;   // 電腦再乘天生活動力倍數：手機沒有 → 1
+      x.exciteCd = now + 45000;
+      LOGS.push(`${src.p.name} → ${x.p.name}：excite ${how}`);
+      if (how === 'zoom') setTimeout(() => { if (calm(x)) zoomies(x, rnd(3000, 6000), true); }, rnd(300, 900));
+      else { x.target = null; x.flip = src.x < x.x; x.set('bark', 6); x.until = now + 1300; say(x, pick(SOC.woof)); }
+    }
+  }
+
+  function howlCheck() {                         // 哈士奇狼嚎（電腦 howl_check）：心情不好、或很久沒被摸 → 仰天長嚎；全部的狗每 howl_gap 分鐘最多一次
+    if (now < nextHowl) return false;
+    for (const k of pets) {
+      if (!k.dog() || breedOf(k) !== '哈士奇' || !calm(k)) continue;
+      const sad = k.p.mood === 0, lonely = now - k.lastTouch > SOC.p.howl_ignored_min * 60000;   // 心情：手機只有三格，最低那格（< mood_bad）算不好
+      if ((sad || lonely) && Math.random() < SOC.p.howl_chance) { startHowl(k); return true; }
+    }
+    return false;
+  }
+  function startHowl(k) {                        // 附近的狗照 howl_join 跑過來坐在旁邊一起嚎
+    nextHowl = now + SOC.p.howl_gap * 60000;
+    const dur = rnd(4500, 6500), tok = { kind: 'howl', t0: now }, rng = pxR(SOC.p.excite_range), joined = [];
+    k.soc = tok; k.busy = true; k.target = null; k.set('howl', 3);
+    say(k, line(k, 'howl'));
+    setTimeout(() => { if (k.soc === tok) say(k, pick(SOC.howlText), dur - 2000); }, 1900);
+    LOGS.push(`${k.p.name}：howl`);
+    for (const x of pets) {
+      if (x === k || !x.dog() || !calm(x) || Math.abs(x.x - k.x) > rng || Math.abs(x.y - k.y) > rng || Math.random() >= SOC.p.howl_join) continue;
+      x.soc = tok; x.busy = true; joined.push(x);
+      x.walkTo(...beside(x, k, gapOf(x, k, .55)), () => {
+        if (x.soc !== tok) return;
+        x.flip = k.x < x.x; x.set('howl', 3);
+        say(x, Math.random() < .5 ? line(x, 'howl_join') : pick(SOC.howlText), 1800);
+      }, true);
+    }
+    setTimeout(() => { for (const p of [k, ...joined]) if (p.soc === tok) { p.target = null; p.set('sit', 1); } socEnd(tok, k, ...joined); }, dur);
+  }
+
+  function followCheck() {                       // 幼貓跟屁蟲（電腦 follow_check）：幼貓挑一隻壯年、熟齡的貓當「媽媽」跟在後面（比較愛挑熟齡、親密的、近的）
+    for (const k of pets) {
+      if (!isKit(k) || k.follow || !freeForSoc(k) || asleep(k) || k.lift || now < (k.followCd || 0)) continue;
+      k.followCd = now + 20000;
+      if (Math.random() > SOC.p.follow_chance) continue;
+      const moms = pets.filter(m => m !== k && !m.dog() && !isKit(m) && !m.held && !asleep(m) && !m.follow);
+      if (!moms.length) continue;
+      const score = m => Math.abs(m.x - k.x) + Math.abs(m.y - k.y) - pxR(m.p.affection ?? 50) - (isSenior(m) ? pxR(SOC.p.senior_mom_bonus) : 0);
+      startFollow(k, moms.sort((p, q) => score(p) - score(q))[0]);
+      return true;
+    }
+    return false;
+  }
+  function startFollow(k, m) {
+    const dur = rnd(SOC.p.follow_min, SOC.p.follow_max) * (isSenior(m) ? SOC.p.senior_follow_mult : 1) * 1000;   // 熟齡比較有耐心
+    k.follow = { mom: m, until: now + dur, hist: [[now, m.anim, m.fps]] };
+    k.followCd = now + (SOC.p.follow_min + SOC.p.follow_cd) * 1000;
+    k.busy = true;
+    say(k, line(k, 'follow_start', { other: m.p.name }));
+    LOGS.push(`${k.p.name} → ${m.p.name}：follow`);
+  }
+  function endFollow(k) { k.follow = null; k.busy = false; k.until = now + rnd(1500, 3000); }
+  function followTick(k) {                       // 電腦 _follow_step：跟在媽媽後面一個身體，媽媽做什麼 0.5 秒後跟著做；媽媽睡了就靠過去一起睡；
+    const f = k.follow, m = f.mom;               // 媽媽跳上貓跳台：跳不上去、坐在下面哭，媽媽下來幫牠理毛
+    if (now > f.until || !pets.includes(m) || m.held) return endFollow(k);
+    if (k.soc) return;                           // 被嚇到、媽媽來理毛中：先不跟
+    k.busy = true;
+    if (f.rescue) { f.rescue = f.tried = f.crying = false; f.cryAt = 0; }
+    if (f.hist[f.hist.length - 1][1] !== m.anim) { f.hist.push([now, m.anim, m.fps]); if (f.hist.length > 12) f.hist.shift(); }
+    const [, past, pastFps] = f.hist.filter(([t]) => t <= now - SOC.p.follow_delay * 1000).pop() || [];
+    if (k.lift) return;
+    if (asleep(m) && SLEEPS.has(past) && !m.lift) { endFollow(k); socStart('cuddle', k, m); return; }
+    if (m.perch) {
+      const t = m.perch.f;
+      if (!f.tried) {
+        if (!k.target) k.walkTo(t.x + (k.x < t.x ? -16 : 16), t.y + 4, () => {   // 試著跳上去 → 失手滑下來
+          f.tried = true; k.flip = t.x < k.x; k.set('jump', 8); k.lift = 12;
+          setTimeout(() => { k.lift = 0; k.set(['crouch', 'shake'], 6); f.cryAt = now + 2200; }, 450);
+          LOGS.push(`${k.p.name}：跳不上去`);
+        }, true);
+        return;
+      }
+      if (!f.crying) { if (f.cryAt && now >= f.cryAt) { f.crying = true; f.cryT0 = now; f.nextCry = now; } return; }
+      k.flip = m.x < k.x; if (k.anim !== 'sit') k.set('sit', 1);
+      if (now >= f.nextCry) { f.nextCry = now + rnd(3500, 5000); say(k, line(k, 'follow_cry', { other: m.p.name })); }
+      if (now - f.cryT0 > SOC.p.follow_rescue_delay * 1000 && !m.soc && (!asleep(m) || isSenior(m))) rescue(k, m);   // 熟齡媽媽睡著也會醒來救
+      return;
+    }
+    if (f.tried) { f.tried = f.crying = false; f.cryAt = 0; }   // 媽媽自己下來了
+    if (isSenior(m)) teach(k, m, f);
+    if (past !== f.copied && !k.target) { f.copied = past; if (past in SOC.followCopy) k.set(past, pastFps); }   // 跟著做的動作＝電腦 FOLLOW_COPY（速度照媽媽的）
+    if (now < (f.teachUntil || 0)) { k.target = null; k.flip = m.x < k.x; return; }   // 熟齡媽媽轉過來示範：原地看著、跟著做
+    const gap = (k.d.w + m.d.w) / 2 * .6;
+    const bx = clamp(m.x + (m.flip ? 1 : -1) * gap, FLOOR.x0 + 6, FLOOR.x1 - 6), by = clamp(m.y + 2, FLOOR.y0, FLOOR.y1);
+    const far = Math.hypot(bx - k.x, by - k.y);
+    if (far > 16 && (!k.target || Math.hypot(k.target[0] - bx, k.target[1] - by) > 20)) k.walkTo(bx, by, () => { k.flip = m.flip; f.copied = null; k.set('sit', 1); }, far > 90);
+  }
+  function rescue(k, m) {                        // 媽媽聽到了：跳下來，走到牠旁邊幫牠理毛（電腦 kitrescue）
+    const tok = { kind: 'rescue', t0: now }, ps = [m, k], t = m.perch && m.perch.f, slept = asleep(m);
+    k.follow.rescue = true;
+    for (const p of ps) { p.soc = tok; p.busy = true; }
+    LOGS.push(`${m.p.name} → ${k.p.name}：rescue`);
+    if (slept) m.set('stretch', 2);
+    say(m, line(m, 'follow_rescue', { other: k.p.name }));
+    later(tok, ps, slept ? 1400 : 400, () => {
+      getDown(m);
+      if (t) { m.x = clamp(m.x + (m.x < t.x ? -18 : 18), FLOOR.x0, FLOOR.x1); m.y = t.y + 6; }
+      m.walkTo(...beside(m, k, gapOf(m, k, .38)), () => {
+        if (!alive(tok, ps)) return socEnd(tok, m, k);
+        face(m, k); m.set('groom_other', 3); k.set(['sit_blink', 'loaf'], 2); addHearts(k, 2);
+        later(tok, ps, rnd(4000, 6000), () => { m.set('sit', 1); socEnd(tok, m, k); });
+      });
+    });
+  }
+  function teach(k, m, f) {                      // 熟齡教幼貓（電腦 _senior_teach）：媽媽閒著時每 15～25 秒轉向幼貓示範洗臉、理毛、伸懶腰
+    if (f.nextTeach == null) { f.nextTeach = now + rnd(4000, 8000); return; }   // 剛開始跟：先等幾秒
+    if (now < f.nextTeach) return;
+    if (m.target || m.soc || m.busy || m.lift || !SOC.watchIdle.includes(m.anim) || Math.abs(m.x - k.x) > NEAR) { f.nextTeach = now + 3000; return; }
+    const st = pick(Object.keys(SOC.teach)), dur = SOC.teach[st] * 1000;
+    m.flip = k.x < m.x; m.set(st, st === 'stretch' ? 2 : 3); m.until = now + dur;
+    f.teachUntil = now + dur + 1000;
+    f.nextTeach = now + rnd(SOC.p.senior_teach_min, Math.max(SOC.p.senior_teach_min, SOC.p.senior_teach_max)) * 1000;
+    if (Math.random() < SOC.p.senior_teach_talk) say(m, line(m, 'senior_teach', { other: k.p.name }));
+    LOGS.push(`${m.p.name} → ${k.p.name}：teach ${st}`);
+  }
+
+  function herdCheck() {                         // 邊牧趕貓（電腦 herd_check／herd_target）：離大家最遠的那隻貓被趕回大家旁邊；趕完 herd_min～herd_max 分鐘後才再趕
+    if (!nextHerd) nextHerd = now + rnd(60000, 180000);
+    if (now < nextHerd) return false;
+    const herders = pets.filter(h => h.dog() && breedOf(h) === '邊境牧羊犬' && freeForSoc(h) && !asleep(h) && !h.lift);
+    if (!herders.length) return false;
+    const ps = pets.filter(k => !k.held && !k.lift && !k.gone);
+    let best = null;
+    for (const h of herders) for (const o of ps) {
+      if (o === h || o.dog() || !freeForSoc(o) || asleep(o) || o.anim === 'inbox') continue;
+      const xs = ps.filter(k => k !== o && k !== h).map(k => k.x).sort((p, q) => p - q);
+      if (!xs.length) continue;
+      const gx = xs[xs.length >> 1], d = Math.abs(o.x - gx);
+      if (d < W * .3) continue;
+      const away = o.x > gx ? 1 : -1, goal = clamp(gx + away * o.d.w * .9, FLOOR.x0 + 20, FLOOR.x1 - 20);
+      if (Math.abs(goal - o.x) < pxR(150)) continue;   // 走不過去（在牆邊）：不趕
+      if (!best || d > best[0]) best = [d, h, o, goal, away];
+    }
+    if (!best && !ps.some(k => !k.dog())) {       // 家裡沒有貓：去趕最大隻的狗（電腦 herd_dog_size：比柴犬大的）
+      for (const h of herders) {
+        const big = ps.filter(o => o !== h && o.dog() && o.d.w >= 90 && freeForSoc(o) && !asleep(o)).sort((p, q) => q.d.w - p.d.w)[0];
+        if (big) { const away = big.x > h.x ? 1 : -1; best = [0, h, big, clamp(big.x - away * pxR(400), FLOOR.x0 + 20, FLOOR.x1 - 20), away]; break; }
+      }
+    }
+    if (!best || Math.random() > SOC.p.herd_chance) return false;
+    nextHerd = now + rnd(SOC.p.herd_min, Math.max(SOC.p.herd_min, SOC.p.herd_max)) * 60000;
+    herd(best[1], best[2], best[3], best[4]);
+    return true;
+  }
+  function herdReact(o) {                        // 被趕的貓照個性：(乖乖走, 當成在玩, 嚇跑, 不爽哈氣)＝電腦 HERD_REACT
+    const w = SOC.herdReact[o.p.personality] || SOC.herdReact['普通'];
+    let r = Math.random() * w.reduce((n, v) => n + v, 0);
+    for (const [k, v] of [['walk', w[0]], ['play', w[1]], ['flee', w[2]], ['refuse', w[3]]]) { r -= v; if (r <= 0) return k; }
+    return 'walk';
+  }
+  function herd(h, o, goal, away, force = {}) {
+    const tok = { kind: 'herd', t0: now }, ps = [h, o];
+    for (const p of ps) { p.soc = tok; p.busy = true; }
+    LOGS.push(`${h.p.name} → ${o.p.name}：herd`);
+    const gap = (h.d.w + o.d.w) * .42;
+    h.walkTo(clamp(o.x + away * gap, FLOOR.x0 + 10, FLOOR.x1 - 10), o.y, () => {   // 繞到牠外側（離大家遠的那一邊），壓低身體盯著
+      if (!alive(tok, ps)) return socEnd(tok, h, o);
+      face(h, o); h.set(['crouch', 'stalk_walk'], 2); say(h, line(h, 'herd_eye'));
+      const react = force.react || (o.dog() ? (Math.random() < SOC.p.herd_dog_ignore ? 'ignore' : 'walk') : herdReact(o));
+      o.target = null; o.set('sit', 1);
+      LOGS.push(`  ${o.p.name} 的反應：${react}`);
+      later(tok, ps, 1300, () => {
+        if (react === 'refuse') {                // 哈氣：邊牧退一步、放棄、垂頭
+          o.set(['hiss', 'arch'], 4); say(o, line(o, 'herded_grumpy'));
+          later(tok, ps, 1500, () => { say(h, line(h, 'herd_give_up')); h.set('sulk', 2); later(tok, ps, 2200, () => socEnd(tok, h, o)); });
+        } else if (react === 'ignore') {         // 大狗不理牠，當著牠的面趴下睡 → 邊牧焦躁暴衝，然後想玩飛盤
+          o.set(['front_sleep', 'sleep'], 1.2); o.until = now + rnd(15000, 25000);
+          later(tok, ps, 1500, () => {
+            say(h, line(h, 'herd_ignored')); socEnd(tok, h, o); zoomies(h, rnd(4000, 6000));
+            setTimeout(() => { if (pets.includes(h)) say(h, line(h, 'herd_want_disc')); }, 6500);
+          });
+        } else if (react === 'play') {           // 好動：當成在玩 → 追著玩
+          socEnd(tok, h, o); h.nextSoc = o.nextSoc = 0; socStart('play', h, o);
+        } else {
+          const t = react === 'flee' && furn.find(f => f.kind === 'cattree'), lv = t ? [0, 1, 2].find(l => !perchAt(t, l)) : undefined;
+          if (t && lv !== undefined && (force.high || Math.random() < SOC.p.herd_high)) {   // 膽小：逃到貓跳台上；邊牧在下面叫一叫，跳不上去，放棄
+            o.walkTo(t.x + (t.flip ? -TREE_LV[lv][1] : TREE_LV[lv][1]), t.y + 2, () => { if (pets.includes(o) && !o.held) perchOn(o, t, lv); }, true);
+            h.walkTo(t.x + (h.x < t.x ? -34 : 34), t.y + 8, () => {
+              if (!alive(tok, ps)) return socEnd(tok, h, o);
+              h.flip = t.x < h.x; h.set('bark', 6); say(h, pick(SOC.woof)); excite(h, 'bark');
+              later(tok, ps, 2000, () => { say(h, line(h, 'herd_high')); h.set('sulk', 2); h.until = now + 2500; socEnd(tok, h, o); });
+            }, true);
+            return;
+          }
+          o.flip = goal < o.x;                    // 乖乖走（嚇跑的用跑的）回大家旁邊，邊牧跟在後面
+          o.walkTo(goal, clamp(o.y + rnd(-10, 10), FLOOR.y0, FLOOR.y1), () => {
+            if (!alive(tok, ps)) return socEnd(tok, h, o);
+            o.set('sit', 1); h.target = null; face(h, o); h.set(['sit_wag', 'sit'], 5); addHearts(h, 2); say(h, line(h, 'herd_done'));
+            later(tok, ps, 2500, () => socEnd(tok, h, o));
+          }, react === 'flee');
+          h.walkTo(clamp(goal + away * gap, FLOOR.x0 + 10, FLOOR.x1 - 10), o.y);
+        }
+      });
+    });
+  }
+
+  const BIG = new Set(SOC ? SOC.bigDogs : []), BACK = {};
+  const rideOk = d => pets.includes(d) && !d.held && !asleep(d) && !d.lift && !['belly', 'loaf'].includes(d.anim) && !(d.soc && d.soc.kind === 'tug');
+  function dogBack(d) {                          // 大狗背上可以坐的位置（電腦 _dog_back）：身體中間（坐著坐到後半身）；高度量這一格圖：附近 5 直排最上面不透明格裡最低的（捲到背上的尾巴不算），再往下陷 dogride_sink 格
+    const P = SOC.p, sit = /^sit|^loaf/.test(d.anim), kx = sit ? P.dogride_sit_x : P.dogride_back_x;
+    const col = Math.round(d.d.w / 2 - d.d.w * kx), key = d.p.sprite + '|' + d.anim + '|' + col;   // 圖面向右、屁股在左邊
+    if (BACK[key] == null) {
+      const im = d.im, { w, h } = d.d;
+      if (!(im.complete && im.naturalWidth)) return [d.x + (d.flip ? 1 : -1) * w * kx, Math.round(h * P.dogride_back_y)];
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const cc = c.getContext('2d'); cc.drawImage(im, 0, d.d.anims[d.anim][0] * h, w, h, 0, 0, w, h);
+      const px = cc.getImageData(0, 0, w, h).data;
+      let top = -1;
+      for (let x = col - 2; x <= col + 2; x++) { let y = 0; while (y < h && !px[(y * w + x) * 4 + 3]) y++; if (y < h) top = Math.max(top, y); }
+      BACK[key] = top < 0 ? Math.round(h * P.dogride_back_y) : Math.round(h - top - P.dogride_sink);
+    }
+    return [d.x + (d.flip ? 1 : -1) * d.d.w * kx, BACK[key]];
+  }
+  function rideCheck() {                         // 大狗載貓（電腦 dogride_check）：阿拉斯加、薩摩耶醒著，附近的幼貓或好動的貓有時跳上牠的背搭便車
+    for (const d of pets) {
+      if (!d.dog() || !BIG.has(breedOf(d)) || pets.some(k => k.ride === d) || !rideOk(d) || d.soc) continue;
+      for (const k of pets) {
+        if (k.dog() || !freeForSoc(k) || asleep(k) || k.lift || Math.abs(k.x - d.x) > pxR(400) || Math.abs(k.y - d.y) > NEAR * .6 || now < (k.rideCd || 0)) continue;
+        k.rideCd = now + 30000;
+        if (!(isKit(k) || k.p.personality === '好動') || Math.random() > SOC.p.dogride_chance) continue;   // 電腦：幼貓或天生活動力 ≥ 60 → 手機沒有天生數值，用個性「好動」
+        rideStart(k, d);
+        return true;
+      }
+    }
+    return false;
+  }
+  function rideStart(k, d) {                     // 追到狗旁邊、跳上去（狗不用停下來等）
+    const tok = { kind: 'ride', t0: now };
+    k.soc = tok; k.busy = true;
+    LOGS.push(`${k.p.name} → ${d.p.name}：ride`);
+    const go = () => {
+      if (k.soc !== tok || !pets.includes(k) || k.held) return;
+      if (!rideOk(d) || pets.some(q => q.ride === d) || now - tok.t0 > 9000) return socEnd(tok, k);
+      const [bx] = dogBack(d);
+      if (Math.abs(k.x - bx) < 14 && Math.abs(k.y - d.y) < 10) {
+        k.target = null; k.flip = d.flip; k.set('jump', 8);
+        setTimeout(() => {
+          if (k.soc !== tok || k.held || !rideOk(d) || pets.some(q => q.ride === d)) return socEnd(tok, k);
+          k.soc = null; k.ride = d; k.rideUntil = now + rnd(SOC.p.dogride_min, SOC.p.dogride_max) * 1000;
+          k.set('sit', 1); k.until = now + rnd(3000, 7000);
+          convo([[k, 'dogride_on', d], [d, 'dogride_carry', k]], 1200);
+        }, 300);
+        return;
+      }
+      k.walkTo(bx, d.y + 1, go, true);
+    };
+    go();
+  }
+  function rideTick(k) {                         // 坐在背上：跟著狗走；狗被拎起來、躺下、睡著、時間到 → 跳下來（電腦 _dogride_tick）
+    const d = k.ride;
+    if (!rideOk(d) || now > k.rideUntil) { rideOff(k); return false; }
+    const [bx, lift] = dogBack(d);
+    k.x = bx; k.y = d.y + .5; k.lift = lift; k.flip = d.flip; k.busy = true;
+    if (now > k.until) { const [a, f] = pick([['sit', 1], ['sit', 1], ['loaf', 1.5], ['groom', 3], ['sit_blink', 2]]); k.set(a, f); k.until = now + rnd(3000, 7000); }
+    return true;
+  }
+  function rideOff(k) {
+    const d = k.ride, side = Math.random() < .5 ? -1 : 1;
+    k.ride = null; k.lift = 0; k.busy = false;
+    k.x = clamp(k.x + side * 24, FLOOR.x0, FLOOR.x1); k.y = clamp((d ? d.y : k.y) + rnd(2, 8), FLOOR.y0, FLOOR.y1);
+    k.flip = side < 0; k.set(['crouch', 'sit'], 4); k.until = now + 1200; k.nextSoc = now + rnd(40000, 80000);
+    if (Math.random() < .4) say(k, line(k, 'dogride_off', { other: d ? d.p.name : '' }));
+  }
+
+  window.__social = {                           // 開發用（預覽、測試）：強制開始一種互動、看最近的紀錄
+    log: LOGS,
+    list: () => pets.map((p, i) => [i, p.p.name, p.dog() ? 'dog' : 'cat', p.anim, Math.round(p.x), Math.round(p.y), p.soc ? p.soc.kind : '', p.perch ? 'tree' + p.perch.lv : '']),
+    // 第二批（P89 M2）：tree(i) 爬貓跳台；fight(i, j) j 在碗前吃、i 過去搶；ambush(i, j) i 在紙箱裡、j 走過去；tug(i, j) 兩隻狗搶球
+    tree(i) { const t = furn.find(f => f.kind === 'cattree'), p = pets[i]; if (!t || !p) return 'no'; quitSoc(p); p.busy = false; p.treeCd = 0; t.shoveUntil = 0; climbTree(p, t); return true; },
+    fight(i, j) { const b = furn.find(f => f.k.spot === 'eat'), a = pets[i], r = pets[j]; if (!b || !a || !r) return 'no'; b.fightCd = 0; for (const p of [a, r]) { quitSoc(p); p.busy = false; }
+      r.target = null; r.x = b.x + 16; r.y = b.y + 4; r.flip = true; r.set('eat', 3); r.until = now + 20000; a.walkTo(b.x - 16, b.y + 4, () => { a.flip = false; if (!foodFight(a, b, true)) { a.set('eat', 3); a.until = now + 3000; } }); return true; },
+    ambush(i, j) { const b = furn.find(f => f.k.spot === 'box'), c = pets[i], v = pets[j]; if (!b || !c || !v) return 'no'; b.ambushUntil = 0; for (const p of [c, v]) { quitSoc(p); p.busy = false; }
+      c.target = null; c.x = b.x; c.y = b.y + 2; c.set('inbox', 2); c.until = now + 30000; v.x = b.x - 90; v.y = b.y + 4; v.walkTo(b.x + 90, b.y + 4); return true; },
+    tug(i, j) { const b = furn.find(f => f.k.spot === 'ball'), a = pets[i], o = pets[j]; if (!b || !a || !o) return 'no'; for (const p of [a, o]) { quitSoc(p); p.busy = false; }
+      o.target = null; o.x = b.x + 14; o.y = b.y + 2; o.set('sit', 1); o.until = now + 20000; a.walkTo(b.x - 14, b.y + 2, () => { a.flip = false; if (!tugStart(a, b)) { a.set('wag', 5); a.until = now + 3000; } }); return true; },
+    // 第三批（P89 M3）：crash(i, j, k) j 睡著、i 疊在 j 上、k 爬上去崩塌；follow(i, j) i 跟著 j（要先把 i 的 p.age 設成幼貓）；
+    // howl(i) 哈士奇嚎；herd(i, j, react) 邊牧 i 趕 j（walk／play／flee／refuse／ignore，flee 會上貓跳台）；ride(i, j) 貓 i 跳上大狗 j；zoom(i) 狗暴衝
+    crash(i, j, k) { const m = pets[i], b = pets[j], a = pets[k]; if (!m || !b || !a) return 'no'; noPileUntil = 0; for (const p of [m, b, a]) { quitSoc(p); getDown(p); p.busy = false; p.target = null; }
+      b.set('sleep', 1.2); b.until = now + 60000; m.x = b.x; m.y = b.y + .5; m.lift = Math.round(b.d.h * .3); m.pileOn = b; m.set(['pile_sleep', 'sleep'], 1.2); m.until = now + 50000;
+      a.x = b.x - 70; a.y = b.y; return socStart('cuddle', a, b, { pile: true, crash: true }); },
+    follow(i, j) { const k = pets[i], m = pets[j]; if (!k || !m) return 'no'; for (const p of [k, m]) { quitSoc(p); p.busy = false; } k.follow = null; startFollow(k, m); return true; },
+    howl(i) { const k = pets[i]; if (!k) return 'no'; nextHowl = 0; quitSoc(k); k.busy = false; startHowl(k); return true; },
+    herd(i, j, react = 'walk') { const h = pets[i], o = pets[j]; if (!h || !o) return 'no'; for (const p of [h, o]) { quitSoc(p); getDown(p); p.busy = false; p.target = null; }
+      const away = o.x > W / 2 ? 1 : -1; herd(h, o, clamp(o.x - away * 150, FLOOR.x0 + 20, FLOOR.x1 - 20), away, { react, high: react === 'flee' }); return true; },
+    ride(i, j) { const k = pets[i], d = pets[j]; if (!k || !d) return 'no'; for (const p of [k, d]) { quitSoc(p); getDown(p); p.busy = false; } k.x = d.x - 50; k.y = d.y; rideStart(k, d); return true; },
+    zoom(i) { const d = pets[i]; if (!d) return 'no'; quitSoc(d); d.busy = false; pets.forEach(p => { p.exciteCd = 0; }); zoomies(d); return true; },
+    force(kind, i = 0, j = 1) { const a = pets[i], b = pets[j]; if (!a || !b) return 'no pets'; for (const p of [a, b]) { quitSoc(p); p.busy = false; p.target = null; } if (kind === 'cuddle' || kind === 'wake') { b.set('sleep', 1.2); b.until = now + 30000; } return socStart(kind, a, b, { pile: true }); },
+  };
+
   // ---------- 畫面迴圈 ----------
   let last = performance.now();
+  // ?raf=timer（開發用）：預覽視窗藏起來時瀏覽器不給畫面更新，用計時器跑（P89 測互動要看動作）；平常照舊用 requestAnimationFrame
+  const nextFrame = /[?&]raf=timer/.test(location.search) ? f => setTimeout(() => f(performance.now()), 33) : f => requestAnimationFrame(f);
   function loop(t) {
     now = t; const dt = Math.min(.05, (t - last) / 1000); last = t;
     door.open += Math.sign(door.want - door.open) * Math.min(Math.abs(door.want - door.open), dt * 3);
@@ -1062,6 +1795,7 @@
       ctx.setTransform(1, 0, 0, 1, -Math.round(cam.x), -Math.round(cam.y));
       drawWall(tod, t); drawFloor(tod);
       pets.forEach(p => p.step(dt));
+      if (t > socNext) { socNext = t + 1000; socialCheck(); }
       const things = [
         ...furn.map(f => ({ y: f.y, draw: () => f.k.draw(f.x, f.y, f.flip) })),
         ...pets.map(p => ({ y: p.held ? H + 1 : p.y, draw: () => { if (editMode) ctx.globalAlpha = .45; p.draw(); ctx.globalAlpha = 1; } })),
@@ -1088,7 +1822,7 @@
       const [l, tp] = b.pet.scr ? b.pet.scr(wy, wx) : [(wx - cam.x) * cam.z, (wy - cam.y) * cam.z];
       b.el.style.left = l + 'px'; b.el.style.top = tp + dy + 'px';
     }
-    requestAnimationFrame(loop);
+    nextFrame(loop);
   }
   function drawMotes(tod, t) {                // 早上、白天：窗戶照進來的光裡，小灰塵慢慢飄（使用者 2026-10-27 給的房間參考圖）
     if (tod !== 'day' && tod !== 'morning') return;
@@ -1802,5 +2536,5 @@
     if (params.has('info')) showDeviceInfo();
   });
   Object.values(imgs).forEach(im => im.addEventListener('load', render, { once: true }));
-  requestAnimationFrame(loop);
+  nextFrame(loop);
 })();

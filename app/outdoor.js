@@ -8,7 +8,7 @@
 //         天空加遠山、一群鳥、熱氣球、風箏、飛機（照場景）；
 //   不重複：樹、房子、攤位的大小、顏色、間距用亂數排（每個場景固定的亂數，這一趟看到的一樣），一層 480 寬（以前 240）才繞回來，每個場景有一個特別的地標；
 //   路面：樹影、水窪（下雨更多）、落葉、裂縫，少一點平均的小雜點；偶爾經過鴿子（毛孩走近會飛走）、路人（下雨撐傘）、遛狗的人、腳踏車。
-(window.DC_BUILD = window.DC_BUILD || {})['outdoor.js'] = 78;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['outdoor.js'] = 81;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const D = window.DC;
