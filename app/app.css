@@ -1,5 +1,5 @@
 :root {
-  --build: 98;            /* 版本戳記（mobile/tools/bump.py） */
+  --build: 99;            /* 版本戳記（mobile/tools/bump.py） */
   --bg: #2a2018;
   --panel: #fffaf2;
   --ink: #3b2f28;
@@ -27,6 +27,14 @@
 
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; overflow: hidden; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }   /* iPhone 橫拿不要自己把字放大 */
+/* iPhone 從主畫面打開（iOS 26）：頁面不比螢幕高時，可用高度少一個狀態列高 → 底下空一條（2026-11-01 使用者截圖）。
+   讓「頁面」至少是螢幕高，#app（fixed inset:0）和全螢幕面板就會到底。不要改 #app 高度：WebKit 只畫到短的那條邊，
+   98 版這樣改，分頁列的字被切掉（frappe-ui PR 1289 同樣結論）。min() 上限＝100lvh：iOS 17/18、橫拿、Android 算出來＝100%，什麼都不變。
+   背景用分頁列的顏色：萬一哪版 iOS 沒生效，空出來那條看起來是分頁列的延伸（mobile/裝置規格.md 第 1 節） */
+@media (display-mode: standalone) {
+  html { min-height: min(100lvh, calc(100% + env(safe-area-inset-top))); background: var(--rail); }
+}
 body {
   background: var(--bg); color: var(--ink);
   font: 15px/1.5 -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
@@ -45,16 +53,16 @@ body:not(.is-phone) .phone-only { display: none; }
 .pages { position: relative; flex: 1; min-width: 0; }
 .view { position: absolute; inset: 0; }
 .view[hidden] { display: none; }
-.page { overflow-y: auto; background: var(--page); padding: calc(8px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right)) 16px 8px; }
+.page { overflow-y: auto; background: var(--page); padding: calc(8px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right)) 16px calc(8px + env(safe-area-inset-left)); }
 /* 手機直拿（body.vertical，app.js 判斷） */
 body.vertical #app { flex-direction: column-reverse; }
-body.vertical .tabs { width: auto; flex-direction: row; padding: 0 0 env(safe-area-inset-bottom); }
+body.vertical .tabs { width: auto; flex-direction: row; padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }   /* 橫拿：瀏海那側也讓開 */
 body.vertical .tabs button { flex: 1; }
 
 
 /* 家：上面全家名單、中間房間、下面工具列（或毛孩面板、佈置列）；介面不蓋住房間（2026-10-14 使用者） */
 .home { display: flex; flex-direction: column; background: var(--rail); }
-.hud-top { flex: none; display: flex; align-items: center; gap: 8px; padding: calc(0px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right)) 4px 8px; background: var(--rail); }
+.hud-top { flex: none; display: flex; align-items: center; gap: 8px; padding: calc(0px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right)) 4px calc(8px + env(safe-area-inset-left)); background: var(--rail); }
 .strip { flex: 1; min-width: 0; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 7px 6px 0 2px; }   /* 上、右留空：位置小圖示凸出頭像外，捲動區會切掉 */
 .strip::-webkit-scrollbar { display: none; }
 .clock { flex: none; color: var(--muted); font-size: 12px; }
@@ -64,10 +72,11 @@ body.vertical .tabs button { flex: 1; }
 .av .where { position: absolute; top: -6px; right: -4px; font-size: 12px; line-height: 1; }
 .av .where .ico { width: 16px; height: 16px; display: block; }
 .av.away canvas { opacity: .45; }
-.stage { position: relative; flex: 1; min-height: 0; overflow: hidden; touch-action: none; background: #1a140f; }
+.stage { position: relative; flex: 1; min-height: 0; overflow: hidden; touch-action: none; background: #1a140f;
+  margin: 0 env(safe-area-inset-right) 0 env(safe-area-inset-left); }   /* 橫拿：房間不跑到瀏海底下（直拿左右＝0） */
 #cv { position: absolute; left: 0; top: 0; image-rendering: pixelated; image-rendering: crisp-edges; }
 #bubbles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
-.homebar { flex: none; display: flex; align-items: center; gap: 6px; padding: 6px calc(8px + env(safe-area-inset-right)) 6px 8px; background: var(--rail); }
+.homebar { flex: none; display: flex; align-items: center; gap: 6px; padding: 6px calc(8px + env(safe-area-inset-right)) 6px calc(8px + env(safe-area-inset-left)); background: var(--rail); }
 .homebar[hidden] { display: none; }
 .hint { flex: 1; min-width: 0; color: var(--muted); font-size: 12px; line-height: 1.35; transition: opacity .6s; }
 .tool { flex: none; height: 44px; min-width: 44px; border: 0; border-radius: 12px; background: var(--chip); color: var(--ink); font-size: 18px; cursor: pointer; padding: 0 8px; }
@@ -101,7 +110,7 @@ body.editing .homebar { display: none; }
 @keyframes fadein { from { opacity: 0; } }
 @keyframes pop { from { transform: translate(-50%, -80%) scale(.6); opacity: 0; } }
 
-.edit-bar { flex: none; display: flex; align-items: center; gap: 8px; padding: 6px calc(8px + env(safe-area-inset-right)) 6px 12px;
+.edit-bar { flex: none; display: flex; align-items: center; gap: 8px; padding: 6px calc(8px + env(safe-area-inset-right)) 6px calc(12px + env(safe-area-inset-left));
   background: #ffe9a6; color: #3b2f28; white-space: nowrap; font-size: 13px; }
 .edit-bar[hidden] { display: none; }
 .edit-bar span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
@@ -143,7 +152,7 @@ h2 { font-size: 17px; margin: 4px 8px 8px; }
 .pocket-stage { position: absolute; inset: 0; overflow: hidden; background: #1a140f; touch-action: none; }
 #pocketCv { position: absolute; left: 0; top: 0; image-rendering: pixelated; image-rendering: crisp-edges; display: block; }
 .bubble-layer { position: absolute; inset: 0; pointer-events: none; }
-.pocket-pill { position: absolute; left: 12px; top: calc(10px + env(safe-area-inset-top)); background: rgba(255,250,242,.88); color: #3b2f28;
+.pocket-pill { position: absolute; left: calc(12px + env(safe-area-inset-left)); top: calc(10px + env(safe-area-inset-top)); background: rgba(255,250,242,.88); color: #3b2f28;
   border-radius: 999px; padding: 4px 12px; font-size: 13px; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
 .pocket-fabs { position: absolute; right: calc(12px + env(safe-area-inset-right)); bottom: 16px; display: flex; flex-direction: column; gap: 12px; align-items: center; }
 .fab { width: 56px; height: 56px; border-radius: 50%; border: 0; background: rgba(255,250,242,.92); color: #3b2f28; box-shadow: 0 3px 10px rgba(0,0,0,.3);
@@ -188,7 +197,7 @@ h2 { font-size: 17px; margin: 4px 8px 8px; }
 .presult-btns [hidden] { display: none; }
 
 /* 點毛孩跳出來的面板：放在房間下面（取代工具列），房間跟著縮短 */
-.sheet { flex: none; background: var(--panel); padding: 8px calc(12px + env(safe-area-inset-right)) 8px 12px; border-top: 1px solid var(--line); }
+.sheet { flex: none; background: var(--panel); padding: 8px calc(12px + env(safe-area-inset-right)) 8px calc(12px + env(safe-area-inset-left)); border-top: 1px solid var(--line); }
 .sheet[hidden] { display: none; }
 body.sheet-open .homebar { display: none; }
 
@@ -357,10 +366,10 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
 /* 登入（server.js；沒登入時蓋住整個畫面＝這時候沒有毛孩）。輸入框字 16px：iPhone 小於 16 會自己放大畫面 */
 .login { position: fixed; inset: 0; z-index: 25; overflow-y: auto; background: var(--page); color: var(--ink);
-  display: flex; align-items: center; justify-content: center;
+  display: flex;   /* 不用 align-items／justify-content 置中：卡片比畫面高時（橫拿、鍵盤、領養）上半部會被切、捲不上去；改用卡片的 margin: auto */
   padding: calc(16px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left)); }
 .login[hidden] { display: none; }
-.login-card { width: 100%; max-width: 360px; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 20px 18px;
+.login-card { margin: auto; width: 100%; max-width: 360px; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 20px 18px;
   display: flex; flex-direction: column; align-items: stretch; text-align: center; }
 .login-logo { width: 64px; height: 64px; border-radius: 16px; margin: 0 auto 6px; image-rendering: pixelated; }
 .login-card h2 { margin: 0; font-size: 20px; }
@@ -475,7 +484,8 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .profile-ask { margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--line); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .profile-ask p { flex: 1 1 100%; margin: 0; }
 .chat-row { display: flex; gap: 6px; margin-top: 8px; }
-.chat-row input { flex: 1 1 auto; min-width: 0; font: inherit; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--page); color: inherit; }
+.chat-row input { flex: 1 1 auto; min-width: 0; font: inherit; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--page); color: inherit;
+  font-size: 16px; min-height: 44px; }   /* iPhone：輸入框字小於 16px，一點就整頁放大 */
 .chat-card .note { opacity: .7; }
 .profile-diary { margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--line); }
 .profile-diary p { margin: 4px 0 0; }
@@ -534,3 +544,9 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .nt-msg { margin: 6px 0 0; font-size: 12px; color: var(--bad); }
 .nt-msg.ok { color: var(--gain); font-weight: 700; }
 .nt-acts { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* 矮的畫面（手機橫拿）：口袋圓按鈕排成一排（直的 4 顆＝272 點，比畫面高）、毛孩面板最多佔家的一半多一點、裡面捲（房間不被擠到 0：毛孩要看得到） */
+@media (max-height: 500px) {
+  .pocket-fabs { flex-direction: row; align-items: flex-end; bottom: 10px; }
+  body.vertical .sheet { max-height: 55%; overflow-y: auto; overscroll-behavior: contain; }
+}

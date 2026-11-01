@@ -2,7 +2,7 @@
 // 斜上往下看的房間（W×H 像素，比螢幕大），整數倍放大（不糊）；拖曳移動鏡頭、兩指縮放。
 // 電腦網頁＝橫版（分頁列在左邊）、手機網頁＝直版（分頁列在下面）（2026-10-14 使用者）。
 // 家具先用程式畫的簡單版（之後換成正式美術）；毛孩用遊戲的側面影格，前後只靠遮擋表現、不縮放。
-(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 98;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 99;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   // 資料：範例（假資料）或伺服器（server.js；登入後 dc_pets_mine 每 10 秒讀一次，見下面「伺服器同步」）。
@@ -3017,21 +3017,17 @@
   function tick() { $('clock').textContent = `${TIME_LABEL[timeOfDay()]} ${new Date().toTimeString().slice(0, 5)}`; }
   // 手機＝手機版（直版版面），電腦＝網頁版（橫版，分頁列在左邊）：只照「是不是手機（觸控）」，不照視窗大小、不照手機直拿橫拿
   // （製作規則第 3 節、裝置規格第 6 節；2026-10-20 使用者：「嚴格遵守手機版的介面跟或者是網頁版」，以前手機橫拿會變成網頁版的樣子）
-  function layout() { document.body.classList.toggle('vertical', isPhone); fixHeight(); }
-  // iPhone 從主畫面打開（iOS 26）：網頁量到的高度比螢幕少一截（剛好少上面狀態列那麼高，約 59 點），畫面從最上面畫、
-  // 底下就空一條（2026-11-01 使用者 iPhone 截圖：分頁列下面多一條黑的）。直拿、從主畫面打開、量到的比螢幕矮時，#app 直接用螢幕高度；
-  // 系統修好了（innerHeight＝螢幕高）就不動。Safari 裡（有網址列）不管：那時候本來就比螢幕矮
-  function fixHeight() {
-    const app = $('app'), sw = Math.min(screen.width, screen.height), sh = Math.max(screen.width, screen.height);
-    const home = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
-    const iOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    const short = home && iOS && innerHeight > innerWidth && Math.abs(innerWidth - sw) <= 1 && innerHeight < sh - 1;
-    app.style.bottom = short ? 'auto' : ''; app.style.height = short ? `${sh}px` : '';
-  }
+  function layout() { document.body.classList.toggle('vertical', isPhone); }
+  // iPhone 從主畫面打開（iOS 26）底下空一條：用 app.css 的 @media (display-mode: standalone) 修「頁面」高度。
+  // 不要改 #app 高度：WebKit 只畫到短的那條邊，98 版這樣改，分頁列的字被切掉（frappe-ui PR 1289 同樣結論）
   const relayout = () => { layout(); requestAnimationFrame(fit); };
   addEventListener('resize', relayout);
   addEventListener('orientationchange', () => setTimeout(relayout, 200));   // iPhone 轉向時 resize 有時候晚一點才來
   matchMedia('(orientation: portrait)').addEventListener('change', relayout);
+  // 鍵盤收起來後版面回原位：iPhone 打字時可能把整頁往上推、收鍵盤沒推回來（這個頁面本來就不該捲；.page 裡面的捲動不受影響）
+  const unshift = () => { const a = document.activeElement; if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return; if (scrollX || scrollY) scrollTo(0, 0); };
+  addEventListener('focusout', () => setTimeout(unshift, 100));
+  if (window.visualViewport) visualViewport.addEventListener('resize', unshift);
   function setPhone(v) { isPhone = v; document.body.classList.toggle('is-phone', v); layout(); render(); requestAnimationFrame(fit); }
 
   if (dev) {                                // 開發用：假資料的切換
@@ -3118,7 +3114,10 @@
     try { for (let i = 0; i < localStorage.length; i++) keys.push(localStorage.key(i)); } catch (_) { keys.push('（讀不到）'); }
     return [
       ['畫面（CSS 點）', `${innerWidth}×${innerHeight}（${innerWidth > innerHeight ? '橫拿' : '直拿'}）`],
-      ['螢幕', `${screen.width}×${screen.height}${$('app').style.height ? `（主畫面高度補成 ${$('app').style.height}）` : ''}`],
+      ['螢幕', `${screen.width}×${screen.height}`],
+      ['版面高度', (() => { const h = u => { const d = document.createElement('div'); d.style.cssText = `position:fixed;visibility:hidden;top:0;height:${u}`; document.body.appendChild(d); const v = Math.round(d.getBoundingClientRect().height); d.remove(); return v; };
+        return `html ${Math.round(document.documentElement.getBoundingClientRect().height)}・#app ${Math.round($('app').getBoundingClientRect().height)}・分頁列底邊 ${Math.round(document.querySelector('.tabs').getBoundingClientRect().bottom)}・100lvh ${h('100lvh')}・100svh ${h('100svh')}`; })()],
+      ['鍵盤／捲動', window.visualViewport ? `可見 ${Math.round(visualViewport.width)}×${Math.round(visualViewport.height)}・往下 ${Math.round(visualViewport.offsetTop)}・整頁捲了 ${Math.round(scrollY)}` : '（不支援）'],
       ['像素比 DPR', +dpr.toFixed(3)],
       ['安全區域 上/右/下/左', safe.join(' / ')],
       ['房間每格', `${cam.z} 點＝${cell} 實體像素${Number.isInteger(cell) ? '' : '（不是整數，會有一點糊）'}`],
@@ -3172,6 +3171,11 @@
     if (old.length) { console.warn('舊檔案：', old, builds()); setTimeout(() => toast('有舊的檔案沒更新：關掉網頁再開一次'), 900); }
     if (params.has('info')) showDeviceInfo();
   });
+  {                                         // 主畫面打開不能加 ?info=1：「全家在哪」標題連點 5 下打開裝置資訊（實機量版面高度用）
+    let n = 0, t = 0;
+    const h2 = document.querySelector('#view-family > h2');
+    if (h2) h2.addEventListener('click', () => { const now = Date.now(); n = now - t < 700 ? n + 1 : 1; t = now; if (n >= 5) { n = 0; showDeviceInfo(); } });
+  }
   Object.values(imgs).forEach(im => im.addEventListener('load', render, { once: true }));
   nextFrame(loop);
 })();
