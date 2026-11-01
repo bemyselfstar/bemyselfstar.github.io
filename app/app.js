@@ -2,7 +2,7 @@
 // 斜上往下看的房間（W×H 像素，比螢幕大），整數倍放大（不糊）；拖曳移動鏡頭、兩指縮放。
 // 電腦網頁＝橫版（分頁列在左邊）、手機網頁＝直版（分頁列在下面）（2026-10-14 使用者）。
 // 家具先用程式畫的簡單版（之後換成正式美術）；毛孩用遊戲的側面影格，前後只靠遮擋表現、不縮放。
-(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 97;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 98;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   // 資料：範例（假資料）或伺服器（server.js；登入後 dc_pets_mine 每 10 秒讀一次，見下面「伺服器同步」）。
@@ -3017,7 +3017,17 @@
   function tick() { $('clock').textContent = `${TIME_LABEL[timeOfDay()]} ${new Date().toTimeString().slice(0, 5)}`; }
   // 手機＝手機版（直版版面），電腦＝網頁版（橫版，分頁列在左邊）：只照「是不是手機（觸控）」，不照視窗大小、不照手機直拿橫拿
   // （製作規則第 3 節、裝置規格第 6 節；2026-10-20 使用者：「嚴格遵守手機版的介面跟或者是網頁版」，以前手機橫拿會變成網頁版的樣子）
-  function layout() { document.body.classList.toggle('vertical', isPhone); }
+  function layout() { document.body.classList.toggle('vertical', isPhone); fixHeight(); }
+  // iPhone 從主畫面打開（iOS 26）：網頁量到的高度比螢幕少一截（剛好少上面狀態列那麼高，約 59 點），畫面從最上面畫、
+  // 底下就空一條（2026-11-01 使用者 iPhone 截圖：分頁列下面多一條黑的）。直拿、從主畫面打開、量到的比螢幕矮時，#app 直接用螢幕高度；
+  // 系統修好了（innerHeight＝螢幕高）就不動。Safari 裡（有網址列）不管：那時候本來就比螢幕矮
+  function fixHeight() {
+    const app = $('app'), sw = Math.min(screen.width, screen.height), sh = Math.max(screen.width, screen.height);
+    const home = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+    const iOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const short = home && iOS && innerHeight > innerWidth && Math.abs(innerWidth - sw) <= 1 && innerHeight < sh - 1;
+    app.style.bottom = short ? 'auto' : ''; app.style.height = short ? `${sh}px` : '';
+  }
   const relayout = () => { layout(); requestAnimationFrame(fit); };
   addEventListener('resize', relayout);
   addEventListener('orientationchange', () => setTimeout(relayout, 200));   // iPhone 轉向時 resize 有時候晚一點才來
@@ -3108,7 +3118,7 @@
     try { for (let i = 0; i < localStorage.length; i++) keys.push(localStorage.key(i)); } catch (_) { keys.push('（讀不到）'); }
     return [
       ['畫面（CSS 點）', `${innerWidth}×${innerHeight}（${innerWidth > innerHeight ? '橫拿' : '直拿'}）`],
-      ['螢幕', `${screen.width}×${screen.height}`],
+      ['螢幕', `${screen.width}×${screen.height}${$('app').style.height ? `（主畫面高度補成 ${$('app').style.height}）` : ''}`],
       ['像素比 DPR', +dpr.toFixed(3)],
       ['安全區域 上/右/下/左', safe.join(' / ')],
       ['房間每格', `${cam.z} 點＝${cell} 實體像素${Number.isInteger(cell) ? '' : '（不是整數，會有一點糊）'}`],
