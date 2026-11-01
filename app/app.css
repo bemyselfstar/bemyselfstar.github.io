@@ -1,5 +1,5 @@
 :root {
-  --build: 81;            /* 版本戳記（mobile/tools/bump.py） */
+  --build: 97;            /* 版本戳記（mobile/tools/bump.py） */
   --bg: #2a2018;
   --panel: #fffaf2;
   --ink: #3b2f28;
@@ -439,6 +439,49 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
 /* ---------- 在手機建立毛孩（adopt.js，P74 M2） ---------- */
 .adopt-card { max-width: 400px; padding: 14px 14px 16px; text-align: left; }
+/* 手機商店（P88 M4b，shop.js）：上面罐罐、分頁；中間格子（只有這裡捲）；下面固定說明＋〔買〕 */
+.shop-card { max-width: 440px; height: min(720px, 100%); padding: 12px 12px 14px; text-align: left; gap: 10px; }
+.shop-head { display: flex; align-items: center; gap: 8px; }
+.shop-head h2 { font-size: 18px; display: flex; align-items: center; gap: 6px; }
+.shop-cans { margin-left: auto; font-weight: 700; background: var(--chip); border-radius: 999px; padding: 6px 12px; }
+.shop-tabs { display: flex; background: var(--chip); border-radius: 999px; padding: 2px; gap: 2px; }
+.shop-tabs button { flex: 1; border: 0; background: none; border-radius: 999px; min-height: 44px; font-size: 14px; cursor: pointer; color: var(--ink); }
+.shop-tabs button.on { background: var(--panel); font-weight: 700; box-shadow: 0 1px 4px rgba(0, 0, 0, .15); }
+.shop-grid { flex: 1; min-height: 0; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; align-content: start; }
+.shop-item { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px 6px; min-height: 108px;
+  border: 2px solid var(--line); border-radius: 12px; background: var(--page); color: var(--ink); cursor: pointer; font: inherit; }
+.shop-item[style*="--rar"] { border-color: color-mix(in srgb, var(--rar) 55%, var(--line)); }
+.shop-item.sel { border-color: #e0a030; box-shadow: 0 0 0 2px #e0a03055; }
+.shop-item.owned { opacity: .55; }
+.shop-item img { width: 48px; height: 48px; object-fit: contain; image-rendering: pixelated; }
+.shop-item .n { font-size: 13px; line-height: 1.2; text-align: center; }
+.shop-item .p { font-size: 12px; font-weight: 700; }
+.shop-item .p.short { color: #b04a3a; opacity: .75; }
+.shop-item .have { position: absolute; top: 4px; right: 4px; font-size: 11px; background: var(--chip); border-radius: 8px; padding: 0 5px; }
+.shop-item .tag { position: absolute; top: 4px; left: 4px; font-size: 10px; background: #e0a030; color: #fff; border-radius: 6px; padding: 0 4px; }
+.shop-detail { display: flex; align-items: center; gap: 10px; min-height: 76px; border-top: 1px solid var(--line); padding-top: 10px; }
+.shop-detail img { width: 48px; height: 48px; object-fit: contain; image-rendering: pixelated; flex: none; }
+.shop-detail img.big { width: 64px; height: 64px; }
+.shop-info { flex: 1; min-width: 0; }
+.shop-info b { display: block; font-size: 14px; }
+.shop-info p { margin: 2px 0 0; font-size: 12px; color: var(--sub, #8a7a6c); }
+.shop-detail .btn { flex: none; white-space: nowrap; }
+.shop-tip { margin: 0; color: var(--sub, #8a7a6c); font-size: 13px; }
+/* P92 牠的檔案（面板裡） */
+.profile-card { flex: 1 1 100%; background: var(--page); border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; text-align: left; }
+.profile-card p { margin: 4px 0 0; font-size: 13px; line-height: 1.5; }
+.profile-card { max-height: 34vh; overflow-y: auto; }   /* P92：檔案內容變多了，卡片裡面捲，家裡的毛孩不被擠掉 */
+.profile-card .profile-phrase { margin: 0 0 6px; font-size: 15px; font-weight: 700; }
+.profile-ask { margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--line); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.profile-ask p { flex: 1 1 100%; margin: 0; }
+.chat-row { display: flex; gap: 6px; margin-top: 8px; }
+.chat-row input { flex: 1 1 auto; min-width: 0; font: inherit; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--page); color: inherit; }
+.chat-card .note { opacity: .7; }
+.profile-diary { margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--line); }
+.profile-diary p { margin: 4px 0 0; }
+.profile-diary .note { opacity: .7; }
+.shop-info p.shop-note { color: #4f9c5a; font-weight: 700; }
+.shop-info p.shop-note.bad { color: #b04a3a; }
 .ad-head { display: flex; align-items: center; justify-content: space-between; }
 .ad-head h2 { font-size: 18px; }
 .ad-head .x[hidden] { display: none; }

@@ -9,7 +9,7 @@
 //   「讀過沒」伺服器不記 → 存在這台手機（deskcat_mail_read_v1）。
 // 伺服器只存「哪一種事＋數字」，句子在這裡照固定句型組（動態跟 social.py 的 MOMENT_TEXT 一樣，改的話兩邊一起改）。
 // 版面：電腦橫版＝信件、動態兩欄並排；手機直拿＝上面兩個分頁切換（body.vertical）。
-(window.DC_BUILD = window.DC_BUILD || {})['mail.js'] = 81;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['mail.js'] = 97;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const D = window.DC, S = window.DCScene, SV = window.DCServer, $ = id => document.getElementById(id);
@@ -369,12 +369,27 @@
       box.append(el('h3', null, `還沒打開（${gifts.length}）`));
       const ul = el('ul', 'letters'); gifts.forEach(m => ul.append(giftCard(m))); box.append(ul);
     }
-    const rest = M.mail.filter(m => !(m.kind === 'gift' && !m.claimed));
+    const { list: rest, hidden } = capPostcards(M.mail.filter(m => !(m.kind === 'gift' && !m.claimed)));
     box.append(el('h3', null, `明信片、旅行日記（${rest.filter(m => m.kind !== 'gift').length}）`));
     if (!rest.length) box.append(el('p', 'note', '還沒有信。毛孩去好友家玩回來、好友送你禮物，都會留在這裡'));
     const ul = el('ul', 'letters');
-    rest.forEach(m => ul.append(m.kind === 'gift' ? giftDone(m) : m.kind === 'trip' ? tripCard(m) : postcardCard(m)));
+    rest.forEach(m => {
+      ul.append(m.kind === 'gift' ? giftDone(m) : m.kind === 'trip' ? tripCard(m) : postcardCard(m));
+      if (hidden.has(m)) ul.append(el('li', 'note', `${clean(m.from || '好友')}家這天還有 ${hidden.get(m)} 張明信片（收起來了）`));
+    });
     box.append(ul);
+  }
+
+  // P93（使用者 2026-10-31「動態訊息多到困擾」）：同一個好友同一天的明信片只顯示最新幾張（DC_RULES.postcard_day，電腦 mail_scene.cap_postcards 一樣）
+  function capPostcards(list) {
+    const cap = (window.DC_RULES || {}).postcard_day || 3, count = new Map(), last = new Map(), hidden = new Map(), out = [];
+    for (const m of list) {
+      if (m.kind !== 'postcard') { out.push(m); continue; }
+      const k = (m.from || '') + '|' + new Date(Date.now() - mins(m.ago) * 60000).toDateString();
+      const n = count.get(k) || 0; count.set(k, n + 1);
+      if (n < cap) { out.push(m); last.set(k, m); } else { const l = last.get(k); hidden.set(l, (hidden.get(l) || 0) + 1); }
+    }
+    return { list: out, hidden };
   }
 
   // ---------- 🐾 好友動態：照片牆 ----------

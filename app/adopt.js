@@ -11,7 +11,7 @@
 // 換衣服（P74 M5，2026-10-26）：毛孩面板〔換衣服〕→ 同一個畫面換成「衣櫃」：一個部位一排，只列衣櫃有的（🎮 dc_wardrobe_mine）、
 //   這隻能穿的（專屬看品種或花色，跟電腦 items.can_wear 一樣）、零件包有這個品種年齡的；狗拿南瓜提籃不戴頭臉脖子（DC_RULES.wear.clash）。
 // 長大換著色本（2026-10-23）：手機建立、電腦還沒接的毛孩長大了（ageKeyOf 變了）→ 背景照同一份外觀重畫、傳上去（checkGrow）。
-(window.DC_BUILD = window.DC_BUILD || {})['adopt.js'] = 81;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['adopt.js'] = 97;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const SV = window.DCServer, P = window.DCParts, $ = id => document.getElementById(id);
@@ -254,6 +254,9 @@
       const { file, poses } = await upload(cfg.cid);
       const r = await SV.petCreate(cfg, file, poses);
       if (!r || r.ok === false) throw new SV.ServerError(r && r.reason === 'too_many' ? '毛孩已經滿了' : '建立不了，等一下再試', 'server', 0);
+      if (SV.profile && window.DC.pickQuirks) {   // P92：天生小怪癖（伺服器寫一次就定了；電腦接走時照這份）
+        try { await SV.profileQuirks({ [cfg.cid]: window.DC.pickQuirks(cfg.species) }); window.DC.loadProfiles(); } catch (_) { /* 電腦打開時會補 */ }
+      }
       close();
       window.DC.toast(`${cfg.name}來到你家了`);
       if (window.DC.pullNow) window.DC.pullNow();

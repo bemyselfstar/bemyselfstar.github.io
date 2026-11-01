@@ -13,7 +13,7 @@
 //     開新帳號＝信箱驗證碼 create_user: true（先用 false 試，沒有帳號才問要不要開）；暱稱＝profiles 表（001，自己的那一列可以改 nickname）；
 //     刪帳號 dc_account_delete（🎮 新的：現在的 delete_my_account 要電腦裝置，手機叫不了）；
 //     手機建立毛孩 dc_pet_create(p_cfg, p_sprite)（🎮 019）＋毛孩圖自己傳 Storage pet-sprites/<帳號>/<cid>-<指紋>.png／.json（權限 013 已經可以）
-(window.DC_BUILD = window.DC_BUILD || {})['server.js'] = 81;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['server.js'] = 97;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const SERVERS = {
@@ -365,5 +365,48 @@
     // 手機的家（server/020，P78；格式見 docs/跨線需求.md 2026-10-19 🎮 P78）。伺服器還沒有 020＝404（app.js 照舊只存瀏覽器）
     homeMine: () => rpc('dc_home_mine'),                     // {owned: {catbed: 1…}（只列有的）, owned_at, layout: [{k, x, y}] 或 null（沒存過）, extras: [{kind, x, y}], layout_at}
     homeLayoutSet: (layout, extras) => rpc('dc_home_layout_set', { p_layout: layout, p_extras: extras }),   // {ok, layout_at}／{ok: false, reason: 'invalid'}
+    // 手機家裡吃東西（P88 M4，2026-10-31；格式見 docs/跨線需求.md 10-31 🎮 P88 吃東西）。🎮 錢包那半還沒做：food＝false 時手機不顯示罐頭、點心
+    // （假伺服器 ?mock=1 打開）。🎮 做好、正式和 dev 都有函式後改成 true
+    food: true,   // v4.18（2026-11-01）：正式版 030～038 都跑了，跟電腦新版一起打開
+    foodMine: () => rpc('dc_food_mine'),                     // {wet: 個數, treats: {salmon: 份數…}, known: {cid: ['salmon'…]}}
+    foodUse: (cid, key) => rpc('dc_food_use', { p_cid: cid, p_key: key }),   // key＝wet／treat_<口味> → {ok, left, love}／{ok: false, reason: none／not_home／no_pet}
+    // 手機商店（P88 M4b，2026-10-31；格式見 docs/跨線需求.md 10-31 🎮 P88 商店）。🎮 共用錢包還沒做：shop＝false 時家裡不顯示〔商店〕（假伺服器打開）
+    shop: true,   // 同上
+    shopMine: () => rpc('dc_shop_mine'),                     // {cans, owned: {catbed: 1…}, items: [衣櫃有的飾品…]}
+    // key＝家具（catbed…）／食物（wet、snack、egg、dango、catnip、treat_<口味>）／nightcap／ev_<飾品>／gacha／ev_gacha →
+    // {ok, cans, …}：家具 owned、罐頭 wet、點心 treats、飾品 item、扭蛋 {item, new, refund, forced, text}；
+    // {ok: false, reason: cans（罐罐不夠）／owned（已經有了）／invalid}
+    shopBuy: key => rpc('dc_shop_buy', { p_key: key }),
+    // 賺罐罐（P88 M3，2026-10-31；格式見 docs/跨線需求.md 10-31 🎮 P88 賺罐罐）。🎮 還沒做：earn＝false 時不叫（假伺服器打開）
+    earn: true,   // 同上
+    // kind＝daily（每天第一次打開）／care（key＝feed／pet／stroke，每隻每天各一次）／find（口袋撿到東西，key＝出門時間:第幾個）／
+    // chest（口袋寶箱，key＝出門時間:第幾個）→ {ok, got: 給了幾個罐罐（0＝沒有／今天到上限）, cans, snack?: true（寶箱開出零食）, item?: 飾品, text?}
+    cansEarn: (kind, cid, key) => rpc('dc_cans_earn', { p_kind: kind, p_cid: cid, p_key: key }),
+    // 毛孩檔案（P92 M1，server/031）：天生小怪癖寫一次就定了。profile＝伺服器有 031（dev 先開；正式版跑 031＋電腦新版後改 true）
+    profile: true,
+    profilesMine: () => rpc('dc_profiles_mine'),                     // {cid: {quirks: [代號], detail: {fav_toy}}}
+    profileQuirks: map => rpc('dc_profile_quirks', { p_map: map }),  // {cid: {quirks, detail}} → {ok, set, profiles}
+    // 毛孩問你＋口頭禪（P92 M2，server/032）：qa＝伺服器有 032（dev 先開；正式版跑 032 後改 true）
+    // profiles 每隻多 prefs {題目: [選項, 秒]}、catchphrase（'' ＝還沒有）
+    qa: true,
+    profilePrefs: map => rpc('dc_profile_prefs', { p_map: map }),    // {cid: {題目: [選項, 秒]}}（同一題以時間新的為準）→ {ok, set, profiles}
+    // 成長日記（P92 M3，server/034）：大事 {cid: {代號: [秒, 補充]}}（同一種以早的為準）；profiles 每隻多 memories、diary
+    profileMemories: map => rpc('dc_profile_memories', { p_map: map }),
+    // 你問毛孩（P92 M4，server/035）：一天免費 5 次；伺服器不存你說的話 → {ok, text, left}／{ok: false, reason, left}
+    async petChat(cid, text, history) {
+      try { return await authed('POST', '/functions/v1/pet-words', { cid, chat: text, history: (history || []).slice(-3) }); }
+      catch (e) { if (e.code !== 'auth' && e.body && e.body.reason) return e.body; throw e; }
+    },
+    chatLeft: () => rpc('dc_chat_left'),                              // {left, max}
+    // 寫一章（門檻伺服器看）→ {ok, ch, text, source}／{ok: false, reason: locked／busy／daily_user…}
+    async petDiary(cid, ch) {
+      try { return await authed('POST', '/functions/v1/pet-words', { cid, diary: ch }); }
+      catch (e) { if (e.code !== 'auth' && e.body && e.body.reason) return e.body; throw e; }
+    },
+    // 口頭禪：Edge Function pet-words（還沒部署 → 404，手機當作「還沒有」）→ {ok, phrase, source}／{ok: false, reason}
+    async petWords(cid) {
+      try { return await authed('POST', '/functions/v1/pet-words', { cid }); }
+      catch (e) { if (e.code !== 'auth' && e.body && e.body.reason) return e.body; throw e; }
+    },
   };
 })();

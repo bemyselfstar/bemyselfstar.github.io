@@ -2,7 +2,7 @@
 // 斜上往下看的房間（W×H 像素，比螢幕大），整數倍放大（不糊）；拖曳移動鏡頭、兩指縮放。
 // 電腦網頁＝橫版（分頁列在左邊）、手機網頁＝直版（分頁列在下面）（2026-10-14 使用者）。
 // 家具先用程式畫的簡單版（之後換成正式美術）；毛孩用遊戲的側面影格，前後只靠遮擋表現、不縮放。
-(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 81;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 97;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   // 資料：範例（假資料）或伺服器（server.js；登入後 dc_pets_mine 每 10 秒讀一次，見下面「伺服器同步」）。
@@ -478,6 +478,15 @@
     else ctx.drawImage(im, x0, y0);
   }
   const pic = (name, hit, fp, more = {}) => ({ hit, fp, ...more, draw(x, y, flip) { put(name, x, y, flip); } });
+  const WIN_UP = 30, WIN_SILL = 6;          // 窗戶：底邊離地多高（掛在牆上）；窗台在圖的底邊往上幾格（貓坐的地方）
+  const TABLE_TOP = 20;                     // 茶几桌面離地多高（杯子、鉛筆放這裡）
+  const shake = f => (f && f.shake > now ? Math.round(Math.sin(now / 28)) : 0);   // 紙袋、塑膠袋：裡面有貓、被撥的時候晃一晃
+  function drawTvShow(x, y) {               // 電視開著（有毛孩在看）：螢幕亮起來，一條小魚游過去（電腦的換台、節目手機不做）
+    const sx = Math.round(x - 21) + 6, sy = Math.round(y - 36) + 8, k = (now / 2600) % 1;
+    rect(sx, sy, 25, 18, '#bfe3ef'); rect(sx, sy + 13, 25, 5, '#8fc7a0'); rect(sx + 3, sy + 2, 5, 2, '#eaf6fa');
+    const fx = sx + 1 + Math.round(k * 21), fy = sy + 7 + Math.round(Math.sin(now / 300));
+    rect(fx, fy, 3, 2, '#e98a4a'); rect(fx - 1, fy, 1, 2, '#c96a32');
+  }
   const FURN = {
     shelf: pic('shelf', [92, 122], [92, 10]),
     cattree: pic('cattree', [70, 94], [70, 10]),
@@ -498,6 +507,22 @@
     fish: { hit: [14, 8], fp: null, spot: 'toy', draw(x, y) {
       ellipse(x, y - 3, 5, 3, OL); ellipse(x, y - 3, 4, 2, '#78b7d8'); rect(x + 5, y - 6, 2, 6, OL); rect(x + 5, y - 5, 1, 4, '#78b7d8'); rect(x - 3, y - 4, 1, 1, OL);
     } },
+    // 2026-11-01 新家具（v4.18 手機跟電腦一起上，跨線需求 2026-11-01）：圖＝電腦版的格子（mobile/tools/make_care_furniture.py），
+    // 毛孩怎麼用（簡單版）見下面 careUse。flat＝平的、畫在最底下；onTable＝放在茶几上（跟著茶几、不能自己搬）；wall＝掛在牆上
+    rug: pic('rug', [35, 11], null, { spot: 'rug', flat: true }),
+    catgrass: pic('catgrass', [12, 17], null, { spot: 'grass' }),
+    fountain: pic('fountain', [17, 14], null, { spot: 'drink' }),
+    feeder: pic('feeder', [18, 26], [18, 6], { spot: 'eat' }),
+    tv: { hit: [43, 36], fp: [43, 10], spot: 'tv', draw(x, y, flip, f) { put('tv', x, y); if (f && f.on > now) drawTvShow(x, y); } },
+    window: { hit: [49, 48 + WIN_UP], fp: null, spot: 'window', wall: true, draw(x, y) { put('window', x, y - WIN_UP); } },
+    purifier: pic('purifier', [18, 39], [18, 8]),
+    tissue: pic('tissue', [16, 11], null),
+    sock: pic('sock', [16, 12], null, { spot: 'carry' }),
+    slipper: pic('slipper', [24, 11], null, { spot: 'carry' }),
+    paperbag: { hit: [30, 24], fp: null, spot: 'pbag', back(x, y, f) { put('paperbag_back', x + shake(f), y); }, draw(x, y, flip, f) { put('paperbag', x + shake(f), y); } },
+    plasticbag: { hit: [25, 30], fp: null, spot: 'plbag', draw(x, y, flip, f) { put('plasticbag', x + shake(f), y); } },
+    mug: { hit: [0, 0], fp: null, onTable: true, draw(x, y) { put('mug', x, y - TABLE_TOP); } },
+    pen: { hit: [0, 0], fp: null, onTable: true, draw(x, y) { put('pen', x, y - TABLE_TOP); } },
   };
   // 一打開就先下載全部家具圖（以前畫到才下載：第一眼只看到空地板，2026-10-27）
   ['shelf', 'cattree', 'sofa', 'armchair', 'table', 'lamp', 'plant', 'catbed', 'food', 'water', 'box', 'doghouse', 'ball'].forEach(furnImg);
@@ -521,12 +546,52 @@
   // 貓窩、貓跳台、沙發、飯碗水碗、紙箱、狗屋＝電腦買過才擺（每種 1 個，位置照範例）。手機沒有圖的電腦家具不出現、不換色
   const DECOR = new Set(['shelf', 'lamp', 'plant', 'armchair', 'table', 'ball']);
   const OWNABLE = new Set(['catbed', 'cattree', 'sofa', 'bowls', 'box', 'doghouse']);
-  const furn = [];                          // 每件：{kind, x, y, k: FURN 的畫法, dx/dy: 預設位置, extra: 伴手禮那筆（是伴手禮才有）}
+  // 2026-11-01 新家具：owned 是數量（例 {rug: 2}），有幾個擺幾個；預設位置照順序（第 2 個在旁邊）。上限＝商店的 max（shared_rules.CARE_LIMIT）
+  // 茶几上的杯子、鉛筆：位置是「離茶几中間多遠」
+  const CARE_AT = {
+    rug: [[226, 456], [424, 470]], catgrass: [[66, 300], [84, 306]], fountain: [[494, 402], [512, 408]],
+    feeder: [[418, 402], [398, 408]], tv: [[468, 352], [418, 352]], window: [[462, WALL_Y + 6], [318, WALL_Y + 6]],
+    purifier: [[530, 338], [544, 360]], tissue: [[430, 292], [412, 298]], sock: [[300, 398], [184, 352]],
+    slipper: [[498, 446], [474, 456]], paperbag: [[166, 470], [130, 466]], plasticbag: [[72, 470], [92, 474]],
+    mug: [[-18, 0], [-6, 0]], pen: [[14, 0], [-30, 0]],
+  };
+  const FURN_MAX = kind => { const s = window.DC_SHOP && DC_SHOP.furn.find(x => x.key === kind); return s ? s.max : OWNABLE.has(kind) ? 1 : 0; };
+  const FIXABLE = new Set(Object.keys((window.DC_SHOP && DC_SHOP.fix) || {}));   // 狗咬壞、手機能修的（sofa catbed rug box slipper sock）
+  const furn = [];                          // 每件：{kind, x, y, k: FURN 的畫法, dx/dy: 預設位置, extra: 伴手禮那筆（是伴手禮才有）, broken: 咬壞了}
   function buildFurn(owned, ex) {           // owned＝null：範例的全部（範例模式、伺服器沒有 020、還沒讀到）
     const list = HOME.furniture.filter(f => FURN[f.kind] && (!owned || DECOR.has(f.kind) || (OWNABLE.has(f.kind) && owned[f.kind] > 0)))
       .map(f => ({ ...f, k: FURN[f.kind], dx: f.x, dy: f.y }));
+    if (owned) for (const [kind, at] of Object.entries(CARE_AT)) {
+      const n = Math.min(+owned[kind] || 0, FURN_MAX(kind), at.length);
+      for (let i = 0; i < n; i++) {
+        const [x, y] = at[i], f = { kind, x, y, k: FURN[kind], dx: x, dy: y };
+        if (FURN[kind].onTable) Object.assign(f, { tdx: x, x: 260 + x, y: 290 });
+        list.push(f);
+      }
+    }
+    if (owned) for (const kind of FIXABLE) {  // <代號>_broken＝咬壞了幾個（電腦傳的；伺服器 038 owned_all）：前面那幾個畫破洞
+      let n = +owned[kind + '_broken'] || 0;
+      for (const f of list) if (n > 0 && f.kind === kind) { f.broken = true; n--; }
+    }
     for (const e of ex) if (FURN[e.kind]) list.push({ kind: e.kind, x: e.x, y: e.y, k: FURN[e.kind], dx: e.x, dy: e.y, extra: e });
     furn.splice(0, furn.length, ...list);
+    placeOnTable(); careRecount();
+  }
+  function placeOnTable() {                 // 杯子、鉛筆跟著茶几（佈置搬了茶几也跟著走）；沒有茶几就不畫
+    const t = furn.find(f => f.kind === 'table');
+    for (const f of furn) if (f.k.onTable) { f.hide = !t; if (t) { f.x = t.x + f.tdx; f.y = t.y + .3; } }
+  }
+  const usable = s => furn.filter(f => f.k.spot === s && !f.broken && !f.hide);   // 咬壞的不去用
+  const CARE_SPOTS = ['rug', 'grass', 'drink', 'tv', 'pbag', 'plbag', 'window', 'carry'];
+  let careChance = 0;                       // 有幾種新家具 → think() 多常去用（一種 5%，最多 30%）
+  function careRecount() { careChance = Math.min(.3, .05 * CARE_SPOTS.filter(s => usable(s).length).length); }
+  function ownedFrom(o) {                   // 伺服器的 owned → 手機擺得出來的（數量、<代號>_broken＝咬壞了幾個）
+    const out = {};
+    for (const [k, v] of Object.entries(o || {})) {
+      const base = k.endsWith('_broken') ? k.slice(0, -7) : k, n = Math.floor(+v) || 0;
+      if (n > 0 && (OWNABLE.has(base) || CARE_AT[base])) out[k] = Math.min(n, FURN_MAX(base) || n);
+    }
+    return out;
   }
   buildFurn(null, extras);
 
@@ -557,20 +622,23 @@
     }
     set(anim, fps = 4) { anim = animOf(this.d, anim); if (anim !== this.anim) { this.anim = anim; this.t0 = now; } this.fps = fps; }
     walkTo(x, y, then, run = false) {        // run：跑（追著玩、嚇跑）
+      if (this.inBag) bagOut(this, true);
       if (this.lift || pets.some(q => q.pileOn === this)) getDown(this);   // 疊在別隻身上、在貓跳台上的：先下來；下面那隻走了：上面的跟著下來（不會浮在半空）
       this.target = [clamp(x, FLOOR.x0, FLOOR.x1), clamp(y, FLOOR.y0 - 8, FLOOR.y1)]; this.after = then || null;
       this.fast = run; this.set(run ? ['run', 'walk'] : 'walk', run ? 10 : 8);
     }
     dog() { return isDog(this.p); }
     think() {                                   // 閒著的時候決定下一件事
+      if (this.inBag) { bagOut(this); return; }   // 在紙袋裡待夠了：鑽出來
       if (this.lift) {                            // 疊著睡醒了、在貓跳台上待夠了：跳下來
         const tree = this.perch && this.perch.f;
         getDown(this);
         this.x = clamp(this.x + (tree ? (this.x < tree.x ? -18 : 18) : (this.flip ? -16 : 16)), FLOOR.x0, FLOOR.x1); if (tree) this.y = tree.y + 6;
       }
       const night = timeOfDay() === 'night', r = Math.random(), dog = this.dog();
-      const spot = s => furn.find(f => f.k.spot === s);
+      const spot = s => usable(s)[0];
       if (night && r < .7) { this.set('sleep', 1.2); this.until = now + rnd(8000, 16000); return; }
+      if (Math.random() < careChance && careUse(this) !== false) return;   // 新家具（2026-11-01）：有幾種就多常去用
       if (dog && SOC && Math.random() < .005) return zoomies(this);   // 暴衝（P89 第三批：興奮傳染要有源頭；手機的狗本來不會）。一隻約 15 分鐘一次（.015 試過：5 隻狗 90 秒衝 3 次，太吵）
       if (!dog && Math.random() < .08 && now >= this.treeCd) { const t = furn.find(f => f.kind === 'cattree'); if (t) return climbTree(this, t); }   // 爬貓跳台（P89 第二批：搶頂層要先會爬）
       if (r < .05 && boardCards.length) return this.walkTo(BOARD.x + BOARD.w / 2 + rnd(-24, 24), FLOOR.y0 + 2, () => {
@@ -594,6 +662,9 @@
       if (this.held) return;
       if (this.ride && rideTick(this)) return;    // 坐在大狗背上：跟著狗（P89 第三批）
       if (this.follow) followTick(this);          // 跟屁蟲：跟在媽媽後面（P89 第三批）
+      if (this.inBag) {                           // 在紙袋裡：跟著袋子（佈置搬了也跟著；袋子收掉了就出來）
+        if (!furn.includes(this.inBag)) this.inBag = null; else { this.x = this.inBag.x; this.y = this.inBag.y - .1; }
+      }
       if (this.perch) {                           // 在貓跳台上：跟著跳台（佈置時搬了跳台也跟著走；跳台收掉了就下來）
         const pf = this.perch;
         if (!furn.includes(pf.f)) { this.perch = null; this.lift = 0; }
@@ -734,7 +805,7 @@
     const key = k + '|' + (pet.p.id || pet.p.name), choices = pool.filter(t => t !== lastLine.get(key));
     const text = (choices.length ? choices : pool)[Math.floor(Math.random() * (choices.length || pool.length))];
     lastLine.set(key, text);
-    return text.replace(/\{(other|name|n)\}/g, (_, v) => v === 'name' ? pet.p.name : String(vars[v] ?? ''));
+    return text.replace(/\{(other|name|n|food)\}/g, (_, v) => v === 'name' ? pet.p.name : String(vars[v] ?? ''));
   }
 
   // ---------- 摸摸、順毛、拎起來 ----------
@@ -744,9 +815,9 @@
     pet.target = null; pet.after = null; pet.busy = false;
     pet.set(pet.dog() ? ['sit_wag', 'wag'] : ['knead', 'sit_blink'], pet.dog() ? 6 : 4);
     pet.until = focusedPet && focusedPet() === pet ? Infinity : now + 2600; addHearts(pet);
-    say(pet, line(pet, 'pet'));
+    say(pet, phraseOf(pet.p) && Math.random() < .2 ? phraseOf(pet.p) : line(pet, 'pet'));   // P92 M2：偶爾說口頭禪
     pet.p.mood = Math.min(MOOD.length - 1, pet.p.mood + 1); pet.p.moodHold = Date.now() + 60000;
-    remote(pet.p, 'pet');
+    remote(pet.p, 'pet'); earnCare(pet.p, 'pet');
   }
   function stroke(pet, dx, dy = 0) {        // 手指滑的方向（dx, dy）跟「頭 → 尾巴」比：同方向＝順毛
     pet.target = null; pet.after = null;
@@ -754,7 +825,7 @@
     const along = dx * vx + dy * vy > 0;
     if (along) {
       pet.set(pet.dog() ? ['sit_wag', 'wag'] : ['sit_blink', 'knead'], pet.dog() ? 6 : 3);
-      addHearts(pet, 1); say(pet, line(pet, 'stroke')); remote(pet.p, 'pet');
+      addHearts(pet, 1); say(pet, line(pet, 'stroke')); remote(pet.p, 'pet'); earnCare(pet.p, 'stroke');
       bubbles.filter(b => b.pet === pet && b.hint).forEach(b => { b.until = 0; });   // 摸對了：提示收起來
     } else {
       pet.set(['shake', 'hiss', 'sit'], 6); say(pet, line(pet, 'stroke_against'));
@@ -814,9 +885,9 @@
     if (!Array.isArray(saved)) return;
     const used = new Set();
     for (const s of saved) {
-      const f = s && furn.find(q => q.kind === s.k && !used.has(q));
+      const f = s && furn.find(q => q.kind === s.k && !used.has(q) && !q.k.onTable);
       if (!f) continue;
-      used.add(f); f.x = clamp(+s.x || 0, 16, W - 16); f.y = clamp(+s.y || 0, WALL_Y + 6, H - 2);
+      used.add(f); f.x = clamp(+s.x || 0, 16, W - 16); f.y = f.k.wall ? WALL_Y + 6 : clamp(+s.y || 0, WALL_Y + 6, H - 2);   // 窗戶一直掛在牆上
     }
   }
   applyLayout(localLayout());
@@ -829,14 +900,14 @@
   // 送上去的 layout 只有家具（伴手禮在 extras、帶自己的位置）；帳號現在沒有的家具，以前記的位置也留著（之後有了擺回原位）。
   const HOME_KEY = 'deskcat_home_v1';
   const KIND_RE = /^[a-z_]{1,24}$/;
-  const TEMPLATE_KINDS = new Set(HOME.furniture.map(f => f.kind));
+  const TEMPLATE_KINDS = new Set([...HOME.furniture.map(f => f.kind), ...Object.keys(CARE_AT)]);   // 擺法記這些（新家具也記）
   const homeAll = () => { try { const a = JSON.parse(localStorage.getItem(HOME_KEY) || '{}'); return a && typeof a === 'object' && !Array.isArray(a) ? a : {}; } catch (_) { return {}; } };
   const homeGet = id => (id && homeAll()[id]) || null;
   function homePut(id, v) { try { const a = homeAll(); a[id] = v; localStorage.setItem(HOME_KEY, JSON.stringify(a)); } catch (_) { /* 存不了：這次開著還是能用 */ } }
   let homeAcct = null, homeMem = null;      // 現在照哪個帳號擺（null＝照舊）、那個帳號的 {owned, layout, extras, dirty}
   const toInt = (v, max) => clamp(Math.round(+v || 0), 0, max);   // 伺服器只收 0～560、0～484 的整數
   function layoutNow(prev) {                // 要存的擺法：家具現在的位置＋以前記的、現在沒有的那幾件（最多 40）
-    const out = furn.filter(f => !f.extra).map(f => ({ k: f.kind, x: toInt(f.x, W), y: toInt(f.y, H) }));
+    const out = furn.filter(f => !f.extra && !f.k.onTable).map(f => ({ k: f.kind, x: toInt(f.x, W), y: toInt(f.y, H) }));   // 茶几上的跟著茶几，不記
     const have = {};
     out.forEach(o => { have[o.k] = (have[o.k] || 0) + 1; });
     for (const s of prev || []) {
@@ -871,9 +942,9 @@
       try {
         const r = await SV.homeMine();
         if (souvAcct() !== id || !r || typeof r !== 'object') return;
-        // 每種最多 1 個。owned_at 是 null＝電腦還沒傳過家具清單（電腦還是舊版）：先照舊全部擺（null），不要一登入家具就少了
-        let owned = null;
-        if (r.owned_at) { owned = {}; for (const [k, v] of Object.entries(r.owned || {})) if (OWNABLE.has(k) && +v > 0) owned[k] = 1; }
+        // owned_at 是 null＝電腦還沒傳過家具清單（電腦還是舊版）：先照舊全部擺（null），不要一登入家具就少了
+        // 2026-11-01 起 owned 是數量（新家具一種最多 2 個）、<代號>_broken＝狗咬壞了幾個
+        const owned = r.owned_at ? ownedFrom(r.owned) : null;
         const mine = homeGet(id);
         let h;
         if (mine && mine.dirty && !mine.none) h = { ...mine, owned };    // 這邊改了還沒傳上去：用這邊的，等一下送
@@ -930,6 +1001,9 @@
     else { saveLayout(); toast('佈置好了'); }
   }
   $('editBtn').onclick = () => setEdit(!editMode);
+  // 商店（P88 M4b，shop.js）：伺服器有共用錢包（SV.shop，🎮 做好前只有假伺服器）才出現
+  $('shopBtn').hidden = !(LIVE && SV.shop);
+  // 分頁列的〔商店〕：按了打開商店（不換頁；onclick 在下面分頁列那裡）
   $('editDone').onclick = () => setEdit(false);
   $('editReset').onclick = () => { furn.forEach(f => { f.x = f.dx; f.y = f.dy; }); picked = null; toast('家具回到原本的位置'); };
   function drawPicked() {                 // 選到的家具：黃色外框
@@ -1025,7 +1099,7 @@
       g.pet.landY = clamp(g.pet.y, FLOOR.y0, FLOOR.y1);
       cv.style.cursor = 'grabbing';
     } else if (g.mode === 'move') {
-      g.f.x = clamp(wx + g.fdx, 16, W - 16); g.f.y = clamp(wy + g.fdy, WALL_Y + 6, H - 2);
+      g.f.x = clamp(wx + g.fdx, 16, W - 16); g.f.y = g.f.k.wall ? WALL_Y + 6 : clamp(wy + g.fdy, WALL_Y + 6, H - 2);   // 窗戶只能左右搬
     }
   });
   function drop() {
@@ -1044,6 +1118,7 @@
       const [bx, by] = toWorld(g.sx, g.sy);
       if (g.pet) { petPet(g.pet); if (!focusedPet() || focusedPet() !== g.pet) openSheet(g.pet.p); }
       else if (!editMode && boardAt(bx, by) && window.DCMail) { closeSheet(); DCMail.openBoard(); }
+      else if (!editMode && brokenAt(bx, by)) { closeSheet(); askFix(brokenAt(bx, by)); }
       else if (!editMode && shelfAt(bx, by)) { closeSheet(); toast(isPhone ? `紀念品 ${souvCount()}／7，口袋頁有圖鑑` : `紀念品 ${souvCount()}／7，手機帶出門撿`); }
       else { closeSheet(); if (editMode) picked = null; }
     } else if (g.mode === 'carry') drop();
@@ -1351,7 +1426,7 @@
     return true;
   }
   function boxAmbushCheck() {                  // 紙箱埋伏：箱子裡有貓、有毛孩走過旁邊 → 縮進去再冒出來伸爪，對方嚇一跳跳開（電腦 _box_ambush、Box.AMBUSH_P）
-    const box = furn.find(f => f.k.spot === 'box');
+    const box = usable('box')[0];
     if (!SOC || !box || now < (box.ambushUntil || 0)) return false;
     const cat = pets.find(p => p.anim === 'inbox' && !p.soc && !p.held && Math.abs(p.x - box.x) < 8 && Math.abs(p.y - box.y) < 8);
     const reach = box.k.hit[0] / 2 + 14;
@@ -1416,7 +1491,130 @@
   const pick = a => a[Math.floor(Math.random() * a.length)];
   const calm = p => pets.includes(p) && !p.held && !p.soc && !p.busy && !p.gone && !p.lift && !asleep(p);   // 醒著、閒著（走路中也算）
   let noPileUntil = 0, nextHowl = 0, nextHerd = 0;
+  // ---------- 新家具的簡單版用法（2026-11-01，v4.18 手機跟電腦一起上；電腦 care_play 的縮小版） ----------
+  // 地毯踩踩／睡、貓草啃、飲水機喝、電視前面坐著看（電視亮起來）、紙袋鑽進去只露頭（只有貓）、窗戶跳上窗台看（狗在下面看）、
+  // 襪子拖鞋叼著走一段、塑膠袋撥一撥（貓常被嚇到）。咬壞的不去用（usable）。電視換台、衛生紙撥一地、清淨機吸毛：手機不做
+  const maybeSay = (p, key, chance) => { if (Math.random() < chance) say(p, line(p, key)); };
+  const pickOne = a => a[Math.floor(Math.random() * a.length)];
+  function careUse(p, want) {                   // 走過去了＝undefined；沒有能用的＝false。want：指定用哪一種（開發用 __care.use）
+    const dog = p.dog();
+    const opts = CARE_SPOTS.filter(s => usable(s).length && !(dog && s === 'pbag'));   // 狗鑽不進紙袋（電腦也是）
+    if (!opts.length) return false;
+    const s = opts.includes(want) ? want : pickOne(opts), f = pickOne(usable(s)), side = Math.random() < .5 ? -1 : 1;
+    const faceIt = () => { p.flip = p.x > f.x; };
+    const stay = (anim, fps, a, b) => { p.set(anim, fps); p.until = now + rnd(a, b); };
+    const later = (ms, fn) => { p.busy = true; setTimeout(() => { p.busy = false; if (pets.includes(p) && !p.held && !p.target && furn.includes(f)) fn(); }, ms); };
+    if (s === 'rug') return p.walkTo(f.x + rnd(-6, 6), f.y - 3, () => {
+      if (Math.random() < .45) return stay('sleep', 1.2, 6000, 12000);
+      stay(dog ? ['loaf', 'sit'] : ['knead', 'loaf'], 3, 4000, 8000); maybeSay(p, 'care_rug_knead', .4);
+    });
+    if (s === 'grass') return p.walkTo(f.x + side * 13, f.y + 2, () => { faceIt(); stay('eat', 3, 2500, 4000); maybeSay(p, 'care_grass', .4); });
+    if (s === 'drink') return p.walkTo(f.x + side * 16, f.y + 3, () => { faceIt(); stay(['drink', 'eat'], 3, 2500, 4500); maybeSay(p, 'care_fount', .35); });
+    if (s === 'tv') return p.walkTo(f.x + rnd(-12, 12), f.y + 14 + rnd(0, 8), () => {
+      p.flip = Math.random() < .5; stay(['sit', 'loaf'], 1, 6000, 10000); f.on = Math.max(f.on || 0, p.until);
+      maybeSay(p, 'care_tv', .4);
+    });
+    if (s === 'window') {
+      if (pets.some(q => q.perch && q.perch.f === f)) return false;
+      return p.walkTo(f.x + rnd(-10, 10), f.y + 6, () => {
+        if (dog) { p.flip = Math.random() < .5; stay('sit', 1, 3000, 6000); maybeSay(p, 'care_window', .4); return; }   // 狗在窗戶下面看
+        p.set('jump', 8);
+        later(350, () => {
+          if (pets.some(q => q !== p && q.perch && q.perch.f === f)) return;
+          p.perch = { f, lv: 'win', dx: clamp(p.x - f.x, -14, 14) }; p.lift = WIN_UP + WIN_SILL; p.flip = Math.random() < .5;
+          stay(['sit', 'loaf'], 1, 6000, 14000); maybeSay(p, 'care_window', .45);
+        });
+      });
+    }
+    if (s === 'pbag') {
+      if (pets.some(q => q.inBag === f)) return false;
+      return p.walkTo(f.x + side * 4, f.y + 6, () => {
+        p.set(['crouch', 'sit'], 3);
+        later(600, () => {
+          if (pets.some(q => q.inBag === f)) return;
+          p.inBag = f; p.x = f.x; p.y = f.y - .1; f.shake = now + 700;      // 畫在紙袋前面那片的後面：只露出頭
+          stay('sit', 1, 6000, 12000); maybeSay(p, 'care_pbag_in', .5);
+        });
+      });
+    }
+    if (s === 'plbag') return p.walkTo(f.x + side * 18, f.y + 3, () => {
+      faceIt(); p.set(dog ? ['sniff', 'sit'] : ['crouch', 'sit'], 3);
+      later(900, () => {
+        f.shake = now + 600;
+        if (!dog && Math.random() < .35) { say(p, line(p, 'care_plbag_scared')); return p.walkTo(...freeSpot(p.x + side * 40, p.y, 20), null, true); }   // 被沙沙聲嚇跑（電腦 35%）
+        stay(dog ? 'sit' : ['play', 'sit'], 3, 2000, 3500); maybeSay(p, 'care_plbag', .45);
+      });
+    });
+    if (s === 'carry') {
+      if (f.carrier) return false;
+      return p.walkTo(f.x + side * 12, f.y + 2, () => {
+        faceIt(); p.set(dog ? 'sniff' : ['crouch', 'sniff'], 4);
+        later(900, () => {
+          if (f.carrier) return;
+          const [x, y] = freeSpot(f.x, f.y, 70);
+          p.walkTo(x, y); f.carrier = p; maybeSay(p, 'care_sock_take', .45);
+        });
+      });
+    }
+    return false;
+  }
+  window.__care = {                             // 開發用（預覽、測試）：use(i, 'rug'／grass／drink／tv／pbag／plbag／window／carry) 叫第 i 隻去用；list 看家具
+    use(i, s) { const p = pets[i]; if (!p) return 'no'; quitSoc(p); getDown(p); p.busy = false; p.target = null; return careUse(p, s) !== false; },
+    ask(kind) { const f = furn.find(q => q.kind === kind && q.broken); if (!f) return 'no'; closeSheet(); askFix(f); return true; },   // 等於點了咬壞的那件
+    list: () => furn.filter(f => CARE_AT[f.kind] || f.broken).map(f => [f.kind, Math.round(f.x), Math.round(f.y), f.broken ? 'broken' : '', f.carrier ? 'carried' : '']),
+    pets: () => pets.map((p, i) => [i, p.p.name, p.dog() ? 'dog' : 'cat', p.anim, Math.round(p.x), Math.round(p.y), p.inBag ? 'bag' : '', p.perch ? 'perch:' + p.perch.lv : '']),
+  };
+  function carryTick() {                        // 叼著的襪子、拖鞋跟著嘴巴；走到了（或被拎起來、叫走）就放下
+    for (const f of furn) {
+      const p = f.carrier;
+      if (!p) continue;
+      if (!pets.includes(p) || p.held || !p.target) { f.carrier = null; f.lift = 0; continue; }
+      f.x = Math.round(clamp(p.x + (p.flip ? -1 : 1) * p.d.w * .3, 16, W - 16)); f.y = Math.round(clamp(p.y + 1, WALL_Y + 6, H - 2));
+      f.lift = Math.round(p.d.h * .3);
+    }
+  }
+  function bagOut(p, quiet) {                   // 從紙袋鑽出來（quiet：被拎起來、叫走，不演）
+    const f = p.inBag;
+    p.inBag = null;
+    if (!f) return;
+    f.shake = now + 500; p.y = clamp(f.y + 7, FLOOR.y0, FLOOR.y1);
+    if (quiet) return;
+    p.set(['stretch', 'sit'], 3); p.until = now + 1500; maybeSay(p, 'care_pbag_out', .4);
+  }
+  // 狗咬壞的（電腦 chew.ChewMarks 的樣子）：破洞、棉花冒出來、地上掉幾撮。點了〔修好 🥫N〕＝dc_shop_buy('fix_<代號>')
+  const STUFF = ['#f6f3ec', '#e6e1d6'];
+  function drawBroken(f) {
+    const im = furnImg(f.kind);
+    if (!im.naturalWidth) return;
+    const w = im.naturalWidth, h = im.naturalHeight, x0 = Math.round(f.x - w / 2), y0 = Math.round(f.y - h);
+    const s = w >= 50 ? 2 : 1;                 // 手機 1 格＝1 像素：大的家具（沙發）破洞畫兩倍大才看得到
+    for (const [fx, fy] of w >= 30 ? [[.3, .55], [.68, .42]] : [[.5, .45]]) {
+      const gx = x0 + Math.round(w * fx), gy = y0 + Math.round(h * fy);
+      rect(gx, gy, 3 * s, 2 * s, 'rgba(70,50,45,.82)'); rect(gx + s, gy + 2 * s, s, s, 'rgba(70,50,45,.6)');
+      for (const [dx, dy, c] of [[-1, -1, 0], [0, -2, 0], [1, -1, 1], [2, -2, 0], [3, -1, 1], [1, -3, 1]]) rect(gx + dx * s, gy + dy * s, s, s, STUFF[c]);
+    }
+    for (const [dx, c] of [[-w / 2 - 5, 0], [w / 2 + 3, 1]]) { const x = Math.round(f.x + dx); rect(x, f.y - 2, 2 * s, 2, STUFF[c]); rect(x + 1, f.y - 3, s, 1, STUFF[0]); }
+  }
+  const brokenAt = (wx, wy) => [...furn].filter(f => f.broken && !f.hide).sort((a, b) => b.y - a.y)
+    .find(f => Math.abs(wx - f.x) < f.k.hit[0] / 2 && wy <= f.y + 2 && wy >= f.y - f.k.hit[1]);
+  function askFix(f) {
+    const [name, price] = (window.DC_SHOP && DC_SHOP.fix[f.kind]) || ['家具', 0];
+    if (!homeAcct || !SV.shopBuy) return toast(`${name}被咬壞了，登入後可以修`);
+    toast(`${name}被狗咬壞了`, [`修好 🥫${price}`, () => fixIt(f, name, price)]);
+  }
+  async function fixIt(f, name, price) {
+    let r = null;
+    try { r = await SV.shopBuy('fix_' + f.kind); } catch (e) { return toast(e.message || '連不上伺服器'); }
+    if (r && r.ok === false) {
+      if (r.reason !== 'not_broken') return toast(r.reason === 'cans' ? `罐罐不夠，要 🥫${price}` : '現在修不了，等一下再試');
+    }
+    f.broken = false; careRecount();
+    if (r && r.owned && homeMem) { homeMem = { ...homeMem, owned: ownedFrom(r.owned) }; homeSave(homeMem.dirty); }
+    toast(r && r.ok === false ? `${name}已經修好了` : `${name}修好了！`);
+  }
+
   function getDown(p) {                         // 從別隻身上、貓跳台、狗背上下來；疊在牠身上的也跟著下來（不會浮在半空）
+    if (p.inBag) bagOut(p, true);
     p.lift = 0; p.pileOn = null; p.perch = null; p.ride = null;
     for (const q of pets) if (q.pileOn === p) { getDown(q); q.set('sit', 1); q.until = now + 1500; }
   }
@@ -1781,6 +1979,412 @@
     force(kind, i = 0, j = 1) { const a = pets[i], b = pets[j]; if (!a || !b) return 'no pets'; for (const p of [a, b]) { quitSoc(p); p.busy = false; p.target = null; } if (kind === 'cuddle' || kind === 'wake') { b.set('sleep', 1.2); b.until = now + 30000; } return socStart(kind, a, b, { pile: true }); },
   };
 
+  // ---------- 吃東西（P88 M4，2026-10-31 使用者「先做吃東西」）----------
+  // 跟電腦版同一份食物（window.DC_FOOD：名稱、價格、說明、點心最愛、商店小圖都從 src/ 匯出，export_lines.py）：
+  // 罐頭（走去碗那邊吃）、高級點心（一隻在原地吃；最愛的口味愛心多、說最愛的台詞）＝在毛孩的面板選；
+  // 吐司、煎蛋、糰子（全家一起吃）、貓薄荷（全家嗨起來、到處跑）＝買了馬上用（手機商店 P88 M4 叫 feast(key)）。
+  // 飽足、親密由伺服器（電腦開著＝電腦）算，手機只演動作、改剩幾個（server.js foodMine／foodUse；🎮 還沒做時 SV.food＝false 不顯示）。
+  const FD = window.DC_FOOD || { items: [], treats: [], fav: {}, icons: {}, pal: {} };
+  let FOOD = null;                              // {wet, treats: {口味: 份數}, known: {cid: [口味]}}；null＝伺服器還沒有
+  async function loadFood() {
+    if (!LIVE || !SV.food) { FOOD = null; return; }
+    try { const r = await SV.foodMine(); FOOD = r && typeof r === 'object' ? { wet: r.wet || 0, treats: r.treats || {}, known: r.known || {} } : null; }
+    catch (_) { /* 讀不到：照舊（下次開面板再讀） */ }
+  }
+  const treatsLeft = () => !!FOOD && FD.treats.some(t => FOOD.treats[t.flavor] > 0);
+  const favOf = p => FD.fav[p.personality || '普通'] || 'salmon';          // 貪吃（什麼都愛）＝null → 按鈕小圖用鮭魚
+  const loves = (p, fl) => { const f = FD.fav[p.personality || '普通']; return f === null || f === fl; };
+  const ICON = {};
+  function foodIcon(key) {                      // 商店小圖（電腦 shop_art 的格子＋顏色）→ 小畫布，一格 1 像素
+    if (ICON[key]) return ICON[key];
+    const g = FD.icons[key] || [], c = document.createElement('canvas');
+    c.width = Math.max(1, ...g.map(r => r.length)); c.height = Math.max(1, g.length);
+    const cc = c.getContext('2d');
+    g.forEach((r, y) => [...r].forEach((ch, x) => { const col = FD.pal[ch]; if (col) { cc.fillStyle = col; cc.fillRect(x, y, 1, 1); } }));
+    return (ICON[key] = c);
+  }
+  function foodImg(key) { const im = document.createElement('img'); im.className = 'ico'; im.alt = ''; im.src = foodIcon(key).toDataURL(); return im; }
+  // 面板裡選吃什麼（不另外開視窗：按鈕換成選項，〔返回〕換回來）
+  function foodChoice(p, what) {
+    const box = $('sheetBtns'); box.innerHTML = ''; box.dataset.choose = what;
+    const add = (img, label, fn, main) => {
+      const b = document.createElement('button'); b.className = 'btn' + (main ? ' main' : '');
+      if (typeof img === 'string') setLabel(b, img, label); else b.replaceChildren(img, label);
+      b.onclick = fn; box.appendChild(b);
+    };
+    if (what === 'feed') {
+      add('bowl', '乾糧（免費）', () => feed(p));
+      add(foodImg('wet'), `罐頭（還有 ${FOOD.wet}）`, () => feedWet(p), true);
+    } else {
+      const known = (FOOD.known || {})[p.id] || [];
+      for (const t of FD.treats) {
+        const n = FOOD.treats[t.flavor] || 0;
+        if (n > 0) add(foodImg(t.key), `${t.food} ×${n}${known.includes(t.flavor) ? ' ❤' : ''}`, () => giveTreat(p, t));
+      }
+    }
+    add('', '返回', () => sheetBtns(p));
+  }
+  const dishes = [];                            // 地上的食物：{key, x, y, until}
+  function drawDish(d) {
+    const c = foodIcon(d.key), left = d.until - now;
+    ctx.save(); if (left < 500) ctx.globalAlpha = Math.max(0, left / 500);
+    ctx.drawImage(c, Math.round(d.x - c.width / 2), Math.round(d.y - c.height));
+    ctx.restore();
+  }
+  function dishAt(pet, key, ms) {               // 放在嘴巴前面的地上（圖預設朝右，flip＝朝左）
+    const x = pet.x + (pet.flip ? -1 : 1) * pet.d.w * .42;
+    dishes.push({ key, x, y: pet.y + 2, until: now + ms });
+    if (dishes.length > 20) dishes.splice(0, dishes.length - 20);
+  }
+  function eatHere(pet, key, ms, done) {        // 在原地吃（不走動）；吃完叫 done
+    quitSoc(pet); getDown(pet);
+    pet.target = null; pet.after = null; pet.busy = false;
+    dishAt(pet, key, ms); pet.set('eat', 3); pet.until = now + ms;
+    setTimeout(() => { if (pets.includes(pet) && !pet.held) done(); }, ms);
+  }
+  const gotFed = p => { p.food = Math.min(3, (p.food || 0) + 1); p.foodHold = Date.now() + 60000; };   // 伺服器下次讀回真的數字
+  async function feedWet(p) {                   // 罐頭：走去碗那邊吃（電腦：倒進飯碗、吃完飽足滿、親密多、20 分鐘不餓）
+    const r = await call(SV.foodUse(p.id, 'wet'));
+    if (!r) return;
+    FOOD.wet = r.left ?? Math.max(0, FOOD.wet - 1); p.food = 3; p.foodHold = Date.now() + 60000; earnCare(p, 'feed');
+    closeSheet();
+    const pet = pets.find(o => o.p === p), bowl = furn.find(f => f.k.spot === 'eat');
+    if (!pet) { toast(`${p.name}吃到罐頭了`); render(); return; }
+    toast(`${p.name}去吃罐頭了（還有 ${FOOD.wet} 個）`);
+    const eat = () => {
+      if (bowl) pet.flip = pet.x > bowl.x;
+      say(pet, line(pet, 'eat_wet')); pet.set('eat', 3); pet.until = now + 5000; pet.busy = false;
+      setTimeout(() => { if (pets.includes(pet) && !pet.held) { addHearts(pet, 4); say(pet, line(pet, 'eat_done_wet'), 2200); } }, 5000);
+    };
+    quitSoc(pet); getDown(pet);
+    if (!bowl) { pet.target = null; dishAt(pet, 'wet', 5000); eat(); return; }
+    pet.busy = true; pet.target = null;
+    pet.walkTo(bowl.x + (pet.x < bowl.x ? -16 : 16), bowl.y + 4, eat);
+  }
+  async function giveTreat(p, t) {              // 高級點心：這一隻在原地吃（電腦 give_treat）
+    const r = await call(SV.foodUse(p.id, t.key));
+    if (!r) return;
+    FOOD.treats[t.flavor] = r.left ?? Math.max(0, (FOOD.treats[t.flavor] || 0) - 1);
+    const love = typeof r.love === 'boolean' ? r.love : loves(p, t.flavor);
+    if (love) { const k = FOOD.known[p.id] = FOOD.known[p.id] || []; if (!k.includes(t.flavor)) k.push(t.flavor); }
+    gotFed(p); closeSheet(); earnCare(p, 'feed');
+    const pet = pets.find(o => o.p === p);
+    if (!pet) { toast(`${p.name}吃了${t.name}`); render(); return; }
+    eatHere(pet, t.key, 2500, () => {
+      addHearts(pet, love ? 6 : 2);
+      say(pet, line(pet, love ? 'treat_love' : 'treat_ok', { food: t.food }), love ? 2600 : 1800);
+      if (love) { pet.set(pet.dog() ? ['sit_wag', 'wag'] : ['knead', 'sit_blink'], 4); pet.until = now + 2500; }   // 電腦：最愛＝呼嚕
+    });
+  }
+  function feast(key) {                         // 買了馬上用：吐司、煎蛋、糰子＝全家在原地一起吃；貓薄荷＝全家嗨起來（電腦 shop_buy）
+    const it = FD.items.find(x => x.key === key);
+    const list = pets.filter(x => !x.held);
+    if (!it || !list.length) return 0;
+    if (key === 'catnip') { list.forEach((x, i) => setTimeout(() => catnip(x, i), i * 500)); return list.length; }
+    const hearts = { snack: 1, egg: 2, dango: 4 }[key] || 2;
+    list.forEach((x, i) => setTimeout(() => {
+      if (!pets.includes(x) || x.held) return;
+      if (x.anim === 'sleep') x.set(x.dog() ? 'shake' : 'stretch', 2);   // 聞到香味醒來
+      eatHere(x, key, rnd(2600, 3600), () => addHearts(x, hearts));
+      gotFed(x.p);
+    }, i * 250));
+    const talker = list[Math.floor(Math.random() * list.length)];
+    setTimeout(() => { if (pets.includes(talker)) say(talker, line(talker, 'eat_done_wet'), 2000); }, 3800);
+    return list.length;
+  }
+  function catnip(x, i) {                       // 貓薄荷：暴衝（秒數＝shared_rules CATNIP_SEC，電腦 shop_buy 同一份）
+    if (!pets.includes(x) || x.held) return;
+    quitSoc(x); getDown(x);
+    const tok = { kind: 'catnip', t0: now }, until = now + rnd(R.catnip_sec[0] * 1000, R.catnip_sec[1] * 1000);   // shared_rules CATNIP_SEC
+    x.soc = tok; x.busy = true; addHearts(x, 3);
+    LOGS.push(`${x.p.name}：catnip`);
+    setTimeout(() => { if (x.soc === tok) say(x, line(x, 'catnip'), 1800); }, 300 + i * 500);
+    const leg = () => {
+      if (x.soc !== tok || !pets.includes(x) || x.held) return;
+      if (now > until) { x.set(x.dog() ? ['pant', 'sit'] : ['loaf', 'sit'], 3); x.until = now + rnd(2500, 4000); return socEnd(tok, x); }
+      x.walkTo(...freeSpot(), leg, true);
+    };
+    if (x.anim === 'sleep') { x.set(x.dog() ? 'shake' : 'stretch', 2); setTimeout(leg, 700); } else leg();
+  }
+  window.__food = {                             // 開發用（預覽、測試）：feast('egg')、treat(i, 'salmon')、wet(i)、看剩幾個
+    get stock() { return FOOD; }, dishes, load: loadFood, feast,
+    wet(i) { const x = pets[i]; return x ? feedWet(x.p) : 'no'; },
+    treat(i, fl = 'salmon') { const x = pets[i], t = FD.treats.find(y => y.flavor === fl); return x && t ? giveTreat(x.p, t) : 'no'; },
+  };
+
+  // ---------- 賺罐罐（P88 M3，2026-10-31 使用者「做賺罐罐」）----------
+  // 只玩手機也賺得到（使用者 10-30「純手機玩家不能比桌面玩家拿的少」→ 一天約 200）：
+  // 每天第一次打開＝禮物；照顧＝每隻每天第一次餵、摸、順毛各給一次（手機沒有「陪玩」：用順毛）；口袋撿到東西有時多撿到罐罐（pocket.js）；
+  // 口袋寶箱＝在口袋每 chestMin 分鐘一個（pocket.js；開出什麼照電腦 roll_reward）。走路步數要 App 才拿得到（P87）。
+  // 給多少、每天上限都是伺服器算（不信手機算的）：手機只說「發生了什麼」（server.js cansEarn；🎮 還沒做時 SV.earn＝false 不叫）。
+  const EARN_DONE = 'deskcat_earn_v1';          // 今天已經送過的（同一天同一件事不再叫伺服器；伺服器自己也擋）
+  const today = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
+  function earnSent(k) {
+    try { const s = JSON.parse(localStorage.getItem(EARN_DONE) || '{}'); return s.day === today() && (s.k || []).includes(k); } catch (_) { return false; }
+  }
+  function earnMark(k) {
+    try {
+      let s = JSON.parse(localStorage.getItem(EARN_DONE) || '{}');
+      if (s.day !== today()) s = { day: today(), k: [] };
+      s.k.push(k); localStorage.setItem(EARN_DONE, JSON.stringify({ day: s.day, k: s.k.slice(-200) }));
+    } catch (_) { /* 存不了：伺服器一樣會擋 */ }
+  }
+  const CARE = { feed: '餵飯', pet: '摸摸', stroke: '順毛' };
+  // kind＝daily／care／find／chest；cid＝哪一隻；key＝這件事的代號（照顧＝feed／pet／stroke；口袋＝出門時間:第幾個）
+  // 回傳伺服器的結果 {ok, got, cans, snack, item, text}（沒叫＝null）
+  async function earn(kind, cid = null, key = '') {
+    if (!LIVE || !SV.earn || SV.mode !== 'live') return null;
+    const k = `${kind}|${cid || ''}|${key}`;
+    if (kind !== 'chest' && earnSent(k)) return null;
+    earnMark(k);
+    let r = null;
+    try { r = await SV.cansEarn(kind, cid, key); } catch (_) { return null; }   // 沒網路：這次算了（伺服器沒記到，明天再來）
+    if (!r || r.ok === false) return r;
+    if (typeof r.cans === 'number') cansNow = r.cans;
+    return r;
+  }
+  let cansNow = null;                           // 最近一次伺服器說的罐罐（提示用）
+  const cansTail = () => cansNow != null ? `（現在 ${cansNow}）` : '';
+  async function earnDaily() {                  // 每天第一次打開
+    const r = await earn('daily', null, today());
+    if (r && r.got > 0) toast(`今天的禮物：🥫 罐罐 +${r.got}${cansTail()}`);
+  }
+  async function earnCare(p, what) {            // 每隻每天第一次餵、摸、順毛
+    if (!p || !p.id || p.where !== 'home') return;
+    const r = await earn('care', p.id, what);
+    if (r && r.got > 0) toast(`第一次${CARE[what]}${p.name}：🥫 +${r.got}${cansTail()}`);
+  }
+
+  // ---------- 牠的檔案（P92 M1，2026-10-31 使用者「我需要讓玩家知道每一個毛孩子都是獨立特別的」）----------
+  // 天生小怪癖（1～2 個，清單在 shared_rules：DC_RULES.quirks）：伺服器 031 寫一次就定了（電腦補發、手機建立誰先寫誰算）。
+  // 點毛孩 →〔檔案〕看牠的小習慣（之後口頭禪、問答、成長日記也放這裡）。伺服器還沒有（SV.profile＝false）：範例模式才隨機給看看。
+  const QR = R.quirks || {}, QTOY = R.quirk_toy_names || {};
+  let PROFILES = {};                            // {cid: {quirks: [代號], detail: {fav_toy}}}
+  async function loadProfiles() {
+    if (!LIVE) return;
+    if (!SV.profile) return;
+    try { const r = await SV.profilesMine(); if (r && typeof r === 'object') PROFILES = r; } catch (_) { /* 下次再讀 */ }
+  }
+  function pickQuirks(species) {                // 跟電腦 shared_rules.pick_quirks 一樣的挑法（手機建立的毛孩）
+    const sp = species === 'dog' ? 'dog' : 'cat';
+    const pool = Object.keys(QR).filter(k => QR[k][2] === 'both' || QR[k][2] === sp).sort(() => Math.random() - .5);
+    const n = Math.random() < (R.quirk_two ?? .5) ? 2 : 1, got = [];
+    for (const k of pool) {
+      const g = QR[k][3];
+      if (g && got.some(x => QR[x][3] === g)) continue;
+      got.push(k);
+      if (got.length >= n) break;
+    }
+    const toys = (R.quirk_toys || {})[sp] || [];
+    return { quirks: got, detail: got.includes('fav_toy') && toys.length ? { fav_toy: toys[Math.floor(Math.random() * toys.length)] } : {} };
+  }
+  function quirksOf(p) {
+    let pr = p && p.id ? PROFILES[p.id] : null;
+    if (!pr && !LIVE && p) pr = PROFILES[p.name] = PROFILES[p.name] || pickQuirks(p.species);   // 範例：看看長怎樣
+    return pr && Array.isArray(pr.quirks) ? pr : null;
+  }
+  function quirkLines(p) {                      // [(名字, 說明)]
+    const pr = quirksOf(p);
+    if (!pr) return [];
+    return pr.quirks.filter(k => QR[k]).map(k => [QR[k][0], k === 'fav_toy' && pr.detail && QTOY[pr.detail.fav_toy]
+      ? `最愛的是${QTOY[pr.detail.fav_toy]}，常常叼著走來走去` : QR[k][1]]);
+  }
+  // ---------- 毛孩問你＋口頭禪（P92 M2，server/032）----------
+  // 題目在 shared_rules（DC_RULES.questions：[代號, 題目, [[選項, 按鈕的字, 檔案頁的喜好]]]）；答案電腦、手機都能答，同一題以時間新的為準。
+  // 手機：〔檔案〕裡「牠想問你」一天一題（一隻）；答了第一題 → 叫 pet-words 寫口頭禪（寫一次就定了）。點牠摸摸偶爾說口頭禪。
+  const QS = R.questions || [];
+  const prefsOf = p => { const pr = p && (PROFILES[p.id] || PROFILES[p.name]); return (pr && pr.prefs) || {}; };
+  const phraseOf = p => { const pr = p && (PROFILES[p.id] || PROFILES[p.name]); return (pr && pr.catchphrase) || ''; };
+  const askKey = p => 'deskcat_asked_' + (p.id || p.name);
+  function askedToday(p) { try { return localStorage.getItem(askKey(p)) === new Date().toDateString(); } catch (_) { return false; } }
+  // 每隻問的順序不一樣（電腦 shared_rules.question_order 一樣的算法：FNV-1a 32 位元，種子＝cid）；只問這個物種能答的題、能選的選項
+  function fnv(t) { let h = 0x811c9dc5; for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h >>> 0; }
+  const spOf = p => (p && p.species === 'dog' ? 'dog' : 'cat');
+  function qOrder(seed, sp) {
+    return QS.filter(q => !q[3] || q[3] === 'both' || q[3] === sp).map(q => q[0])
+      .map(k => [fnv(`${seed}:${k}`), k]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
+  }
+  function optionsFor(q, sp) { return q[2].filter(o => !o[3] || o[3] === sp); }
+  function nextQuestion(p) {
+    const pr = prefsOf(p), k = qOrder(p.id || p.name || '', spOf(p)).find(x => !pr[x]);
+    return k ? QS.find(q => q[0] === k) : null;
+  }
+  function likeLines(p) {
+    const pr = prefsOf(p);
+    return QS.map(q => { const a = pr[q[0]]; const o = a && q[2].find(x => x[0] === a[0]); return o ? o[2] : ''; }).filter(Boolean);
+  }
+  async function answerQuestion(p, q, opt) {
+    const at = Date.now() / 1000, key = p.id || p.name;
+    const cur = PROFILES[key] = PROFILES[key] || { quirks: [], detail: {} };
+    cur.prefs = Object.assign({}, cur.prefs, { [q[0]]: [opt[0], at] });
+    try { localStorage.setItem(askKey(p), new Date().toDateString()); } catch (_) { /* 私密模式：照樣能答 */ }
+    const pet = pets.find(o => o.p === p);
+    if (pet) { say(pet, line(pet, `pref_${q[0]}_${opt[0]}`)); addHearts(pet, 1); }
+    if (opt[2]) toast(`🐾 ${p.name}記住了：${opt[2]}`);
+    profileView(p);
+    if (!LIVE || !SV.qa || !p.id) return;
+    try {
+      const r = await SV.profilePrefs({ [p.id]: cur.prefs });
+      if (r && r.profiles) PROFILES = Object.assign(PROFILES, r.profiles);
+    } catch (_) { toast('沒連上，等一下再答一次'); return; }
+    if (!phraseOf(p)) wantPhrase(p);
+  }
+  async function wantPhrase(p) {
+    try {
+      const r = await SV.petWords(p.id);
+      if (r && r.ok && r.phrase) {
+        PROFILES[p.id] = Object.assign(PROFILES[p.id] || {}, { catchphrase: r.phrase });
+        toast(`🐾 ${p.name}有自己的口頭禪了：「${r.phrase}」`);
+        const pet = pets.find(o => o.p === p); if (pet) say(pet, r.phrase, 2600);
+        if (sheetPet && sheetPet.p === p && $('sheetBtns').dataset.choose === 'profile') profileView(p);
+      }
+    } catch (_) { /* 伺服器還沒有 pet-words：下次答題再試 */ }
+  }
+  // ---------- 成長日記（P92 M3，server/034）----------
+  // 大事＝每隻的「第一次」（電腦記大部分，手機記「第一次跟你出門」）；在一起天數、親密度到了解鎖一章（DC_RULES.diary_steps），
+  // AI 用牠的口吻寫（pet-words）。檔案頁：寫好的章、正在寫的、下一個還沒解鎖的條件；大事列表。
+  const MEMS = Object.fromEntries((R.memories || []).map(m => [m[0], m[1]]));
+  const STEPS = R.diary_steps || [];
+  const profOf = p => (p && (PROFILES[p.id] || PROFILES[p.name])) || null;
+  const daysOf = p => (p && p.came_at ? Math.max(0, (Date.now() - new Date(p.came_at).getTime()) / 864e5) : 0);
+  function rememberMem(p, code) {
+    if (!p || !MEMS[code]) return;
+    const key = p.id || p.name, cur = PROFILES[key] = PROFILES[key] || { quirks: [], detail: {} }, mm = cur.memories = cur.memories || {};
+    if (mm[code]) return;
+    mm[code] = [Date.now() / 1000, ''];
+    if (LIVE && SV.qa && p.id && SV.profileMemories) {
+      SV.profileMemories({ [p.id]: { [code]: mm[code] } }).then(r => { if (r && r.profiles) PROFILES = Object.assign(PROFILES, r.profiles); }).catch(() => { /* 下次再送 */ });
+    }
+  }
+  function diaryDue(p) {
+    const d = (profOf(p) || {}).diary || {}, days = daysOf(p), aff = p.affection ?? 0;
+    return STEPS.filter(s => !d[s[0]] && (s[1] === 'days' ? days >= s[2] : aff >= s[2])).map(s => s[0]);
+  }
+  let diaryBusy = false;
+  async function wantDiary(p) {               // 到了門檻、還沒寫：叫伺服器寫一章（一次一章）
+    if (diaryBusy || !LIVE || !SV.qa || !p.id || !SV.petDiary) return;
+    const ch = diaryDue(p)[0];
+    if (!ch) return;
+    diaryBusy = true;
+    try {
+      const r = await SV.petDiary(p.id, ch);
+      if (r && r.ok && r.text) {
+        const cur = PROFILES[p.id] = PROFILES[p.id] || { quirks: [], detail: {} };
+        cur.diary = Object.assign({}, cur.diary, { [ch]: { t: r.text, at: Date.now() / 1000 } });
+        toast(`📖 ${p.name}的成長日記多了一章`);
+        if (sheetPet && sheetPet.p === p && $('sheetBtns').dataset.choose === 'profile') profileView(p, true);
+      }
+    } catch (_) { /* 伺服器還沒有：下次再試 */ } finally { diaryBusy = false; }
+  }
+  function diaryBlock(p) {
+    const box = document.createElement('div'); box.className = 'profile-diary';
+    const pr = profOf(p) || {}, d = pr.diary || {}, days = daysOf(p), aff = p.affection ?? 0;
+    const h = document.createElement('b'); h.textContent = '📖 成長日記'; box.append(h);
+    let lock = '';
+    for (const [ch, kind, n, label] of STEPS) {
+      const ok = kind === 'days' ? days >= n : aff >= n;
+      if (d[ch]) {
+        const e = document.createElement('p'); const t = document.createElement('b'); t.textContent = label + '　';
+        e.append(t, d[ch].t); box.append(e);
+      } else if (ok) {
+        const e = document.createElement('p'); e.className = 'note'; e.textContent = `${label}：牠正在寫…`; box.append(e);
+      } else if (!lock && kind === 'days') lock = label;
+    }
+    const e = document.createElement('p'); e.className = 'note';                 // 下一章的條件放最後
+    e.textContent = lock ? `🔒 下一章：${lock}解鎖` : '一起生活就會解鎖更多章'; box.append(e);
+    const mm = Object.entries(pr.memories || {}).filter(([k]) => MEMS[k]).sort((a, b) => a[1][0] - b[1][0]);
+    if (mm.length) {
+      const e = document.createElement('p'); e.className = 'note';
+      e.textContent = '⭐ ' + mm.map(([k, v]) => MEMS[k] + (v[1] ? `（${v[1]}）` : '')).join('、');
+      box.append(e);
+    }
+    return box;
+  }
+  // ---------- 你問毛孩（P92 M4，server/035）----------
+  // 打一句話，牠照自己的個性、小怪癖、喜好、大事、日記回一句；一天免費 5 次（DC_RULES.chat）；伺服器不存你說的話，
+  // 這裡的對話只留在這次開著的時候（帶最近 3 句給 AI 接話）。
+  const CHAT = R.chat || { free_day: 5, q_max: 60, history: 3 };
+  const chatHist = {};
+  let chatLeftN = null;
+  const CHAT_WHY = { daily_user: `今天的 ${CHAT.free_day} 次用完了，明天再來找牠聊天`, daily_total: '今天大家聊太多了，牠想休息，明天再來',
+                     ai_failed: '牠好像在發呆，再說一次看看（這次不算次數）', busy: '牠還在想上一句…', no_pet: '這隻還沒傳到雲端，等一下再試' };
+  function chatView(p, note = '') {
+    const box = $('sheetBtns'); box.innerHTML = ''; box.dataset.choose = 'chat';
+    const card = document.createElement('div'); card.className = 'profile-card chat-card';
+    const h = document.createElement('b');
+    h.textContent = `💬 跟${p.name}說話　` + (chatLeftN == null ? '' : `今天還能問 ${chatLeftN} 次`); card.append(h);
+    const key = p.id || p.name;
+    for (const [q, a] of (chatHist[key] || []).slice(-4)) {
+      const e = document.createElement('p'); e.innerHTML = '';
+      const you = document.createElement('span'); you.className = 'note'; you.textContent = `你：${q}`;
+      const it = document.createElement('b'); it.textContent = `${p.name}：`;
+      e.append(you, document.createElement('br'), it, a); card.append(e);
+    }
+    if (note) { const e = document.createElement('p'); e.className = 'note'; e.textContent = note; card.append(e); }
+    const row = document.createElement('div'); row.className = 'chat-row';
+    const inp = document.createElement('input'); inp.type = 'text'; inp.maxLength = CHAT.q_max; inp.placeholder = `跟${p.name}說一句話…`;
+    const go = document.createElement('button'); go.className = 'btn'; go.textContent = '說';
+    const send = async () => {
+      const q = inp.value.trim();
+      if (!q || go.disabled) return;
+      if (!LIVE || !SV.qa || !p.id || !SV.petChat) { chatView(p, '要登入才能跟牠說話'); return; }
+      go.disabled = true; inp.disabled = true;
+      try {
+        const r = await SV.petChat(p.id, q, chatHist[key] || []);
+        if (r && r.left != null) chatLeftN = r.left;
+        if (r && r.ok && r.text) {
+          (chatHist[key] = chatHist[key] || []).push([q, r.text]); chatHist[key] = chatHist[key].slice(-6);
+          const pet = pets.find(o => o.p === p); if (pet) say(pet, r.text.length > 11 ? r.text.slice(0, 10) + '…' : r.text, 3000);
+          chatView(p);
+        } else chatView(p, CHAT_WHY[(r && r.reason) || 'ai_failed'] || CHAT_WHY.ai_failed);
+      } catch (_) { chatView(p, '沒連上，等一下再試'); }
+    };
+    go.onclick = send; inp.onkeydown = e => { if (e.key === 'Enter') send(); };
+    row.append(inp, go); card.append(row);
+    const tip = document.createElement('p'); tip.className = 'note'; tip.textContent = R.chat_privacy || ''; card.append(tip);
+    const back = document.createElement('button'); back.className = 'btn'; back.textContent = '返回'; back.onclick = () => sheetBtns(p);
+    box.append(card, back);
+    if (chatLeftN == null && LIVE && SV.qa && SV.chatLeft) SV.chatLeft().then(r => { if (r && r.left != null) { chatLeftN = r.left; if (sheetPet && sheetPet.p === p && box.dataset.choose === 'chat') chatView(p, note); } }).catch(() => {});
+  }
+  function profileView(p, loaded = false) {     // 面板裡看檔案（不另外開視窗：按鈕換成內容，〔返回〕換回來）；loaded＝剛讀過伺服器、不用再讀
+    const box = $('sheetBtns'); box.innerHTML = ''; box.dataset.choose = 'profile';
+    const card = document.createElement('div'); card.className = 'profile-card';
+    if (phraseOf(p)) {
+      const ph = document.createElement('p'); ph.className = 'profile-phrase'; ph.textContent = `💬「${phraseOf(p)}」`; card.append(ph);
+    }
+    const h = document.createElement('b'); h.textContent = '🐾 牠的小習慣'; card.append(h);
+    const got = quirkLines(p);
+    if (!got.length) {
+      const e = document.createElement('p'); e.textContent = '還在觀察牠…（電腦打開後就會發現）'; card.append(e);
+    }
+    for (const [n, d] of got) {
+      const row = document.createElement('p'); const nb = document.createElement('b'); nb.textContent = n;
+      row.append(nb, '　' + d); card.append(row);
+    }
+    const likes = likeLines(p);
+    if (likes.length) { const lk = document.createElement('p'); lk.textContent = '❤ ' + likes.join('、'); card.append(lk); }
+    const habits = ((profOf(p) || {}).habits || []).map(h => (R.habits || []).find(x => x[0] === h)).filter(Boolean);   // P92 M4 照顧習慣（電腦算的）
+    for (const [, name, did, eff] of habits) {
+      const e = document.createElement('p'); const nb = document.createElement('b'); nb.textContent = `🤝 ${name}`;
+      e.append(nb, `　${did} → 牠${eff}`); card.append(e);
+    }
+    const q = (LIVE ? SV.qa : true) && !askedToday(p) ? nextQuestion(p) : null;
+    if (q) {                                    // 牠想問你（一天一題）
+      const ask = document.createElement('div'); ask.className = 'profile-ask';
+      const qt = document.createElement('p'); qt.textContent = `❓ ${p.name}想問你：${q[1]}`; ask.append(qt);
+      for (const o of optionsFor(q, spOf(p))) {
+        const b = document.createElement('button'); b.className = 'btn'; b.textContent = o[1];
+        b.onclick = () => answerQuestion(p, q, o); ask.append(b);
+      }
+      card.append(ask);
+    }
+    card.append(diaryBlock(p));                // P92 M3 成長日記
+    const back = document.createElement('button'); back.className = 'btn'; back.textContent = '返回'; back.onclick = () => sheetBtns(p);
+    box.append(card, back);
+    wantDiary(p);
+    if (LIVE && SV.profile && !loaded) loadProfiles().then(() => { if (sheetPet && sheetPet.p === p && box.dataset.choose === 'profile') profileView(p, true); });   // 讀一次就好（以前會一直重讀）
+  }
+
   // ---------- 畫面迴圈 ----------
   let last = performance.now();
   // ?raf=timer（開發用）：預覽視窗藏起來時瀏覽器不給畫面更新，用計時器跑（P89 測互動要看動作）；平常照舊用 requestAnimationFrame
@@ -1794,11 +2398,17 @@
       ctx.fillStyle = '#1a140f'; ctx.fillRect(0, 0, viewW, viewH);
       ctx.setTransform(1, 0, 0, 1, -Math.round(cam.x), -Math.round(cam.y));
       drawWall(tod, t); drawFloor(tod);
-      pets.forEach(p => p.step(dt));
+      pets.forEach(p => p.step(dt)); placeOnTable(); carryTick();
       if (t > socNext) { socNext = t + 1000; socialCheck(); }
       const things = [
-        ...furn.map(f => ({ y: f.y, draw: () => f.k.draw(f.x, f.y, f.flip) })),
-        ...pets.map(p => ({ y: p.held ? H + 1 : p.y, draw: () => { if (editMode) ctx.globalAlpha = .45; p.draw(); ctx.globalAlpha = 1; } })),
+        ...furn.filter(f => !f.hide).map(f => ({ y: f.k.flat ? -1 : f.y, draw: () => { f.k.draw(f.x, f.y - (f.lift || 0), f.flip, f); if (f.broken) drawBroken(f); } })),
+        ...furn.filter(f => f.k.back && !f.hide).map(f => ({ y: f.y - .2, draw: () => f.k.back(f.x, f.y, f) })),   // 紙袋的提把、裡面（毛孩鑽進去：畫在牠後面）
+        ...dishes.filter(d => now < d.until).map(d => ({ y: d.y - .1, draw: () => drawDish(d) })),
+        ...pets.map(p => ({ y: p.held ? H + 1 : p.y, draw: () => {
+          if (editMode) ctx.globalAlpha = .45;
+          if (p.inBag) { ctx.save(); ctx.beginPath(); ctx.rect(Math.round(p.inBag.x) - 14, 0, 28, H); ctx.clip(); }   // 在紙袋裡：袋子外面的尾巴、屁股不畫
+          p.draw(); if (p.inBag) ctx.restore(); ctx.globalAlpha = 1;
+        } })),
       ].sort((a, b) => a.y - b.y);
       things.forEach(o => o.draw());
       drawPicked();
@@ -1891,10 +2501,12 @@
   function actions(p, more = false) {
     const b = [];
     const pc = !LIVE || deskAt != null || !SV.p74;   // P74：只有手機、電腦從來沒連過的帳號沒有〔去上班〕（沒有桌面可以去）
-    if (p.where === 'home') { if (pc) b.push(['desk', '去上班', 'work']); if (isPhone) b.push(['pocket', '帶出門', 'pocket']); if (more) b.push(['bowl', '餵飯', 'feed']); }
+    if (p.where === 'home') { if (pc) b.push(['desk', '去上班', 'work']); if (isPhone) b.push(['pocket', '帶出門', 'pocket']); if (more) b.push(['bowl', '餵飯', 'feed']); if (more && treatsLeft()) b.push(['@treat', '點心', 'treat']); }
     else if (p.where === 'desk') { if (more) b.push(['paw', '摸摸', 'pet'], ['bowl', '餵飯', 'feed']); b.push(['home', '叫回家', 'callhome', true]); }
     else if (p.where === 'pocket') b.push(['home', '放回家', 'callhome', true]);
     else if (p.where === 'friend') b.push(['home', '叫回家', 'callhome']);
+    if (more) b.push(['paw', '檔案', 'profile']);   // P92：牠的小習慣
+    if (more) b.push(['letter', '說話', 'chat']);    // P92 M4 你問毛孩
     if (more && LIVE && SV.p74 && p.cfg && window.DCAdopt) b.push(['edit', '換顏色', 'recolor']);   // P74：在手機換顏色（adopt.js）
     // P74 M5 換衣服：v4.18 才開給玩家（shared_rules PHONE_WEAR → DC_RULES.wear.on）；dev 先開著試
     if (more && LIVE && SV.p74 && p.cfg && window.DCAdopt && (R.wear.on || SV.which === 'dev')) b.push(['gift', '換衣服', 'dress']);
@@ -1903,7 +2515,10 @@
   function act(p, what) {
     const pet = pets.find(o => o.p === p);
     if (what === 'pocket') { toPocket(p); return; }
-    if (what === 'feed') { feed(p); return; }
+    if (what === 'feed') { if (p.where === 'home' && FOOD && FOOD.wet > 0) foodChoice(p, 'feed'); else feed(p); return; }
+    if (what === 'treat') { foodChoice(p, 'treat'); return; }
+    if (what === 'profile') { profileView(p); return; }
+    if (what === 'chat') { chatView(p); return; }
     if (what === 'recolor') { closeSheet(); DCAdopt.open(p); return; }
     if (what === 'dress') { closeSheet(); DCAdopt.open(p, 'wear'); return; }
     if (what === 'pet') {                    // 在桌面的：送一個摸摸給電腦（電腦上的牠冒愛心、說話）
@@ -1942,6 +2557,7 @@
     if (LIVE && !await call(SV.petMove(p.id, 'pocket'))) return false;
     const pet = pets.find(o => o.p === p);
     p.placeAt = Date.now();
+    rememberMem(p, 'pocket');                  // P92 M3 成長日記：第一次跟你出門
     if (instant || !pet) {
       if (pet) { pets.splice(pets.indexOf(pet), 1); pet.gone = true; }
       p.where = 'pocket'; render(); return true;
@@ -1960,7 +2576,7 @@
   // 餵飯：家裡的走去碗那邊吃；在桌面的送給電腦（電腦上的牠吃飯）。飽足由電腦算（伺服器下次讀回來）
   function feed(p) {
     if (cooling(p, 'feed')) { toast(`${p.name}剛吃過了`); return; }
-    remote(p, 'feed', p.where === 'desk');
+    remote(p, 'feed', p.where === 'desk'); earnCare(p, 'feed');
     p.food = 3; p.foodHold = Date.now() + 60000;
     const pet = pets.find(o => o.p === p), bowl = furn.find(f => f.k.spot === 'eat');
     if (!pet) { toast(LIVE && !deskOn() ? `電腦開了${p.name}就吃到` : `幫${p.name}在桌面放飯了`); render(); return; }
@@ -1979,7 +2595,7 @@
   // 位置一律照伺服器的：讀到換地方了才演走出門／走進來（moved），按的那一刻只先走到門口等。
   let deskAt = null, booted = !LIVE, pullTimer = 0, pulling = false, netError = '';
   const COOL = R.cool_ms;                     // 同一隻多久送一次（shared_rules：電腦 pet_sync、伺服器 027 同一份；一直按不會一直加）
-  const REASON = { pocket_full: '口袋已經有一隻了', not_home: '牠現在不在家', no_pet: '伺服器找不到牠', too_many: '待辦太多了，等一下', invalid: '這個沒辦法做' };
+  const REASON = { pocket_full: '口袋已經有一隻了', not_home: '牠現在不在家', no_pet: '伺服器找不到牠', too_many: '待辦太多了，等一下', invalid: '這個沒辦法做', none: '吃完了：到商店買' };
   const RESULT = { full: '桌面滿了', away: '牠出門了', gone: '電腦找不到牠', busy: '牠在忙', lost: '電腦沒回應', expired: '電腦一天沒開' };
   const cooling = (p, kind) => Date.now() - (p[kind + 'At'] || 0) < COOL[kind];
   const pend = new Map();                    // 等電腦照做的待辦：id → {p, kind}
@@ -2051,7 +2667,7 @@
       schedulePull(fast() ? 3000 : 10000);
     }
   }
-  document.addEventListener('visibilitychange', () => { if (!document.hidden && SV.mode === 'live') { souvReady = false; homeReady = false; pull(); watchActions(); } });   // 回到畫面：紀念品、家具也再讀一次（別支手機可能加了、電腦可能買了）
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && SV.mode === 'live') { souvReady = false; homeReady = false; pull(); watchActions(); if (booted) earnDaily(); } });   // 回到畫面：紀念品、家具也再讀一次（別支手機可能加了、電腦可能買了）
 
   // 伺服器 0～100 → 畫面的 0～3（MOOD 表情、foodBar）
   const lvl = v => v == null ? 2 : R.food_bars.filter(t => v >= t).length;   // 飽足格 0～3（shared_rules food_bars：第 1 條以下＝餓了，跟電腦一樣）
@@ -2108,7 +2724,7 @@
       if (pet) { pets.splice(pets.indexOf(pet), 1); pet.gone = true; }
     }
     if (!booted) {
-      booted = true; spawnHome();
+      booted = true; spawnHome(); loadFood(); loadProfiles(); setTimeout(earnDaily, 1500);
       const mine = r.pets.filter(s => s && s.sprite).map(s => [uid, s.sprite]);
       if (uid) SV.pruneSprites(mine);
       setTimeout(fromWidget, 600);            // 從 iPhone 小工具點進來的：摸那一隻
@@ -2300,11 +2916,8 @@
     drawAvatar($('sheetAvatar'), p);
     $('sheetName').textContent = `${p.name}　${MOOD[p.mood]}`; withDays($('sheetName'), p);
     setLabel($('sheetInfo'), WHERE[p.where].icon, `${doing(p)}　飽足 ${foodBar(p.food)}`);
-    const box = $('sheetBtns'); box.innerHTML = '';
-    for (const [ic, label, what, main] of actions(p, true)) {
-      const btn = document.createElement('button'); btn.className = 'btn' + (main ? ' main' : ''); setLabel(btn, ic, label);
-      btn.onclick = () => act(p, what); box.appendChild(btn);
-    }
+    sheetBtns(p);
+    if (LIVE && SV.food && p.where === 'home') loadFood().then(() => { if (sheetPet && sheetPet.p === p && !$('sheet').hidden && !$('sheetBtns').dataset.choose) sheetBtns(p); });
     $('sheet').hidden = false; document.body.classList.add('sheet-open');
     const pet = pets.find(o => o.p === p);   // 面板開著＝選中：牠停在原地、鏡頭對著牠
     const prevZoom = sheetPet ? sheetPet.prevZoom : cam.lv;
@@ -2321,6 +2934,14 @@
     }
   }
   let sheetPet = null;
+  function sheetBtns(p) {
+    const box = $('sheetBtns'); box.innerHTML = ''; delete box.dataset.choose;
+    for (const [ic, label, what, main] of actions(p, true)) {
+      const btn = document.createElement('button'); btn.className = 'btn' + (main ? ' main' : '');
+      if (ic.startsWith('@')) btn.replaceChildren(foodImg('treat_' + favOf(p)), label); else setLabel(btn, ic, label);
+      btn.onclick = () => act(p, what); box.appendChild(btn);
+    }
+  }
   function release(pet) {                     // 不再選中：可以自己走動，提示收起來
     if (pet.until === Infinity) pet.until = now + 1500;
     bubbles.filter(b => b.pet === pet && b.hint).forEach(b => { b.until = 0; });
@@ -2391,6 +3012,7 @@
     if (tab === 'mail' && window.DCMail) DCMail.show();
   }
   document.querySelectorAll('.tabs button').forEach(b => { b.onclick = () => switchTab(b.dataset.tab); });
+  $('shopBtn').onclick = () => { if (editMode) setEdit(false); closeSheet(); if (window.DCShop) DCShop.open(); };
 
   function tick() { $('clock').textContent = `${TIME_LABEL[timeOfDay()]} ${new Date().toTimeString().slice(0, 5)}`; }
   // 手機＝手機版（直版版面），電腦＝網頁版（橫版，分頁列在左邊）：只照「是不是手機（觸控）」，不照視窗大小、不照手機直拿橫拿
@@ -2437,6 +3059,11 @@
     },
     useCtx: c => { ctx = c || roomCtx; },
     pullNow: () => pull(),                  // 領養完馬上讀一次（adopt.js）
+    // 商店（shop.js）：罐頭、點心剩幾個；買了吐司煎蛋糰子貓薄荷馬上用；買了家具重讀家裡的家具
+    food: () => FOOD, loadFood, feast, homeSync, earn, get cansNow() { return cansNow; },
+    pickQuirks, loadProfiles,                // P92：手機建立的毛孩也有天生小怪癖（adopt.js）
+    qOrder,                                  // P92 M2：問題順序（測試跟電腦比對）
+    setFood(r) { if (!FOOD) FOOD = { wet: 0, treats: {}, known: {} }; if (typeof r.wet === 'number') FOOD.wet = r.wet; if (r.treats) FOOD.treats = { ...r.treats }; },
     ctx: () => ctx,
     get isPhone() { return isPhone; },
   };
@@ -2466,7 +3093,7 @@
     b['app.css'] = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--build'), 10) || null;
     return b;
   }
-  const BUILD_FILES = ['index.html', 'app.css', 'lines.js', 'server.js', 'app.js', 'pocket.js', 'trip.js', 'scenes.js', 'mail.js', 'parts.js', 'adopt.js', 'notify.js', 'outdoor.js', 'fake/fake_data.js', 'fake/fake_mail.js'];
+  const BUILD_FILES = ['index.html', 'app.css', 'lines.js', 'server.js', 'app.js', 'pocket.js', 'trip.js', 'scenes.js', 'mail.js', 'parts.js', 'adopt.js', 'notify.js', 'outdoor.js', 'shop.js', 'fake/fake_data.js', 'fake/fake_mail.js'];
   function staleFiles() {                 // 跟 index.html 不一樣、或根本沒有戳記的＝手機拿到舊檔（地毯飛起來那次：fake_data.js 是舊的）
     const b = builds(), want = b['index.html'];
     return BUILD_FILES.filter(k => b[k] !== want);

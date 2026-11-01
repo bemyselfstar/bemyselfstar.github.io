@@ -1,7 +1,7 @@
 // DeskCat 手機網頁「🎒 口袋」：毛孩跟你出門（只有手機有）。P66 新設計第 6 節：口袋、合照、順毛。
 // 口袋＝毛孩跟你出門、在戶外（不是真的口袋）：直式滿版的戶外場景（城市、公園、步道；照時間換天空、天氣先手動選，不要求位置權限），功能是右下的懸浮按鈕。
 // 合照：相機畫面疊上像素毛孩（可拖、放大、換姿勢、翻面），拍下來存到手機或分享；照片只留在手機、不上傳。
-(window.DC_BUILD = window.DC_BUILD || {})['pocket.js'] = 81;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['pocket.js'] = 97;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const D = window.DC, $ = id => document.getElementById(id);
@@ -17,6 +17,11 @@
   // 撿過的（D.souvenirs()）跟著帳號存在伺服器（server/017，2026-10-17；app.js souvSync），這支手機只當暫存。
   const FIND_EVERY = window.DC_RULES.pocket.every_min, FIND_MAX = window.DC_RULES.pocket.max;   // shared_rules（伺服器 024 推播「撿到東西」也用同一份）
   let item = null, nextAt = 0;
+  // 口袋寶箱（P88 M3，2026-10-31）：在口袋每 chestMin 分鐘一個（電腦寶箱 chest_minutes；export_lines 從 params.py 匯出），點一下打開，
+  // 開出什麼伺服器決定（電腦 roll_reward：罐罐／零食／飾品）。伺服器還沒有（SV.earn＝false）就不出現。撿東西時也可能多撿到罐罐（伺服器擲）。
+  const SV = window.DCServer, CHEST_MIN = (window.DC_SHOP || {}).chestMin || 0;
+  const canEarn = () => D.LIVE && SV && SV.earn && SV.mode === 'live';
+  const tripKey = n => `${Math.round(outAt() / 1000)}:${n}`;   // 這一趟（出門時間）的第幾個：伺服器用它擋重複
   const outAt = () => pet.p.placeAt || since;   // 伺服器的 place_at 每次讀回來都會更新（剛帶出門時是這支手機的時間）
   const minsOut = () => (Date.now() - outAt()) / 60000;
   // 這一趟撿過的也記在這台（2026-10-18 BUG「口袋版一直撿到紀念品」，手機 36 版）：p.found 只在記憶體，iPhone 關掉 App 重開就變空的，
@@ -30,9 +35,10 @@
     } catch (_) { return null; }
   }
   function saveFound() {
-    try { localStorage.setItem(FOUND_KEY, JSON.stringify({ cid: pet.p.id, at: outAt(), found: pet.p.found })); } catch (_) { /* 存不了：這次開著還是對的 */ }
+    try { localStorage.setItem(FOUND_KEY, JSON.stringify({ cid: pet.p.id, at: outAt(), found: pet.p.found, chests: pet.p.chests || 0 })); } catch (_) { /* 存不了：這次開著還是對的 */ }
   }
   const waiting = () => pet ? Math.min(FIND_MAX, Math.floor(minsOut() / FIND_EVERY)) - pet.p.found.length - (item ? 1 : 0) : 0;
+  const chestsWaiting = () => pet && CHEST_MIN && canEarn() ? Math.floor(minsOut() / CHEST_MIN) - (pet.p.chests || 0) - (item ? 1 : 0) : 0;
 
   function sync() {                       // 口袋裡現在是哪一隻
     const p = pocketPet();
@@ -58,9 +64,11 @@
     const s = loadFound();
     // 伺服器：放進口袋的時間（place_at）；範例：出門 1 小時 12 分（＝已經可以撿 3 樣），重新整理還是同一趟
     since = p.placeAt || (s && s.cid === p.id && Date.now() - s.at < 6 * 3600000 ? s.at : Date.now() - 72 * 60000);
-    p.found = p.found || []; item = null; nextAt = performance.now() + 1800;
-    if (s && s.cid === p.id && Math.abs(s.at - (p.placeAt || since)) < 5 * 60000 && s.found.length > p.found.length)
-      p.found = s.found.filter(k => typeof k === 'string' && (!window.DCScene || window.DCScene.ITEMS[k])).slice(0, FIND_MAX);
+    p.found = p.found || []; p.chests = p.chests || 0; item = null; nextAt = performance.now() + 1800;
+    if (s && s.cid === p.id && Math.abs(s.at - (p.placeAt || since)) < 5 * 60000) {
+      if (s.found.length > p.found.length) p.found = s.found.filter(k => typeof k === 'string' && (!window.DCScene || window.DCScene.ITEMS[k])).slice(0, FIND_MAX);
+      p.chests = Math.max(p.chests, +s.chests || 0);   // 同一趟開過幾個寶箱（關掉 App 重開不會再開一次）
+    }
   }
   function fit() {                        // 滿版：放大倍數照毛孩大小挑（大約佔畫面寬的一半），畫布蓋滿整個畫面
     const box = $('pocketStage'), w = box.clientWidth, h = box.clientHeight;
@@ -107,7 +115,8 @@
     // 毛孩（整隻在步道上）
     pet.step(dt); pet.draw(); D.drawHearts(pet, dt);
     // 撿到的東西：毛孩前面、比牠的腳更靠近你的步道上（畫在毛孩前面，不會被擋住），一閃一閃
-    if (item && window.DCScene) {
+    if (item && item.chest) drawChest(item, t);
+    else if (item && window.DCScene) {
       window.DCScene.ITEMS[item.k].draw(c, item.x, item.y);
       const on = Math.floor(t / 350) % 2;
       [[-6, -11], [6, -9], [0, -14]].forEach(([dx, dy], i) => { if ((i + on) % 2) { D.rect(item.x + dx, item.y + dy - 1, 1, 3, '#fff6c8'); D.rect(item.x + dx - 1, item.y + dy, 3, 1, '#fff6c8'); } });
@@ -136,9 +145,46 @@
     pet.walking = false; pet.flip = true; pet.set('sit', 1); pet.until = performance.now() + 3000;   // 停下來、轉頭看那個東西
     D.say(pet, D.line(pet, 'pocket_find'));
   }
+  function spawnChest() {                  // 口袋寶箱：出現在毛孩前面的步道上
+    const d = D.petInfo(pet.p);
+    item = { chest: true, open: false, x: Math.max(10, Math.round(pet.x - d.w * .5)), y: Math.round(PH * (PATH_BOT - .02)) };
+    pet.walking = false; pet.flip = true; pet.set('sit', 1); pet.until = performance.now() + 3000;
+    D.say(pet, D.line(pet, 'pocket_find'));
+  }
+  function drawChest(it, t) {              // 小寶箱（14×10 格；打開＝蓋子掀起來、冒金光）
+    const x = it.x - 7, y = it.y - 10, OL = '#4a2e1c';
+    D.rect(x, y + 3, 14, 7, OL); D.rect(x + 1, y + 4, 12, 5, '#a8682e'); D.rect(x + 1, y + 8, 12, 1, '#7e4a20');
+    if (it.open) {
+      D.rect(x, y - 2, 14, 4, OL); D.rect(x + 1, y - 1, 12, 2, '#c47e3a');
+      D.rect(x + 2, y + 3, 10, 2, '#ffe08a');
+      const on = Math.floor(t / 200) % 2;
+      [[-3, -5], [4, -7], [10, -4]].forEach(([dx, dy], i) => { if ((i + on) % 2) { D.rect(x + dx + 2, y + dy - 1, 1, 3, '#fff6c8'); D.rect(x + dx + 1, y + dy, 3, 1, '#fff6c8'); } });
+    } else {
+      D.rect(x, y, 14, 4, OL); D.rect(x + 1, y + 1, 12, 2, '#c47e3a'); D.rect(x + 1, y + 1, 12, 1, '#d99a52');
+      D.rect(x + 6, y + 1, 2, 8, '#f2c14e'); D.rect(x + 5, y + 3, 4, 3, '#f2c14e'); D.rect(x + 6, y + 4, 2, 1, OL);
+      const on = Math.floor(t / 350) % 2;
+      [[-6, -4], [6, -2], [0, -7]].forEach(([dx, dy], i) => { if ((i + on) % 2) { D.rect(it.x + dx, it.y + dy - 12, 1, 3, '#fff6c8'); D.rect(it.x + dx - 1, it.y + dy - 11, 3, 1, '#fff6c8'); } });
+    }
+  }
+  async function openChest() {             // 點一下：打開（伺服器決定開出什麼）
+    if (item.open) return;
+    const it = item; it.open = true;
+    pet.p.chests = (pet.p.chests || 0) + 1; saveFound();
+    const r = await D.earn('chest', pet.p.id, tripKey(pet.p.chests));
+    const WI = (window.DC_RULES.wear || {}).items || {}, tail = D.cansNow != null ? `（現在 ${D.cansNow}）` : '';
+    if (!r || r.ok === false) D.toast('寶箱打不開：等一下再試');
+    else if (r.got > 0) { D.toast(`寶箱：🥫 罐罐 +${r.got}${tail}`); D.addHearts(pet, 2); }
+    else if (r.snack) { D.toast('寶箱：零食！家裡的毛孩吃得好開心'); D.addHearts(pet, 3); }
+    else if (r.item) D.toast(`寶箱：${(WI[r.item] || {}).name || r.item}！點毛孩 →〔換衣服〕`);
+    else D.toast(r.text || '寶箱是空的（今天的罐罐拿滿了）');
+    setTimeout(() => { if (item === it) { item = null; nextAt = performance.now() + 3500; } }, 1600);
+  }
   function pickUp() {                      // 點一下：收進包包
     const k = item.k, it = window.DCScene.ITEMS[k], had = D.souvenirs()[k] || pet.p.found.includes(k);
     pet.p.found.push(k); item = null; nextAt = performance.now() + 3500; saveFound();
+    D.earn('find', pet.p.id, tripKey(pet.p.found.length)).then(r => {   // 有時候多撿到罐罐（伺服器擲）
+      if (r && r.got > 0) D.toast(`還撿到 🥫 罐罐 +${r.got}${D.cansNow != null ? `（現在 ${D.cansNow}）` : ''}`);
+    });
     D.addHearts(pet, 2); D.say(pet, had ? D.line(pet, 'pocket_got', { other: it.name }) : D.line(pet, 'souvenir_new'), 2200);
     render();
     const pill = $('pocketInfo'); pill.classList.remove('bump'); void pill.offsetWidth; pill.classList.add('bump');
@@ -147,7 +193,7 @@
     if (!pet) return;
     if (!pet.fitted) { fit(); if (!pet.fitted) return; }   // 一打開就是口袋（?tab=pocket）時毛孩還沒讀到：讀到了再排一次
     if (!pet.placed) placeInPocket();
-    if (!item && window.DCScene && performance.now() > nextAt && waiting() > 0) spawnItem();
+    if (!item && window.DCScene && performance.now() > nextAt) { if (waiting() > 0) spawnItem(); else if (chestsWaiting() > 0) spawnChest(); }
     D.useCtx(pctx); pctx.setTransform(1, 0, 0, 1, 0, 0);
     drawScene(dt, t);
     D.useCtx(null);
@@ -219,7 +265,7 @@
   const up = e => {
     if (g.on && !g.moved && pet) {
       const r = pcv.getBoundingClientRect(), wx = (e.clientX - r.left) / scale, wy = (e.clientY - r.top) / scale;
-      if (item && Math.abs(wx - item.x) < 11 && wy > item.y - 16 && wy < item.y + 6) pickUp();   // 手指大小（44px）÷ 放大倍數
+      if (item && Math.abs(wx - item.x) < 11 && wy > item.y - 16 && wy < item.y + 6) { if (item.chest) openChest(); else pickUp(); }   // 手指大小（44px）÷ 放大倍數
       else D.petPet(pet);
     }
     g.on = false;
@@ -413,6 +459,7 @@
   function toastIn(msg) { D.toast(msg); }
 
   window.DCPocket = { frame, render, show, openPhoto, get pet() { return pet; }, ph,
+    get item() { return item; }, tap() { if (item) { if (item.chest) openChest(); else pickUp(); } },   // 開發用：點步道上那個東西（撿起來／開寶箱）
     petNow() { if (pet) D.petPet(pet); },   // 從 iPhone 小工具點進來：摸口袋裡那隻（app.js fromWidget）
   };
 })();
