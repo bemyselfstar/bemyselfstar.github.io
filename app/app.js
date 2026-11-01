@@ -2,7 +2,7 @@
 // 斜上往下看的房間（W×H 像素，比螢幕大），整數倍放大（不糊）；拖曳移動鏡頭、兩指縮放。
 // 電腦網頁＝橫版（分頁列在左邊）、手機網頁＝直版（分頁列在下面）（2026-10-14 使用者）。
 // 家具先用程式畫的簡單版（之後換成正式美術）；毛孩用遊戲的側面影格，前後只靠遮擋表現、不縮放。
-(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 99;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 100;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   // 資料：範例（假資料）或伺服器（server.js；登入後 dc_pets_mine 每 10 秒讀一次，見下面「伺服器同步」）。
@@ -53,7 +53,9 @@
   const animOf = (d, want) => { for (const a of [].concat(want)) if (d.anims[a]) return a; return 'idle'; };
 
   // 頭像：用坐著那一格，裁掉空白後放進正方形
-  function drawAvatar(cv, p) {
+  // css＝畫面上顯示幾點（40、48）：照 devicePixelRatio 畫成實體像素、每格放大整數倍（不糊、不壓扁；2026-11 使用者「不應該壓模糊」）；
+  // 放不下（大型犬）就水平置中、從頭頂往下裁＝大頭照。沒給 css＝舊做法（口袋、信箱、旅行照這些）
+  function drawAvatar(cv, p, css) {
     const d = petInfo(p), im = img(d.file);
     const go = () => {
       const [row] = d.anims[animOf(d, ['sit', 'idle'])];
@@ -64,7 +66,17 @@
       for (let y = 0; y < d.h; y++) for (let x = 0; x < d.w; x++) if (px[(y * d.w + x) * 4 + 3] > 0) {
         x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
       }
-      const bw = x1 - x0 + 1, bh = y1 - y0 + 1, side = Math.max(bw, bh) + 4;
+      const bw = x1 - x0 + 1, bh = y1 - y0 + 1;
+      if (css) {
+        const dev = Math.round(css * (window.devicePixelRatio || 1)), pad = 2;           // 40 點 × DPR 3＝120 實體像素
+        const k = Math.max(1, Math.floor((dev - pad * 2) / Math.max(bw, bh)), dev >= 80 ? 2 : 1);   // 每格幾個實體像素（整數；高解析度至少 2）
+        const cw = Math.min(bw, Math.floor((dev - pad * 2) / k)), ch = Math.min(bh, Math.floor((dev - pad * 2) / k));
+        cv.width = dev; cv.height = dev;
+        const c = cv.getContext('2d'); c.imageSmoothingEnabled = false; c.clearRect(0, 0, dev, dev);
+        c.drawImage(t, x0 + Math.floor((bw - cw) / 2), y0, cw, ch, Math.floor((dev - cw * k) / 2), dev - pad - ch * k, cw * k, ch * k);
+        return;
+      }
+      const side = Math.max(bw, bh) + 4;
       cv.width = side; cv.height = side;
       const c = cv.getContext('2d'); c.imageSmoothingEnabled = false; c.clearRect(0, 0, side, side);
       c.drawImage(t, x0, y0, bw, bh, Math.floor((side - bw) / 2), side - bh - 2, bw, bh);
@@ -121,7 +133,17 @@
     cam.x = wx - ax / cam.z; cam.y = wy - ay / cam.z; clampCam();
   }
   const zoomBy = (d, ax, ay) => { camTouched = true; setZoom(cam.lv + d, ax, ay); };
-  function lookAt(wx, wy) { cam.x = wx - viewW / 2; cam.y = wy - viewH / 2; clampCam(); }
+  function lookAt(wx, wy) { camAnim++; cam.x = wx - viewW / 2; cam.y = wy - viewH / 2; clampCam(); }
+  let camAnim = 0;
+  let gliding = 0;                         // 滑到幾點（這段時間 keepVisible 不搶鏡頭）
+  function glideTo(wx, wy, ms = 220) {     // 鏡頭滑過去（點毛孩、點名單頭像；2026-11 以前瞬間跳）；系統開了減少動態效果就直接到
+    const x0 = cam.x, y0 = cam.y; lookAt(wx, wy); const x1 = cam.x, y1 = cam.y, id = ++camAnim;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    cam.x = x0; cam.y = y0; const t0 = performance.now(); gliding = t0 + ms;
+    const step = t => { if (id !== camAnim) { gliding = 0; return; } const k = Math.min(1, (t - t0) / ms), e = 1 - (1 - k) ** 3;
+      cam.x = x0 + (x1 - x0) * e; cam.y = y0 + (y1 - y0) * e; clampCam(); if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  }
   // 打開時對準在家的毛孩；沒有在家的 → 家具最集中的地方（2026-10-27：第一眼只看到窗戶、空地板、一整塊地毯）
   function cozySpot() {                    // 客廳（茶几下面那塊大地毯：沙發、茶几、單人沙發圍著）；沒有的話＝家具最多的地方
     const rug = HOME.rugs.map(rugAt).find(r => r && !r.round);
@@ -141,6 +163,7 @@
     lookAt(x, y - 24);
   }
   function keepVisible(pet) {              // 毛孩整隻都在畫面裡（面板打開、房間變矮時用）
+    if (performance.now() < gliding) return;
     const m = 6, h = pet.d.h, w = pet.d.w * .7;
     if (pet.x - w / 2 < cam.x + m || pet.x + w / 2 > cam.x + viewW - m || pet.y - h < cam.y + m || pet.y > cam.y + viewH - m) lookAt(pet.x, pet.y - h / 2);
   }
@@ -1069,7 +1092,7 @@
         zoomBy(d > g.d0 ? 1 : -1, mx - r.left, my - r.top);
         Object.assign(g, { d0: d, mx, my, cx: cam.x, cy: cam.y });
       } else {
-        cam.x = g.cx - (mx - g.mx) / cam.z; cam.y = g.cy - (my - g.my) / cam.z; clampCam(); camTouched = true;
+        camAnim++; cam.x = g.cx - (mx - g.mx) / cam.z; cam.y = g.cy - (my - g.my) / cam.z; clampCam(); camTouched = true;
         if (Math.hypot(mx - g.mx, my - g.my) > 8 && sheetPet) sheetPet.free = true;   // 自己移開了：不要再把鏡頭拉回那隻
       }
       return;
@@ -1084,7 +1107,7 @@
     }
     if (g.mode === 'pan') {
       camTouched = true;
-      cam.x = g.cx - (e.clientX - g.sx) / cam.z; cam.y = g.cy - (e.clientY - g.sy) / cam.z; clampCam();
+      camAnim++; cam.x = g.cx - (e.clientX - g.sx) / cam.z; cam.y = g.cy - (e.clientY - g.sy) / cam.z; clampCam();
       cv.style.cursor = 'grabbing';
     } else if (g.mode === 'stroke') {
       g.ax += e.clientX - g.lx; g.ay += e.clientY - g.ly; g.lx = e.clientX; g.ly = e.clientY;
@@ -2462,13 +2485,16 @@
   // 提示訊息（2026-10-14 健檢：回饋要出現在剛剛操作的地方，不是畫面正上方；停 3.5 秒；可以附一個解決的按鈕）
   //   家、面板開著 → 面板裡（按鈕上面）；家、面板關著 → 下方工具列的提示列；其他頁 → 下方、分頁列上面
   //   都放在房間／場景外面，不蓋住毛孩
+  const EDIT_TIP = coarse ? '按住家具拖到喜歡的地方' : '拖曳家具到喜歡的地方';
+  $('editTip').textContent = EDIT_TIP;
   function toast(msg, action) {
     clearTimeout(toastTimer);
     const home = !$('view-home').hidden, sheetOpen = !$('sheet').hidden;
-    const el = home ? (sheetOpen ? $('sheetMsg') : $('hint')) : $('toast');
+    // 佈置模式：工具列藏起來了 → 沒按鈕的訊息放佈置列的說明那格（2026-11：以前送進看不到的工具列）
+    const el = !home ? $('toast') : editMode && !action ? $('editTip') : sheetOpen ? $('sheetMsg') : $('hint');
     for (const x of [$('sheetMsg'), $('toast')]) if (x !== el) x.hidden = true;
     $('hint').classList.remove('msg');
-    el.textContent = msg;
+    el.replaceChildren(Object.assign(document.createElement('span'), { textContent: msg }));   // 包一層：最多兩行、截斷，不把工具列／面板撐高
     if (action) {
       const b = document.createElement('button'); b.className = 'btn main'; b.textContent = action[0];
       b.onclick = () => { done(); action[1](); }; el.appendChild(b);
@@ -2477,7 +2503,9 @@
     if (el === $('hint')) { el.classList.add('msg'); el.style.opacity = 1; }
     const done = () => {
       clearTimeout(toastTimer);
-      if (el === $('hint')) { el.classList.remove('msg'); el.textContent = ''; } else el.hidden = true;
+      if (el === $('hint')) { el.classList.remove('msg'); el.textContent = ''; }
+      else if (el === $('editTip')) el.textContent = EDIT_TIP;
+      else el.hidden = true;
     };
     toastTimer = setTimeout(done, action ? 6000 : 3500);
   }
@@ -2913,7 +2941,7 @@
     const s = document.createElement('span'); s.className = 'days'; s.textContent = `在一起第 ${n} 天`; el.append(s);
   }
   function openSheet(p) {
-    drawAvatar($('sheetAvatar'), p);
+    drawAvatar($('sheetAvatar'), p, 40);
     $('sheetName').textContent = `${p.name}　${MOOD[p.mood]}`; withDays($('sheetName'), p);
     setLabel($('sheetInfo'), WHERE[p.where].icon, `${doing(p)}　飽足 ${foodBar(p.food)}`);
     sheetBtns(p);
@@ -2928,12 +2956,17 @@
       pet.target = null; pet.after = null; pet.until = Infinity; if (pet.anim === 'walk') pet.set('sit', 1);
       if (isPhone) {                          // 手機：放大對準牠，提示順毛方向（摸對一次才消失）
         setZoom(cam.cover + 1, stage.clientWidth / 2, stage.clientHeight / 2);
-        lookAt(pet.x, pet.y - pet.d.h / 2);
+        glideTo(pet.x, pet.y - pet.d.h / 2);
         strokeHint(pet, 60000);
       }
     }
   }
   let sheetPet = null;
+  function stripMore() {                    // 名單右邊還有沒看到的：漸層提示可以滑
+    const s = $('strip'); s.classList.toggle('more', s.scrollLeft + s.clientWidth < s.scrollWidth - 2);
+  }
+  $('strip').addEventListener('scroll', stripMore, { passive: true });
+  addEventListener('resize', stripMore);
   function sheetBtns(p) {
     const box = $('sheetBtns'); box.innerHTML = ''; delete box.dataset.choose;
     for (const [ic, label, what, main] of actions(p, true)) {
@@ -2964,12 +2997,14 @@
     for (const p of list) {
       const b = document.createElement('button'); b.className = 'av' + (p.where === 'home' ? '' : ' away');
       b.title = `${p.name}：${WHERE[p.where].label}`;
-      const c = document.createElement('canvas'); drawAvatar(c, p); b.append(c);
+      b.setAttribute('aria-label', `${p.name}，${WHERE[p.where].label}`);   // 手機沒有游標，title 不一定會被念出來
+      const c = document.createElement('canvas'); drawAvatar(c, p, 40); b.append(c);
       const w = document.createElement('span'); w.className = 'where'; if (p.where !== 'home') w.append(icon(WHERE[p.where].icon)); b.append(w);
       const n = document.createElement('span'); n.className = 'nm'; n.textContent = p.name; b.append(n);
-      b.onclick = () => { const pet = pets.find(o => o.p === p); if (pet) lookAt(pet.x, pet.y - 20); openSheet(p); };
+      b.onclick = () => { const pet = pets.find(o => o.p === p); if (pet) glideTo(pet.x, pet.y - 20); openSheet(p); };
       strip.appendChild(b);
     }
+    stripMore();
     const ul = $('familyList'); ul.innerHTML = '';
     if (LIVE && booted && !list.length && !SV.p74) {   // P74 還沒上的正式網址：舊的說法
       const li = document.createElement('li'); li.className = 'empty';
@@ -2986,7 +3021,7 @@
     }
     for (const p of list) {
       const li = document.createElement('li');
-      const c = document.createElement('canvas'); drawAvatar(c, p);
+      const c = document.createElement('canvas'); drawAvatar(c, p, 48);
       const mid = document.createElement('div');
       mid.innerHTML = '<div class="n"></div><div class="s"></div><div class="s"></div>';
       mid.children[0].textContent = `${p.name} ${MOOD[p.mood]}`; withDays(mid.children[0], p);
@@ -3003,7 +3038,7 @@
   }
 
   function switchTab(tab) {
-    document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+    document.querySelectorAll('.tabs button').forEach(b => { b.classList.toggle('on', b.dataset.tab === tab); b.setAttribute('aria-current', b.dataset.tab === tab ? 'page' : 'false'); });
     for (const v of ['home', 'family', 'pocket', 'mail']) $('view-' + v).hidden = v !== tab;
     $('toast').hidden = true;                // 上一頁的提示不帶到這一頁（會蓋到家的工具列）
     closeSheet();
@@ -3028,6 +3063,7 @@
   const unshift = () => { const a = document.activeElement; if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return; if (scrollX || scrollY) scrollTo(0, 0); };
   addEventListener('focusout', () => setTimeout(unshift, 100));
   if (window.visualViewport) visualViewport.addEventListener('resize', unshift);
+  addEventListener('scroll', unshift, { passive: true });   // 整頁被任何東西捲動（scrollIntoView、聚焦）→ 沒在打字就馬上捲回來
   function setPhone(v) { isPhone = v; document.body.classList.toggle('is-phone', v); layout(); render(); requestAnimationFrame(fit); }
 
   if (dev) {                                // 開發用：假資料的切換

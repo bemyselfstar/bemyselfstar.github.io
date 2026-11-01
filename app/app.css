@@ -1,5 +1,5 @@
 :root {
-  --build: 99;            /* 版本戳記（mobile/tools/bump.py） */
+  --build: 100;            /* 版本戳記（mobile/tools/bump.py） */
   --bg: #2a2018;
   --panel: #fffaf2;
   --ink: #3b2f28;
@@ -13,6 +13,7 @@
   --rail: #fffaf2;
   --page: #f6efe4;
   --shadow: 0 6px 24px rgba(30, 20, 10, .35);
+  --tabs-h: 59px;          /* 手機分頁列高度（不含下面的安全區）：提示訊息排在它上面 */
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -28,6 +29,8 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; overflow: hidden; }
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }   /* iPhone 橫拿不要自己把字放大 */
+html, body { overscroll-behavior: none; }   /* iPhone 在分頁列、工具列上滑：整頁不回彈（2026-11 使用者「按一按下方介面又會跑掉」） */
+html { touch-action: manipulation; }        /* 連點〔＋〕〔－〕不會被當成點兩下放大（iOS 會忽略 user-scalable=no）；房間、口袋本來就是 none */
 /* iPhone 從主畫面打開（iOS 26）：頁面不比螢幕高時，可用高度少一個狀態列高 → 底下空一條（2026-11-01 使用者截圖）。
    讓「頁面」至少是螢幕高，#app（fixed inset:0）和全螢幕面板就會到底。不要改 #app 高度：WebKit 只畫到短的那條邊，
    98 版這樣改，分頁列的字被切掉（frappe-ui PR 1289 同樣結論）。min() 上限＝100lvh：iOS 17/18、橫拿、Android 算出來＝100%，什麼都不變。
@@ -46,9 +49,9 @@ button { font: inherit; color: inherit; }
 #app { position: fixed; inset: 0; display: flex; }
 .tabs { flex: none; width: calc(60px + env(safe-area-inset-left)); padding-left: env(safe-area-inset-left);
   display: flex; flex-direction: column; justify-content: center; gap: 4px; background: var(--rail); z-index: 7; }
-.tabs button { border: 0; background: none; padding: 8px 0; font-size: 20px; cursor: pointer; opacity: .5; color: var(--ink); }
+.tabs button { border: 0; background: none; padding: 8px 0; font-size: 20px; cursor: pointer; color: var(--muted); }   /* 沒選到：灰字＋灰圖示（以前整顆半透明，像不能按、字對比不夠） */
 .tabs button span { display: block; font-size: 11px; }
-.tabs button.on { opacity: 1; }
+.tabs button.on { color: var(--gain); font-weight: 700; }   /* 選到：橘字加粗（淺色 #b5541c、深色 #f4a56a，兩種模式都夠清楚） */
 body:not(.is-phone) .phone-only { display: none; }
 .pages { position: relative; flex: 1; min-width: 0; }
 .view { position: absolute; inset: 0; }
@@ -63,29 +66,39 @@ body.vertical .tabs button { flex: 1; }
 /* 家：上面全家名單、中間房間、下面工具列（或毛孩面板、佈置列）；介面不蓋住房間（2026-10-14 使用者） */
 .home { display: flex; flex-direction: column; background: var(--rail); }
 .hud-top { flex: none; display: flex; align-items: center; gap: 8px; padding: calc(0px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right)) 4px calc(8px + env(safe-area-inset-left)); background: var(--rail); }
-.strip { flex: 1; min-width: 0; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 7px 6px 0 2px; }   /* 上、右留空：位置小圖示凸出頭像外，捲動區會切掉 */
+/* 整條固定高度（資料讀進來前後一樣高，房間不跳）；上、右留空給位置徽章（凸出頭像外，捲動區會切掉） */
+.strip { flex: 1; min-width: 0; height: 62px; display: flex; gap: 8px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; padding: 7px 6px 0 2px; }
+.strip.more { -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent); }   /* 右邊還有：漸層提示可以滑 */
 .strip::-webkit-scrollbar { display: none; }
 .clock { flex: none; color: var(--muted); font-size: 12px; }
-.av { position: relative; flex: none; width: 44px; min-height: 44px; border: 0; background: none; padding: 0; text-align: center; cursor: pointer; color: var(--ink); }
-.av canvas { width: 36px; height: 36px; border-radius: 10px; background: var(--chip); image-rendering: pixelated; display: block; margin: 0 auto; }
+.av { position: relative; flex: none; width: 48px; min-height: 44px; border: 0; background: none; padding: 0; text-align: center; cursor: pointer; color: var(--ink); }
+.av canvas { width: 40px; height: 40px; border-radius: 12px; background: var(--chip); image-rendering: pixelated; display: block; margin: 0 auto; }
 .av .nm { font-size: 11px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
-.av .where { position: absolute; top: -6px; right: -4px; font-size: 12px; line-height: 1; }
+/* 位置徽章（不在家才有）：白色圓底＝狀態，不是「不能按」 */
+.av .where { position: absolute; top: -6px; right: -2px; width: 20px; height: 20px; border-radius: 50%; background: var(--panel);
+  box-shadow: 0 0 0 1.5px var(--line); display: flex; align-items: center; justify-content: center; }
+.av .where:empty { display: none; }
 .av .where .ico { width: 16px; height: 16px; display: block; }
-.av.away canvas { opacity: .45; }
+/* 不在家：不變暗（2026-11 使用者「不應該壓模糊」），底色拿掉、換成外框＋名字灰字 */
+.av.away canvas { background: transparent; box-shadow: inset 0 0 0 2px var(--line); }
+.av.away .nm { color: var(--muted); }
 .stage { position: relative; flex: 1; min-height: 0; overflow: hidden; touch-action: none; background: #1a140f;
   margin: 0 env(safe-area-inset-right) 0 env(safe-area-inset-left); }   /* 橫拿：房間不跑到瀏海底下（直拿左右＝0） */
 #cv { position: absolute; left: 0; top: 0; image-rendering: pixelated; image-rendering: crisp-edges; }
 #bubbles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
-.homebar { flex: none; display: flex; align-items: center; gap: 6px; padding: 6px calc(8px + env(safe-area-inset-right)) 6px calc(8px + env(safe-area-inset-left)); background: var(--rail); }
+/* 工具列固定 56 高：提示、訊息只在提示那一格裡換，不把工具列撐高（2026-11 使用者「按一按下方介面又會跑掉」） */
+.homebar { flex: none; height: 56px; display: flex; align-items: center; gap: 8px; padding: 6px calc(8px + env(safe-area-inset-right)) 6px calc(8px + env(safe-area-inset-left)); background: var(--rail); }
 .homebar[hidden] { display: none; }
-.hint { flex: 1; min-width: 0; color: var(--muted); font-size: 12px; line-height: 1.35; transition: opacity .6s; }
+.hint { flex: 1; min-width: 0; max-height: 44px; overflow: hidden; color: var(--muted); font-size: 12px; line-height: 1.35; transition: opacity .6s;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .tool { flex: none; height: 44px; min-width: 44px; border: 0; border-radius: 12px; background: var(--chip); color: var(--ink); font-size: 18px; cursor: pointer; padding: 0 8px; }
 .tool.wide { font-size: 14px; }
 /* 像素圖示（art/icons/，24×24；2026-10-15 取代表情符號）：一格對一點，不縮放才清楚 */
 .ico { width: 24px; height: 24px; image-rendering: pixelated; vertical-align: middle; flex: none; pointer-events: none; }
 .btn .ico, .tool .ico, .seg .ico, .paw .ico, .letter-sub .ico, h3 .ico, #sheetInfo .ico, .s .ico, #pocketInfo .ico, .pc-stage button .ico { margin: -3px 4px 0 0; }
 .letter-sub .ico, .s .ico { width: 16px; height: 16px; }
-.tabs button .ico { display: block; margin: 0 auto 2px; }
+.tabs button .ico { display: block; margin: 0 auto 2px; filter: grayscale(1); opacity: .7; }
+.tabs button.on .ico { filter: none; opacity: 1; }
 .fab b .ico { display: block; }
 h2 .ico, .edit-bar b .ico { margin: -3px 6px 0 0; }
 .snap-save .ico { margin: 0; }
@@ -110,7 +123,7 @@ body.editing .homebar { display: none; }
 @keyframes fadein { from { opacity: 0; } }
 @keyframes pop { from { transform: translate(-50%, -80%) scale(.6); opacity: 0; } }
 
-.edit-bar { flex: none; display: flex; align-items: center; gap: 8px; padding: 6px calc(8px + env(safe-area-inset-right)) 6px calc(12px + env(safe-area-inset-left));
+.edit-bar { flex: none; height: 56px; display: flex; align-items: center; gap: 8px; padding: 6px calc(8px + env(safe-area-inset-right)) 6px calc(12px + env(safe-area-inset-left));
   background: #ffe9a6; color: #3b2f28; white-space: nowrap; font-size: 13px; }
 .edit-bar[hidden] { display: none; }
 .edit-bar span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
@@ -228,18 +241,28 @@ body.sheet-open .homebar { display: none; }
 .dev button { font-size: 12px; padding: 2px 6px; border: 1px solid #ccc; border-radius: 6px; background: #fff; color: #333; cursor: pointer; }
 
 /* 手機直拿（body.vertical，app.js 判斷） */
-body.vertical .toast { left: 50%; max-width: calc(100% - 32px); bottom: calc(76px + env(safe-area-inset-bottom)); }
+body.vertical .toast { left: 50%; max-width: calc(100% - 32px); bottom: calc(var(--tabs-h) + 17px + env(safe-area-inset-bottom)); }   /* 分頁列上面 */
 body.vertical .clock { display: none; }   /* 直版放不下；窗外的天色看得出時間 */
 body.vertical .hint { font-size: 11px; }
-body.vertical .edit-bar span { display: none; }   /* 手機版：佈置列不放說明字（以前照視窗寬度 640 判斷；2026-10-20 改成照手機版／網頁版） */
+body.vertical .edit-bar b { display: none; }   /* 手機：黃色那條就代表佈置模式，留位置給說明、訊息（2026-11：以前藏的是說明字，佈置時的提示整個看不到） */
+.edit-bar #editTip { flex: 1; min-width: 0; font-size: 12px; line-height: 1.35; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 
 /* 提示訊息出現在操作的地方（2026-10-14 健檢） */
 .sheet-msg { margin-top: 8px; padding: 6px 6px 6px 12px; border-radius: 12px; background: #fff1c9; color: #3b2f28; font-size: 14px; font-weight: 700;
   display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .sheet-msg[hidden] { display: none; }
-.hint.msg { color: #3b2f28; background: #fff1c9; font-weight: 700; font-size: 13px; border-radius: 12px; padding: 4px 4px 4px 10px;
+.sheet-status { display: grid; min-height: 48px; margin-top: 6px; align-items: center; }   /* 順毛提示、提示訊息共用同一格：訊息出現時按鈕不往下掉 */
+.sheet-status > * { grid-area: 1 / 1; margin: 0; }
+.sheet-status .sheet-msg { z-index: 1; min-height: 44px; font-size: 13px; flex-wrap: nowrap; }
+.sheet-msg .btn { flex: none; min-height: 44px; }
+/* 手機的面板固定高度（像 iOS 的底部面板）：按鈕多一個、少一個，或打開檔案、說話，都在面板裡捲；房間只在開關時變一次 */
+body.vertical .sheet { height: min(300px, 48%); overflow-y: auto; overscroll-behavior: contain; }
+body.vertical .sheet-head { position: sticky; top: -8px; z-index: 2; background: var(--panel); padding-top: 8px; margin-top: -8px; }   /* 面板裡捲的時候名字那列留著 */
+body.vertical .sheet .profile-card { max-height: none; overflow: visible; }   /* 面板自己會捲，不要兩層捲動 */
+.hint.msg { color: #3b2f28; background: #fff1c9; font-weight: 700; font-size: 12px; border-radius: 12px; height: 44px; max-height: none; padding: 0 0 0 10px;
   display: flex; align-items: center; justify-content: space-between; gap: 6px; }
-.hint .btn { min-height: 36px; padding: 4px 10px; font-size: 13px; }
+.hint.msg > span, .sheet-msg > span { flex: 1; min-width: 0; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.hint .btn { flex: none; min-height: 44px; padding: 0 12px; border-radius: 12px; font-size: 13px; }
 
 /* 信箱（mail.js）：電腦橫版兩欄並排；手機直拿上面兩個分頁切換 */
 .tabs button { position: relative; }
@@ -545,8 +568,7 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .nt-msg.ok { color: var(--gain); font-weight: 700; }
 .nt-acts { display: flex; flex-wrap: wrap; gap: 8px; }
 
-/* 矮的畫面（手機橫拿）：口袋圓按鈕排成一排（直的 4 顆＝272 點，比畫面高）、毛孩面板最多佔家的一半多一點、裡面捲（房間不被擠到 0：毛孩要看得到） */
+/* 矮的畫面（手機橫拿）：口袋圓按鈕排成一排（直的 4 顆＝272 點，比畫面高）。毛孩面板見上面 body.vertical .sheet（固定 48%、裡面捲） */
 @media (max-height: 500px) {
   .pocket-fabs { flex-direction: row; align-items: flex-end; bottom: 10px; }
-  body.vertical .sheet { max-height: 55%; overflow-y: auto; overscroll-behavior: contain; }
 }
