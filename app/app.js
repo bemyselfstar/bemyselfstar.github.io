@@ -2,7 +2,7 @@
 // 斜上往下看的房間（W×H 像素，比螢幕大），整數倍放大（不糊）；拖曳移動鏡頭、兩指縮放。
 // 電腦網頁＝橫版（分頁列在左邊）、手機網頁＝直版（分頁列在下面）（2026-10-14 使用者）。
 // 家具先用程式畫的簡單版（之後換成正式美術）；毛孩用遊戲的側面影格，前後只靠遮擋表現、不縮放。
-(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 100;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 101;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   // 資料：範例（假資料）或伺服器（server.js；登入後 dc_pets_mine 每 10 秒讀一次，見下面「伺服器同步」）。
@@ -546,6 +546,8 @@
     plasticbag: { hit: [25, 30], fp: null, spot: 'plbag', draw(x, y, flip, f) { put('plasticbag', x + shake(f), y); } },
     mug: { hit: [0, 0], fp: null, onTable: true, draw(x, y) { put('mug', x, y - TABLE_TOP); } },
     pen: { hit: [0, 0], fp: null, onTable: true, draw(x, y) { put('pen', x, y - TABLE_TOP); } },
+    // 友情盆栽（P72 第 2 期，2026-11-08）：電腦上有才擺（dc_fplant_mine 的 has）；圖照長到哪換（fpLook），點一下澆水（fpTap）
+    fplant: { hit: [22, 40], fp: [14, 6], draw(x, y, flip, f) { if (!fpData) return; put(fpLook(fpData).img, x, y); if (f && f.splash > now) fpSplash(x, y, f); } },
   };
   // 一打開就先下載全部家具圖（以前畫到才下載：第一眼只看到空地板，2026-10-27）
   ['shelf', 'cattree', 'sofa', 'armchair', 'table', 'lamp', 'plant', 'catbed', 'food', 'water', 'box', 'doghouse', 'ball'].forEach(furnImg);
@@ -578,6 +580,87 @@
     slipper: [[498, 446], [474, 456]], paperbag: [[166, 470], [130, 466]], plasticbag: [[72, 470], [92, 474]],
     mug: [[-18, 0], [-6, 0]], pen: [[14, 0], [-30, 0]],
   };
+  // ---------- 友情盆栽（P72 第 2 期，server/042，2026-11-08；規格 docs/跨線需求.md 11-08）----------
+  // 電腦用友情點數買的、好友的毛孩來玩時澆水；電腦每分鐘把樣子傳上去，手機一天也能自己澆一次（電腦同步時照同一天補上）。
+  // 圖＝電腦版的畫法產生的（mobile/tools/make_fplant.py → art/furniture/fplant_*.png）；規則 DC_RULES.fplant（src/shared_rules.py fplant_rules）。
+  // 好友的毛孩澆水、收種子、謝了留種子都在電腦上做：手機只看、自己澆。
+  const FPR = (window.DC_RULES && window.DC_RULES.fplant) || null;
+  const FP_AT = [424, 178];                 // 預設位置：靠牆、立燈和窗戶中間（佈置可以搬，位置跟著帳號存）
+  const FP_NAMES = ['種子', '發芽', '小苗', '花苞', '開花'];
+  const FP_WHY = { today: '今天澆過了，明天再來', bloomed: '花開了，不用再澆水', no_plant: '電腦上還沒有友情盆栽' };
+  let fpData = null, fpAt = 0, fpBusy = false, fpNone = false, fpAcct = null;   // fpData＝dc_fplant_mine 回的（has 是 true 才有）；fpNone＝伺服器沒有 042
+  const fpDays = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 864e5);
+  function fpLook(d) {                      // 長到哪、開什麼花、謝了沒 → 要畫哪張圖（電腦 FriendPlant.stage／wilted 同一套）
+    const st = d.state || {}, pts = +st.pts || 0, stages = FPR.stages;
+    const stage = stages.filter(n => pts + 1e-9 >= n).length, bloomed = stage >= stages.length;
+    const sp = FPR.species.find(x => x[0] === st.species) || FPR.species[0], rare = bloomed && !!st.rare;
+    const wilt = bloomed && !!st.bloom_day && fpDays(st.bloom_day, d.today) >= FPR.bloom_days;
+    const suf = (rare ? 'r' : '') + (wilt ? 'w' : '');
+    return { stage, bloomed, wilt, rare, mutated: !bloomed && !!st.mutated, name: sp[rare ? 2 : 1],
+             left: bloomed && st.bloom_day ? FPR.bloom_days - fpDays(st.bloom_day, d.today) : 0,
+             img: stage < 3 ? `fplant_${stage}` : stage === 3 ? `fplant_3_${sp[0]}` : `fplant_${sp[0]}${suf ? '_' + suf : ''}` };
+  }
+  function fpSplash(x, y, f) {              // 澆水：水滴從上面掉進盆子（0.9 秒）
+    const k = 1 - (f.splash - now) / 900;
+    for (const [dx, ph] of [[-4, 0], [0, .4], [4, .7]]) { const t = (k * 1.8 + ph) % 1; rect(x + dx, y - 36 + Math.round(t * 22), 1, 2, '#6fa8d6'); }
+  }
+  const fpFurn = () => ({ kind: 'fplant', x: FP_AT[0], y: FP_AT[1], k: FURN.fplant, dx: FP_AT[0], dy: FP_AT[1] });
+  function fpPlace() {                      // 有／沒有盆栽變了：只加、拿掉這一件（其他家具不動）
+    const i = furn.findIndex(f => f.kind === 'fplant');
+    if (!fpData && i >= 0) furn.splice(i, 1);
+    if (fpData && i < 0) {
+      const f = fpFurn(), saved = (homeAcct && homeMem ? homeMem.layout : localLayout()) || [];
+      const s = saved.find(o => o && o.k === 'fplant');
+      if (s) { f.x = clamp(+s.x || 0, 16, W - 16); f.y = clamp(+s.y || 0, WALL_Y + 6, H - 2); }
+      furn.push(f);
+    }
+  }
+  async function fplantSync(force) {        // 讀盆栽（電腦一分鐘傳一次：手機也一分鐘讀一次就好）
+    const id = souvAcct();
+    if (fpAcct !== id) { fpAcct = id; fpAt = 0; if (fpData) { fpData = null; fpPlace(); } }
+    if (!LIVE || SV.mode !== 'live' || !id || !SV.fplantMine || !FPR || fpNone || fpBusy || editMode) return;
+    if (!force && Date.now() - fpAt < 60e3) return;
+    fpAt = Date.now(); fpBusy = true;
+    try {
+      const r = await SV.fplantMine();
+      if (souvAcct() !== id || !r || typeof r !== 'object') return;
+      const had = !!fpData;
+      fpData = r.has && r.state && typeof r.state === 'object' ? r : null;
+      if (had !== !!fpData) fpPlace();
+    } catch (e) {
+      if (e.status === 404) { fpNone = true; if (fpData) { fpData = null; fpPlace(); } }   // 伺服器還沒有 042（正式版跟下一版一起上）：不畫
+      /* 沒網路：照上次的畫著，下次再讀 */
+    } finally { fpBusy = false; }
+  }
+  function fpStatus(d) {                    // 不能澆的時候點盆栽：說現在怎樣
+    // 提示列兩行、一行約 11 字（2026-11-08 預設大小截圖）：好友名字最多兩個、放第二句
+    const L = fpLook(d), h = (d.state.helpers || []).filter(x => typeof x === 'string').slice(-2).reverse();
+    const who = h.length ? `・來幫忙：${h.join('、')}` : '';
+    if (L.wilt) return `${L.name}謝了，打開電腦會留下種子`;
+    if (L.bloomed) return `${L.name}開花了${L.left > 0 ? `（還 ${L.left} 天）` : ''}${who}`;
+    if (L.mutated) return `${FP_NAMES[L.stage]}：這顆種子好像跟上次不一樣…`;
+    return `${FP_NAMES[L.stage]}・今天澆過了${who}`;
+  }
+  async function fpTap(f) {                 // 點盆栽：能澆就澆（跟電腦點一下一樣），不能澆就說為什麼
+    const d = fpData;
+    if (!d || fpBusy) return;
+    if (!d.can_water || !SV.fplantWater) return toast(fpStatus(d));
+    const before = fpLook(d);
+    fpBusy = true;
+    let r = null;
+    try { r = await SV.fplantWater(); } catch (e) { return toast(e.message || '連不上伺服器'); } finally { fpBusy = false; }
+    if (!r || typeof r !== 'object') return toast('現在澆不了，等一下再試');
+    if (r.ok === false && r.reason === 'no_plant') { fpData = null; fpPlace(); return toast(FP_WHY.no_plant); }
+    if (fpData && r.state && typeof r.state === 'object') fpData = { ...fpData, state: r.state, can_water: false };
+    if (r.ok === false) return toast(FP_WHY[r.reason] || '現在澆不了，等一下再試');
+    f.splash = now + 900;
+    if (navigator.vibrate) navigator.vibrate(10);
+    const L = fpLook(fpData);
+    toast(r.bloomed ? `開花了！是${L.rare ? '稀有的' : ''}${L.name}${L.rare ? ' ✨' : ' 🌸'}`
+      : L.stage > before.stage ? `澆好水了 💧 長成${FP_NAMES[L.stage]}了！`
+      : L.mutated ? '澆好水了 💧 這顆種子好像跟上次不一樣…' : `澆好水了 💧 ${FP_NAMES[L.stage]}・明天再來`);
+  }
+  const fpHit = (wx, wy) => furn.find(f => f.kind === 'fplant' && Math.abs(wx - f.x) < f.k.hit[0] / 2 && wy <= f.y + 2 && wy >= f.y - f.k.hit[1]);
   const FURN_MAX = kind => { const s = window.DC_SHOP && DC_SHOP.furn.find(x => x.key === kind); return s ? s.max : OWNABLE.has(kind) ? 1 : 0; };
   const FIXABLE = new Set(Object.keys((window.DC_SHOP && DC_SHOP.fix) || {}));   // 狗咬壞、手機能修的（sofa catbed rug box slipper sock）
   const furn = [];                          // 每件：{kind, x, y, k: FURN 的畫法, dx/dy: 預設位置, extra: 伴手禮那筆（是伴手禮才有）, broken: 咬壞了}
@@ -597,6 +680,7 @@
       for (const f of list) if (n > 0 && f.kind === kind) { f.broken = true; n--; }
     }
     for (const e of ex) if (FURN[e.kind]) list.push({ kind: e.kind, x: e.x, y: e.y, k: FURN[e.kind], dx: e.x, dy: e.y, extra: e });
+    if (fpData) list.push(fpFurn());          // 友情盆栽（位置照 applyLayout）
     furn.splice(0, furn.length, ...list);
     placeOnTable(); careRecount();
   }
@@ -923,7 +1007,7 @@
   // 送上去的 layout 只有家具（伴手禮在 extras、帶自己的位置）；帳號現在沒有的家具，以前記的位置也留著（之後有了擺回原位）。
   const HOME_KEY = 'deskcat_home_v1';
   const KIND_RE = /^[a-z_]{1,24}$/;
-  const TEMPLATE_KINDS = new Set([...HOME.furniture.map(f => f.kind), ...Object.keys(CARE_AT)]);   // 擺法記這些（新家具也記）
+  const TEMPLATE_KINDS = new Set([...HOME.furniture.map(f => f.kind), ...Object.keys(CARE_AT), 'fplant']);   // 擺法記這些（新家具、友情盆栽也記）
   const homeAll = () => { try { const a = JSON.parse(localStorage.getItem(HOME_KEY) || '{}'); return a && typeof a === 'object' && !Array.isArray(a) ? a : {}; } catch (_) { return {}; } };
   const homeGet = id => (id && homeAll()[id]) || null;
   function homePut(id, v) { try { const a = homeAll(); a[id] = v; localStorage.setItem(HOME_KEY, JSON.stringify(a)); } catch (_) { /* 存不了：這次開著還是能用 */ } }
@@ -1080,7 +1164,7 @@
     if (!pts.has(e.pointerId)) {           // 沒按著：滑鼠游標的樣子
       if (e.pointerType !== 'mouse') return;
       hoverF = editMode ? furnAt(wx, wy) : null;
-      cv.style.cursor = editMode ? (hoverF ? 'move' : 'grab') : petAt(wx, wy) || boardAt(wx, wy) || shelfAt(wx, wy) ? 'pointer' : 'grab';
+      cv.style.cursor = editMode ? (hoverF ? 'move' : 'grab') : petAt(wx, wy) || boardAt(wx, wy) || shelfAt(wx, wy) || fpHit(wx, wy) ? 'pointer' : 'grab';
       return;
     }
     pts.set(e.pointerId, [e.clientX, e.clientY]);
@@ -1142,6 +1226,7 @@
       if (g.pet) { petPet(g.pet); if (!focusedPet() || focusedPet() !== g.pet) openSheet(g.pet.p); }
       else if (!editMode && boardAt(bx, by) && window.DCMail) { closeSheet(); DCMail.openBoard(); }
       else if (!editMode && brokenAt(bx, by)) { closeSheet(); askFix(brokenAt(bx, by)); }
+      else if (!editMode && fpHit(bx, by)) { closeSheet(); fpTap(fpHit(bx, by)); }
       else if (!editMode && shelfAt(bx, by)) { closeSheet(); toast(isPhone ? `紀念品 ${souvCount()}／7，口袋頁有圖鑑` : `紀念品 ${souvCount()}／7，手機帶出門撿`); }
       else { closeSheet(); if (editMode) picked = null; }
     } else if (g.mode === 'carry') drop();
@@ -2687,6 +2772,7 @@
       merge(await SV.petsMine()); netError = '';
       if (!souvReady || souvWaiting()) souvSync();   // 紀念品：剛登入／剛打開先對一次；有還沒送出去的就補送
       if (!homeReady || homeWaiting()) homeSync();   // 家具（P78）：同上；佈置還沒傳上去的補送
+      fplantSync();                                  // 友情盆栽（P72）：一分鐘讀一次
     } catch (e) {
       if (!netError && !booted) toast(e.message || '連不上伺服器');
       netError = e.message || '連不上伺服器'; renderAccount();
@@ -2695,7 +2781,7 @@
       schedulePull(fast() ? 3000 : 10000);
     }
   }
-  document.addEventListener('visibilitychange', () => { if (!document.hidden && SV.mode === 'live') { souvReady = false; homeReady = false; pull(); watchActions(); if (booted) earnDaily(); } });   // 回到畫面：紀念品、家具也再讀一次（別支手機可能加了、電腦可能買了）
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && SV.mode === 'live') { souvReady = false; homeReady = false; fpAt = 0; pull(); watchActions(); if (booted) earnDaily(); } });   // 回到畫面：紀念品、家具也再讀一次（別支手機可能加了、電腦可能買了）
 
   // 伺服器 0～100 → 畫面的 0～3（MOOD 表情、foodBar）
   const lvl = v => v == null ? 2 : R.food_bars.filter(t => v >= t).length;   // 飽足格 0～3（shared_rules food_bars：第 1 條以下＝餓了，跟電腦一樣）

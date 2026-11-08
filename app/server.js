@@ -13,7 +13,7 @@
 //     開新帳號＝信箱驗證碼 create_user: true（先用 false 試，沒有帳號才問要不要開）；暱稱＝profiles 表（001，自己的那一列可以改 nickname）；
 //     刪帳號 dc_account_delete（🎮 新的：現在的 delete_my_account 要電腦裝置，手機叫不了）；
 //     手機建立毛孩 dc_pet_create(p_cfg, p_sprite)（🎮 019）＋毛孩圖自己傳 Storage pet-sprites/<帳號>/<cid>-<指紋>.png／.json（權限 013 已經可以）
-(window.DC_BUILD = window.DC_BUILD || {})['server.js'] = 100;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['server.js'] = 101;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const SERVERS = {
@@ -365,6 +365,10 @@
     // 手機的家（server/020，P78；格式見 docs/跨線需求.md 2026-10-19 🎮 P78）。伺服器還沒有 020＝404（app.js 照舊只存瀏覽器）
     homeMine: () => rpc('dc_home_mine'),                     // {owned: {catbed: 1…}（只列有的）, owned_at, layout: [{k, x, y}] 或 null（沒存過）, extras: [{kind, x, y}], layout_at}
     homeLayoutSet: (layout, extras) => rpc('dc_home_layout_set', { p_layout: layout, p_extras: extras }),   // {ok, layout_at}／{ok: false, reason: 'invalid'}
+    // 友情盆栽（P72 第 2 期，server/042，2026-11-08；格式見 docs/跨線需求.md 11-08）。伺服器還沒有 042＝404（app.js 不畫盆栽）
+    // → {has, today, state: {pts, day, day_pts, me_today, species, rare, mutated, bloom_day, helpers: [好友取的名字], book, rounds}, pc_at, can_water, pending}
+    fplantMine: () => rpc('dc_fplant_mine'),
+    fplantWater: () => rpc('dc_fplant_water'),               // {ok, bloomed, rare, state}／{ok: false, reason: no_plant／today／bloomed, state?}
     // 手機家裡吃東西（P88 M4，2026-10-31；格式見 docs/跨線需求.md 10-31 🎮 P88 吃東西）。🎮 錢包那半還沒做：food＝false 時手機不顯示罐頭、點心
     // （假伺服器 ?mock=1 打開）。🎮 做好、正式和 dev 都有函式後改成 true
     food: true,   // v4.18（2026-11-01）：正式版 030～038 都跑了，跟電腦新版一起打開

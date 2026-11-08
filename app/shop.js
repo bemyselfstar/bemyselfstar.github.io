@@ -4,7 +4,7 @@
 // 名稱、價格、說明、稀有度、小圖都從 src/ 匯出（lines.js 的 DC_FOOD、DC_SHOP；export_lines.py），手機不另外寫數字。
 // 罐罐、買得到買不到、扭蛋抽到什麼以伺服器為準（server.js shopMine／shopBuy；🎮 共用錢包還沒做 → SV.shop＝false 不顯示入口）。
 // 版面：上面罐罐、分頁；中間商品格子（只有這裡捲）；下面固定一塊說明＋購買（點一下商品＝選，再按〔買〕才買＝不用另外跳確認）。
-(window.DC_BUILD = window.DC_BUILD || {})['shop.js'] = 100;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['shop.js'] = 101;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
