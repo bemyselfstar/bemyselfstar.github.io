@@ -16,8 +16,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="DeskCat">
-<link rel="stylesheet" href="app.css?v=102">
-<script>window.DC_BUILD = { 'index.html': 102 };</script>
+<link rel="stylesheet" href="app.css?v=104">
+<script>window.DC_BUILD = { 'index.html': 104 };</script>
 <!-- 每個檔的網址都帶 ?v=版本（mobile/tools/bump.py 一起改）：手機上舊的快取不會被拿來用（mobile/裝置規格.md 第 3 節） -->
 </head>
 <body>
@@ -275,21 +275,30 @@
   </section>
   <section id="adopt" class="login adopt" aria-label="建立毛孩" hidden>
     <div class="login-card adopt-card">
-      <div class="ad-head"><h2>領養你的毛孩</h2><button id="adClose" class="x" type="button" aria-label="關閉" hidden>✕</button></div>
-      <div id="adStage" class="ad-stage"><canvas id="adPreview" width="1" height="1"></canvas></div>
-      <div id="adSpecies" class="ad-row" role="group" aria-label="貓或狗"></div>
-      <div id="adBreed" class="ad-row ad-scroll" role="group" aria-label="品種"></div>
-      <div class="ad-row"><div id="adCoat" class="ad-scroll" role="group" aria-label="花色"></div><button id="adSeed" class="chip" type="button" hidden>換斑紋</button></div>
-      <div id="adWear" class="ad-wear" hidden></div>   <!-- 換衣服：一個部位一排（adopt.js renderWear） -->
-      <div class="ad-colors">
+      <div class="ap-head"><h2>領養你的毛孩</h2><button id="adClose" class="x" type="button" aria-label="關閉" hidden>✕</button>
+        <div id="adQuit" class="ap-pop" role="dialog" aria-label="放棄這次換的？" hidden><p>放棄這次換的？</p>
+          <div><button id="adQuitNo" class="chip" type="button">繼續換</button><button id="adQuitYes" class="chip warn" type="button">放棄</button></div></div></div>
+      <div class="ap-equip">   <!-- 換衣服：毛孩兩邊是裝備格（左：頭、臉、脖子；右：服裝、手上、還原；adopt.js renderWear） -->
+        <div id="adSlotsL" class="ap-slots" hidden></div>
+        <div id="adStage" class="ap-stage"><canvas id="adPreview" width="1" height="1"></canvas></div>
+        <div id="adSlotsR" class="ap-slots" hidden></div>
+      </div>
+      <div id="adSpecies" class="ap-row" role="group" aria-label="貓或狗"></div>
+      <div id="adBreed" class="ap-row ap-scroll" role="group" aria-label="品種"></div>
+      <div class="ap-row"><div id="adCoat" class="ap-scroll" role="group" aria-label="花色"></div><button id="adSeed" class="chip" type="button" hidden>換斑紋</button></div>
+      <div id="adWear" class="ap-wear" hidden>   <!-- 換衣服：選中的部位那一格的衣服（圖片格子；adopt.js renderWear） -->
+        <p id="adWearNow" class="ap-wnow"></p>
+        <div id="adWearGrid" class="ap-grid" role="group"></div>
+      </div>
+      <div class="ap-colors">
         <label>毛色<input id="adC_fur" type="color"></label>
         <label id="adStripeColor">條紋<input id="adC_stripe" type="color"></label>
         <label>肚子<input id="adC_belly" type="color"></label>
         <label>眼睛<input id="adC_eye" type="color"></label>
-        <label id="adStripeRow" class="ad-chk"><input id="adStripes" type="checkbox">條紋</label>
+        <label id="adStripeRow" class="ap-chk"><input id="adStripes" type="checkbox">條紋</label>
         <button id="adReset" class="chip" type="button" hidden>原本的顏色</button>
       </div>
-      <div class="ad-names">
+      <div class="ap-names">
         <label id="adNickRow">你的暱稱<input id="adNick" maxlength="20" autocomplete="nickname" placeholder="好友看得到"></label>
         <label>牠的名字<input id="adName" maxlength="12" placeholder="例如：小橘"></label>
       </div>
@@ -298,23 +307,23 @@
     </div>
   </section>
 </div>
-<script src="lines.js?v=102"></script>
-<script src="fake/sprites.js?v=102"></script>
-<script src="fake/fake_data.js?v=102"></script>
-<script src="fake/fake_mail.js?v=102"></script>
-<script src="server.js?v=102"></script>
+<script src="lines.js?v=104"></script>
+<script src="fake/sprites.js?v=104"></script>
+<script src="fake/fake_data.js?v=104"></script>
+<script src="fake/fake_mail.js?v=104"></script>
+<script src="server.js?v=104"></script>
 <script>   // 開發用：假的伺服器（只在本機、家裡 Wi-Fi 加 ?mock=1；mobile/tools/mock_server.js；2026-10-20 起 iPhone 也能用來試 P74）
   if (/[?&]mock=1/.test(location.search) && /^(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+)$/.test(location.hostname)) document.write('<script src="tools/mock_server.js"><\/script>');
 </script>
-<script src="app.js?v=102"></script>
-<script src="outdoor.js?v=102"></script>   <!-- 口袋的戶外場景、散步（2026-10-20） -->
-<script src="pocket.js?v=102"></script>
-<script src="trip.js?v=102"></script>
-<script src="scenes.js?v=102"></script>
-<script src="mail.js?v=102"></script>
-<script src="parts.js?v=102"></script>   <!-- 零件包換色組圖（P75） -->
-<script src="adopt.js?v=102"></script>
-<script src="shop.js?v=102"></script>   <!-- 手機商店（P88 M4b） -->   <!-- 在手機建立毛孩（P74 M2） -->
-<script src="notify.js?v=102"></script>   <!-- 通知（P74 M4） -->
+<script src="app.js?v=104"></script>
+<script src="outdoor.js?v=104"></script>   <!-- 口袋的戶外場景、散步（2026-10-20） -->
+<script src="pocket.js?v=104"></script>
+<script src="trip.js?v=104"></script>
+<script src="scenes.js?v=104"></script>
+<script src="mail.js?v=104"></script>
+<script src="parts.js?v=104"></script>   <!-- 零件包換色組圖（P75） -->
+<script src="adopt.js?v=104"></script>
+<script src="shop.js?v=104"></script>   <!-- 手機商店（P88 M4b） -->   <!-- 在手機建立毛孩（P74 M2） -->
+<script src="notify.js?v=104"></script>   <!-- 通知（P74 M4） -->
 </body>
 </html>

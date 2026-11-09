@@ -4,7 +4,7 @@
 // 名稱、價格、說明、稀有度、小圖都從 src/ 匯出（lines.js 的 DC_FOOD、DC_SHOP；export_lines.py），手機不另外寫數字。
 // 罐罐、買得到買不到、扭蛋抽到什麼以伺服器為準（server.js shopMine／shopBuy；🎮 共用錢包還沒做 → SV.shop＝false 不顯示入口）。
 // 版面：上面罐罐、分頁；中間商品格子（只有這裡捲）；下面固定一塊說明＋購買（點一下商品＝選，再按〔買〕才買＝不用另外跳確認）。
-(window.DC_BUILD = window.DC_BUILD || {})['shop.js'] = 102;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['shop.js'] = 104;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
@@ -187,7 +187,7 @@
   }
   function close() { $('shop').hidden = true; document.body.classList.remove('login-open'); }
   $('shopClose').onclick = close;
-  window.DCShop = { open, close, get state() { return st; } };
+  window.DCShop = { open, close, iconOf: iid => iconOfItem(iid), get state() { return st; } };   // iconOf：換衣服的格子用商店小圖（沒有＝''）
   { const q = new URLSearchParams(location.search).get('shop');   // 網址 ?shop=food／furn／wear：一打開就是商店那一頁（預覽工作室📱 手機畫面用）
     if (TABS.some(t => t[0] === q)) setTimeout(() => open(q), 800); }
 })();

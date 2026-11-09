@@ -8,10 +8,12 @@
 // 新帳號第一次進來（還沒有毛孩）時自動打開；「全家」頁沒有毛孩時也有〔建立毛孩〕。
 // 換顏色（P74 M2 剩下的，2026-10-22）：毛孩面板〔換顏色〕→ 同一個畫面、從牠現在的 cfg 開始；不能換貓狗、品種（伺服器規定），
 //   著色本照牠現在的年齡 → 毛孩圖、小圖傳上去 → dc_pet_look_set（🎮 019）。電腦打開會照「最後改的為準」換成手機選的。
-// 換衣服（P74 M5，2026-10-26）：毛孩面板〔換衣服〕→ 同一個畫面換成「衣櫃」：一個部位一排，只列衣櫃有的（🎮 dc_wardrobe_mine）、
+// 換衣服（P74 M5，2026-10-26）：毛孩面板〔換衣服〕→ 同一個畫面換成「衣櫃」：只列衣櫃有的（🎮 dc_wardrobe_mine）、
 //   這隻能穿的（專屬看品種或花色，跟電腦 items.can_wear 一樣）、零件包有這個品種年齡的；狗拿南瓜提籃不戴頭臉脖子（DC_RULES.wear.clash）。
+//   2026-11-09 改版（使用者「介面不是很友善」→ 選 B）：毛孩兩邊 5 個裝備格＝現在戴的，點一格 → 下面那個部位的圖片格子；
+//   圖＝商店小圖，沒有的（品種專屬）和整套服裝從這隻的圖切出來（cutIcon）；〔還原〕回到打開時的樣子；改過按 ✕ 先問「放棄這次換的？」。
 // 長大換著色本（2026-10-23）：手機建立、電腦還沒接的毛孩長大了（ageKeyOf 變了）→ 背景照同一份外觀重畫、傳上去（checkGrow）。
-(window.DC_BUILD = window.DC_BUILD || {})['adopt.js'] = 102;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['adopt.js'] = 104;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const SV = window.DCServer, P = window.DCParts, $ = id => document.getElementById(id);
@@ -38,9 +40,10 @@
   };
   const breedsOf = sp => choices.species[sp].breeds;
   const coatsOf = (sp, breed) => (breedsOf(sp).find(b => b.breed === breed) || breedsOf(sp)[0]).coats;
+  function baseBook() { const c = st.coat; return `${c.book}${c.spotted ? `_s${st.seed}` : ''}_${ageNow()}`; }   // 沒穿服裝的著色本
   function bookName() {                          // 穿整套服裝＝換那套服裝的著色本（<範本>[_s斑]_<年齡>@<服裝>，零件包格式.md 第 8 節）
-    const c = st.coat, seed = c.spotted ? `_s${st.seed}` : '', cos = st.wear && st.wear.body;
-    return `${c.book}${seed}_${ageNow()}` + (cos ? `@${cos}` : '');
+    const cos = st.wear && st.wear.body;
+    return baseBook() + (cos ? `@${cos}` : '');
   }
   const ageNow = () => st.ageKey || ageBook(NEW_MONTHS);
   // 換顏色：照牠現在的年齡選著色本（cat_art.age_look）。手機建立的 cfg 有生日；電腦的只有年齡階段（幼年就用 3 個月大的，電腦打開會換成自己畫的圖）
@@ -98,8 +101,9 @@
   function renderForm() {
     const wearMode = st.mode === 'wear';
     $('adSpecies').hidden = $('adBreed').hidden = st.mode === 'look' || wearMode;   // 換顏色、換衣服不能換貓狗、品種
-    $('adCoat').parentElement.hidden = document.querySelector('#adopt .ad-colors').hidden = wearMode;
-    $('adWear').hidden = !wearMode;
+    $('adCoat').parentElement.hidden = document.querySelector('#adopt .ap-colors').hidden = wearMode;
+    $('adWear').hidden = $('adSlotsL').hidden = $('adSlotsR').hidden = !wearMode;
+    $('adopt').classList.toggle('wearing', wearMode);
     if (wearMode) renderWear();
     seg($('adSpecies'), Object.entries(choices.species).map(([k, s]) => [k, s.label]), st.sp, v => { if (v !== st.sp) setBreed(v, breedsOf(v)[0].breed); });
     seg($('adBreed'), breedsOf(st.sp).map(b => [b.breed, b.breed]), st.breed, v => setBreed(st.sp, v));
@@ -194,8 +198,8 @@
     if (!st || !st.pet || $('adopt').hidden) return;
     const m = st.sm, seq = SEQ.filter(a => m.anims[a]), b = st.box;
     const anim = seq[Math.floor(st.frame / 16) % seq.length], n = m.anims[anim][1];
-    const r = P.frameRect(m, anim, st.frame % n), cv = $('adPreview');
-    const z = Math.max(1, Math.min(5, Math.floor(130 / b.h), Math.floor(300 / b.w)));
+    const r = P.frameRect(m, anim, st.frame % n), cv = $('adPreview'), sg = $('adStage');
+    const z = Math.max(1, Math.min(5, Math.floor(((sg.clientHeight || 150) - 20) / b.h), Math.floor(((sg.clientWidth || 320) - 12) / b.w)));   // 換衣服的舞台比較高、比較窄
     cv.width = b.w; cv.height = b.h; cv.style.width = b.w * z + 'px'; cv.style.height = b.h * z + 'px';
     const c = cv.getContext('2d'); c.imageSmoothingEnabled = false; c.clearRect(0, 0, b.w, b.h);
     c.drawImage(st.sheet, r.x + b.x, r.y + b.y, b.w, b.h, 0, 0, b.w, b.h);
@@ -289,15 +293,24 @@
   const LOOK_FAIL = { no_look: '電腦版更新後才能在這裡換', gone: '找不到牠了', no_sprite: '圖沒傳好，再試一次', invalid: '這個顏色存不了',
                       not_owned: '衣櫃裡沒有這件' };
 
-  // ---------- 換衣服（衣櫃） ----------
+  // ---------- 換衣服（衣櫃；2026-11-09 改版 B：裝備格＋圖片格子） ----------
   let dressIdx = null, owned = [];
+  const SLOT_L = ['head', 'face', 'neck'], SLOT_R = ['body', 'hold'];   // 毛孩左邊、右邊（右邊第三格是〔還原〕）
+  const NONE = { head: '不戴', neck: '不戴', face: '不戴', body: '不穿', hold: '不拿' };
+  const slotLabel = s => (WEAR.slots.find(x => x[0] === s) || [s, s])[1];
   function canWear(iid) {                        // 跟電腦 items.can_wear 一樣：專屬看品種或花色（preset）
     const it = WEAR.items[iid];
     return !!it && (!it.breeds.length || it.breeds.includes(st.breed) || it.breeds.includes(buildLook().preset));
   }
   function hasArt(iid, slot) {                   // 零件包有沒有這件（這個品種、年齡；整套服裝看這個花色有沒有那本）
-    if (slot === 'body') { const c = st.coat, seed = c.spotted ? `_s${st.seed}` : ''; return dressIdx.costume_books.some(b => b.book === `${c.book}${seed}_${ageNow()}@${iid}`); }
+    if (slot === 'body') return dressIdx.costume_books.some(b => b.book === `${baseBook()}@${iid}`);
     return dressIdx.packs.some(p => p.iid === iid && p.group === st.breed && p.age === ageNow());
+  }
+  function listOf(slot) {                        // 這個部位能換的；打開時身上戴的那件一定列（衣櫃清單沒有它也一樣，例：活動送的）
+    const list = owned.filter(iid => WEAR.items[iid] && WEAR.items[iid].slot === slot && canWear(iid) && hasArt(iid, slot));
+    const w0 = (st.wear0 || {})[slot];
+    if (w0 && WEAR.items[w0] && !list.includes(w0)) list.unshift(w0);
+    return list;
   }
   function wearPick(slot, iid) {                 // shared_rules.wear_pick 照翻：換上 iid（null＝脫）→ 照 clash 自動脫掉衝突的
     const w = {}; for (const [k, v] of Object.entries(st.wear || {})) if (v) w[k] = v;
@@ -312,27 +325,110 @@
     }
     return [w, off];
   }
-  function renderWear() {
-    const box = $('adWear'); box.innerHTML = '';
-    for (const [slot, label] of WEAR.slots) {
-      const list = owned.filter(iid => WEAR.items[iid] && WEAR.items[iid].slot === slot && canWear(iid) && hasArt(iid, slot));
-      if (!list.length && !(st.wear || {})[slot]) continue;
-      const row = document.createElement('div'); row.className = 'ad-wrow';
-      const lab = document.createElement('span'); lab.className = 'ad-wlab'; lab.textContent = label;
-      const sc = document.createElement('div'); sc.className = 'ad-scroll'; sc.setAttribute('role', 'group'); sc.setAttribute('aria-label', label);
-      row.append(lab, sc); box.append(row);
-      seg(sc, [['', '不穿'], ...list.map(iid => [iid, WEAR.items[iid].name])], (st.wear || {})[slot] || '', v => {
-        const [w, off] = wearPick(slot, v || null);
-        st.wear = w;
-        st.note = off.length ? `${off.map(s => WEAR.slots.find(x => x[0] === s)[1]).join('、')}先脫掉了` : '';   // 畫好再說（refresh 會清掉提示）
-        refresh();
-      });
+  const wearKey = w => JSON.stringify(Object.keys(w || {}).filter(k => w[k]).sort().map(k => [k, w[k]]));
+  const dirty = () => !!st && st.mode === 'wear' && wearKey(st.wear) !== wearKey(st.wear0);
+
+  // 格子的小圖：商店有小圖就用；沒有（品種專屬）＝從這隻的飾品圖切出來（穿在透明的身上 → 只剩飾品 → 裁掉空白）
+  const icons = new Map();
+  const FK_TRY = ['sit:0', 'idle:0', 'walk:0'];
+  function cropURL(img, rx = 0, ry = 0, rw = img.w, rh = img.h) {   // img＝{w, h, data}；(rx, ry, rw, rh) 那一塊 → 裁掉透明 → dataURL（空的＝''）
+    let x0 = rw, y0 = rh, x1 = -1, y1 = -1;
+    for (let y = 0; y < rh; y++) for (let x = 0; x < rw; x++) if (img.data[((ry + y) * img.w + rx + x) * 4 + 3]) {
+      if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
     }
-    if (!box.childElementCount) { const n = document.createElement('p'); n.className = 'note'; n.textContent = '衣櫃還是空的：在電腦版買衣服，或用友情點數換專屬飾品'; box.append(n); }
+    if (x1 < 0) return '';
+    const w = x1 - x0 + 1, h = y1 - y0 + 1, cv = document.createElement('canvas'), out = new ImageData(w, h);
+    for (let y = 0; y < h; y++) out.data.set(img.data.subarray(((ry + y0 + y) * img.w + rx + x0) * 4, ((ry + y0 + y) * img.w + rx + x1 + 1) * 4), y * w * 4);
+    cv.width = w; cv.height = h; cv.getContext('2d').putImageData(out, 0, 0);
+    return cv.toDataURL();
+  }
+  async function cutIcon(iid, slot) {
+    const lk = look(), stp = stripes();
+    if (slot === 'body') {                       // 整套服裝：那本著色本坐著的那格
+      const cos = await getBook(`${baseBook()}@${iid}`), m = cos.meta;
+      const img = { w: cos.width, h: cos.height, data: P.compose(cos, lk, stp) };
+      for (const fk of FK_TRY) {
+        const [a, i] = fk.split(':');
+        if (!m.anims[a]) continue;
+        const r = P.frameRect(m, a, +i), u = cropURL(img, r.x, r.y, r.w, r.h);
+        if (u) return u;
+      }
+      return '';
+    }
+    const base = await getBook(baseBook()), pack = await getPack(iid, st.breed, ageNow()), fs = base.meta.frame_size || {};
+    for (const fk of FK_TRY) {
+      if (!fs[fk]) continue;
+      const [w, h] = fs[fk], empty = { w, h, data: new Uint8ClampedArray(w * h * 4) };
+      const u = cropURL(P.dress(base, { [fk]: empty }, lk, stp, { [slot]: pack }, null)[fk]);
+      if (u) return u;
+    }
+    return '';
+  }
+  function iconFor(iid, slot) {                  // → Promise<網址>（'' ＝沒有圖，只寫名字）
+    const shop = slot !== 'body' && window.DCShop && window.DCShop.iconOf ? window.DCShop.iconOf(iid) : '';   // 整套服裝的商店圖是貓穿的：一律用這隻穿上的樣子
+    if (shop) return Promise.resolve(shop);
+    const k = `${iid}|${baseBook()}|${JSON.stringify(look())}|${stripes()}`;
+    if (!icons.has(k)) icons.set(k, cutIcon(iid, slot).catch(e => { console.warn('切不出飾品小圖', iid, e); return ''; }));
+    return icons.get(k);
+  }
+  function iconEl(iid, slot, cls) {              // 先放空的框，圖好了再填（不擋畫面）
+    const box = document.createElement('span'); box.className = cls;
+    iconFor(iid, slot).then(u => { if (!u) return; const im = document.createElement('img'); im.src = u; im.alt = ''; box.replaceChildren(im); });
+    return box;
+  }
+
+  function slotBtn(s) {                          // 裝備格：戴著＝那件的圖；沒戴＝虛線；選中的＝框起來
+    const iid = (st.wear || {})[s], b = document.createElement('button');
+    b.type = 'button'; b.className = 'ap-slot' + (iid ? ' worn' : ' empty') + (s === st.slot ? ' sel' : '');
+    b.setAttribute('aria-pressed', s === st.slot ? 'true' : 'false');
+    b.setAttribute('aria-label', `${slotLabel(s)}：${iid ? itemName(iid) : NONE[s]}`);
+    if (iid) b.append(iconEl(iid, s, 'slot-ic'));
+    const tx = document.createElement('span'); tx.textContent = slotLabel(s); b.append(tx);
+    b.onclick = () => { if (st.slot !== s) { st.slot = s; renderWear(); } };
+    return b;
+  }
+  function tile(iid, label) {                    // 格子：圖＋名字；第一格「不戴」＝圓圈斜線
+    const cur = (st.wear || {})[st.slot] || '', b = document.createElement('button'), on = (iid || '') === cur;
+    b.type = 'button'; b.className = 'ap-tile' + (on ? ' on' : '');
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    if (iid) b.append(iconEl(iid, st.slot, 'ap-ic'));
+    else { const ic = document.createElement('span'); ic.className = 'ap-ic'; const n = document.createElement('span'); n.className = 'ap-none'; ic.append(n); b.append(ic); }
+    const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = label; b.append(nm);
+    b.onclick = () => {
+      if (on) return;
+      const [w, off] = wearPick(st.slot, iid || null);
+      st.wear = w;
+      st.note = off.length ? `${off.map(slotLabel).join('、')}先脫掉了` : '';   // 畫好再說（refresh 會清掉提示）
+      refresh();
+    };
+    return b;
+  }
+  function renderWear() {
+    const wear = st.wear || {}, all = [...SLOT_L, ...SLOT_R];
+    if (!st.slot) st.slot = all.find(s => wear[s]) || all.find(s => listOf(s).length) || 'head';
+    $('adSlotsL').replaceChildren(...SLOT_L.map(slotBtn));
+    const rs = document.createElement('button'); rs.type = 'button'; rs.className = 'ap-slot reset'; rs.textContent = '還原';
+    rs.setAttribute('aria-label', '換回打開時穿的'); rs.hidden = !dirty();
+    rs.onclick = () => { st.wear = { ...st.wear0 }; st.note = '換回原本的了'; refresh(); };
+    $('adSlotsR').replaceChildren(...SLOT_R.map(slotBtn), rs);
+    const s = st.slot, cur = wear[s], b = document.createElement('b');
+    b.textContent = cur ? itemName(cur) : NONE[s];
+    $('adWearNow').replaceChildren(`${slotLabel(s)}：`, b);
+    const grid = $('adWearGrid'), keepTop = grid.dataset.slot === s ? grid.scrollTop : 0, list = listOf(s);
+    grid.setAttribute('aria-label', slotLabel(s)); grid.dataset.slot = s;
+    grid.replaceChildren(tile('', NONE[s]), ...list.map(iid => tile(iid, itemName(iid))));
+    if (!list.length) {
+      const n = document.createElement('p'); n.className = 'note';
+      n.textContent = owned.length ? `衣櫃裡還沒有${slotLabel(s)}能用的：在電腦版商店買，或用友情點數換` : '衣櫃還是空的：在電腦版買衣服，或用友情點數換專屬飾品';
+      grid.append(n);
+    }
+    const on = grid.querySelector('.on');     // 換了部位：捲到牠現在戴的那件（不然戴的在下面看不到）
+    grid.scrollTop = keepTop || (on ? Math.max(0, on.offsetTop - (grid.clientHeight - on.offsetHeight) / 2) : 0);
   }
   async function saveLook() {
     const p = st.target, btn = $('adGo');
     if (!st.pet) return;
+    if (st.mode === 'wear' && !dirty()) { close(); window.DC.toast(`${p.name}還是原本那套`); return; }   // 沒換：不用重傳圖
     btn.disabled = true; say('幫牠換顏色…');
     try {
       const { file, poses } = await upload(p.id);
@@ -351,8 +447,8 @@
     while (growing) await new Promise(r => setTimeout(r, 200));   // 背景正在幫別隻換長大的圖（共用 st）：等它做完
     const box = $('adopt'), recolor = !!(target && target.cfg), dressing = recolor && mode === 'wear';
     box.hidden = false; document.body.classList.add('login-open');
-    box.querySelector('.ad-head h2').textContent = dressing ? `幫${target.name}換衣服` : recolor ? `幫${target.name}換顏色` : '領養你的毛孩';
-    box.querySelector('.ad-names').hidden = recolor;
+    box.querySelector('.ap-head h2').textContent = dressing ? `幫${target.name}換衣服` : recolor ? `幫${target.name}換顏色` : '領養你的毛孩';
+    box.querySelector('.ap-names').hidden = recolor;
     $('adGo').textContent = recolor ? '換好了' : '就是牠了';
     say('讀取中…');
     try {
@@ -367,7 +463,7 @@
           if (!dressIdx) dressIdx = await (await fetch(PARTS + 'dress/index.json', { cache: 'no-store' })).json();
           owned = ((await SV.wardrobeMine()) || {}).items || [];
         } catch (e) { say(e.status === 404 ? '伺服器還沒準備好換衣服' : '讀不到衣櫃，檢查網路再試', true); return; }
-        st.mode = 'wear';
+        st.mode = 'wear'; st.wear0 = { ...st.wear }; st.slot = null;   // wear0：〔還原〕、按 ✕ 要不要問看這個
       }
       refresh();
       return;
@@ -385,7 +481,7 @@
     $('adName').value = '';
   }
   function close() {
-    $('adopt').hidden = true; clearTimeout(timer); say('');
+    $('adopt').hidden = true; $('adQuit').hidden = true; clearTimeout(timer); say('');
     if ($('login').hidden) document.body.classList.remove('login-open');
   }
   function colorChanged() {
@@ -430,7 +526,12 @@
   }
 
   $('adGo').onclick = save;
-  $('adClose').onclick = close;
+  $('adClose').onclick = () => {                 // 換衣服換到一半：在標題列問一下（就在 ✕ 旁邊，不跳大框）
+    if (!dirty()) return close();
+    $('adQuit').hidden = false; $('adQuitNo').focus();
+  };
+  $('adQuitNo').onclick = () => { $('adQuit').hidden = true; $('adClose').focus(); };
+  $('adQuitYes').onclick = close;
   for (const [k] of COLORS) $('adC_' + k).addEventListener('input', colorChanged);
   $('adStripes').addEventListener('change', colorChanged);
   $('adReset').onclick = () => setCoat(st.coat);
