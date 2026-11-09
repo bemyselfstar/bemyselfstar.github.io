@@ -11,7 +11,7 @@
 // 換衣服（P74 M5，2026-10-26）：毛孩面板〔換衣服〕→ 同一個畫面換成「衣櫃」：一個部位一排，只列衣櫃有的（🎮 dc_wardrobe_mine）、
 //   這隻能穿的（專屬看品種或花色，跟電腦 items.can_wear 一樣）、零件包有這個品種年齡的；狗拿南瓜提籃不戴頭臉脖子（DC_RULES.wear.clash）。
 // 長大換著色本（2026-10-23）：手機建立、電腦還沒接的毛孩長大了（ageKeyOf 變了）→ 背景照同一份外觀重畫、傳上去（checkGrow）。
-(window.DC_BUILD = window.DC_BUILD || {})['adopt.js'] = 101;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['adopt.js'] = 102;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const SV = window.DCServer, P = window.DCParts, $ = id => document.getElementById(id);
@@ -121,6 +121,7 @@
   async function refresh() {
     renderForm();
     const want = bookName();
+    let again = false;
     $('adStage').classList.add('loading');
     try {
       const pet = await getBook(want);
@@ -132,16 +133,36 @@
       say(st.note || ''); st.note = '';
     } catch (e) {
       console.warn('零件包讀不到', want, e);
-      say('毛孩的圖讀不到，檢查網路再試', true);
+      const cos = st.mode === 'wear' && st.wear && st.wear.body;
+      if (cos && bookName() === want) {        // 換衣服：身上那套服裝的圖讀不到 → 先脫掉、照沒穿的畫，衣櫃照樣打開
+        const keep = { ...st.wear }; delete keep.body; st.wear = keep;
+        st.note = `${itemName(cos)}的圖讀不到，先脫掉了`; again = true;
+      } else say('毛孩的圖讀不到，檢查網路再試', true);
     } finally { $('adStage').classList.remove('loading'); }
+    if (again) refresh();
   }
   const SEQ = ['walk', 'sit_wag', 'idle'];
   // 照現在的顏色組整張圖表 → st.sheet（canvas）、st.rgba、st.sm（這張圖表的 meta：穿飾品時格子變大）、st.sw（寬）
   // 穿了脖子／頭／臉／手上的飾品：切成每一格 → P.dress 疊上去 → 重排（格子＝最大那格，底部置中；上傳的 meta w、h 用這個）
-  async function paint() {
+  // 換衣服畫面（lenient）：身上哪件飾品的圖讀不到 → 先脫掉、提示列說一聲，衣櫃照樣打開（2026-11-09：官網飾品圖 404，整個畫面打不開）。
+  // 換顏色、長大換圖不脫（會把衣服從外觀拿掉）→ 照舊丟錯。
+  const itemName = iid => (WEAR.items[iid] || {}).name || iid;
+  async function paint(lenient) {
     const pet = st.pet, lk = look(), stp = stripes(), wear = st.wear || {};
     let rgba = P.compose(pet, lk, stp), meta = pet.meta, w = pet.width, h = pet.height;
-    const slots = P.DRESS_ORDER.filter(s => wear[s]);
+    let slots = P.DRESS_ORDER.filter(s => wear[s]);
+    if (slots.length) {
+      const age = ageNow(), got = {}, lost = [];
+      for (const s of slots) {
+        try { got[s] = await getPack(wear[s], st.breed, age); }
+        catch (e) { if (!lenient) throw e; console.warn('飾品的圖讀不到', wear[s], st.breed, age, e); lost.push(s); }
+      }
+      if (lost.length) {
+        const keep = { ...wear }; for (const s of lost) delete keep[s];
+        st.wear = keep; slots = slots.filter(s => !lost.includes(s));
+        st.note = `${lost.map(s => itemName(wear[s])).join('、')}的圖讀不到，先脫掉了`;
+      }
+    }
     if (slots.length) {
       const age = ageNow(), got = {};
       for (const s of slots) got[s] = await getPack(wear[s], st.breed, age);
@@ -157,7 +178,7 @@
     return rgba;
   }
   async function draw() {                        // 組整張圖表 → 預覽輪流播「走路」「坐著搖尾巴」
-    const rgba = await paint(), m = st.sm, W = st.sw;
+    const rgba = await paint(st.mode === 'wear'), m = st.sm, W = st.sw;
     let x0 = m.w, y0 = m.h, x1 = -1, y1 = -1;     // 預覽只放毛孩那一塊（幼犬的格子很大、毛孩很小）：這幾個動作所有格子的範圍
     for (const a of SEQ.filter(k => m.anims[k])) for (let i = 0; i < m.anims[a][1]; i++) {
       const r = P.frameRect(m, a, i);
