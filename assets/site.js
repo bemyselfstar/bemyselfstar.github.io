@@ -4,7 +4,7 @@
   'use strict';
   const SP = window.DESKCAT_SPRITES;
   const SITE = {
-    version: 'v4.18.0',
+    version: 'v4.19.0',
     download: 'https://github.com/bemyselfstar/DeskCat-release/releases/latest/download/DeskCat.exe',   // 直接下載（檔名每版都一樣）
     releases: 'https://github.com/bemyselfstar/DeskCat-release/releases',   // 所有版本
     mail: 'bemyselfstar.studio@gmail.com',
@@ -48,7 +48,7 @@
     foot.className = 'site-foot';
     foot.innerHTML = `<div class="wrap">
       <div>DeskCat 桌面貓咪・Windows 免安裝・手機網頁・網站內容依 ${SITE.version} 玩家版說明整理<br>演出畫面以遊戲實際影格重現，非錄影；聯絡：${SITE.mail}</div>
-      <nav class="foot-links" aria-label="頁尾連結"><a href="faq.html#privacy">隱私說明</a><a href="faq.html#faq">常見問題</a><a href="phone.html">手機版</a><a data-download href="${SITE.download}">下載</a></nav></div>`;
+      <nav class="foot-links" aria-label="頁尾連結"><a href="privacy.html">隱私權政策</a><a href="support.html">客服</a><a href="faq.html#faq">常見問題</a><a href="phone.html">手機版</a><a data-download href="${SITE.download}">下載</a></nav></div>`;
     document.body.append(foot);
     document.querySelectorAll('[data-download]').forEach(a => { a.href = SITE.download; a.rel = 'noopener'; });
     document.querySelectorAll('[data-releases]').forEach(a => { a.href = SITE.releases; a.target = '_blank'; a.rel = 'noopener'; });

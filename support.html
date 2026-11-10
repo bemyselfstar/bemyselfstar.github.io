@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>客服與支援｜DeskCat</title>
+<meta name="description" content="DeskCat 客服與支援：常見問題、回報問題的方法、聯絡信箱、刪除帳號。">
+<meta property="og:title" content="客服與支援｜DeskCat">
+<meta property="og:description" content="DeskCat 客服與支援：常見問題、回報問題的方法、聯絡信箱、刪除帳號。">
+<meta property="og:image" content="assets/og.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#e0803a">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;600;700;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<a class="skip" href="#main">跳到主要內容</a>
+<main id="main" class="wrap">
+  <div class="page-title">
+    <h1>客服與支援</h1>
+    <p class="lead">遇到問題、有建議，或想刪除帳號，都可以在這裡找到方法。</p>
+  </div>
+
+  <section id="first">
+    <h2>先看看常見問題</h2>
+    <p>擋到畫面、換電腦、自動更新、手機版、收不到通知…常被問到的都在<a href="faq.html">常見問題</a>。</p>
+  </section>
+
+  <section id="report">
+    <h2>回報問題</h2>
+    <ol>
+      <li><b>電腦版</b>：右鍵毛孩「⚙ 帳號＆設定…」→「🩺 回報」分頁 →「複製診斷資訊」，貼到信裡。診斷資訊只有程式狀態和視窗位置，沒有你打的字。</li>
+      <li><b>手機版</b>：在出問題的畫面截圖，寫下你按了什麼、用的是 iPhone 還是 Android。</li>
+      <li>寄到 <span data-mail></span>。</li>
+    </ol>
+  </section>
+
+  <section id="account">
+    <h2>帳號</h2>
+    <ul>
+      <li><b>登入</b>：不用密碼，輸入信箱收驗證碼就能登入；也可以用 Google 登入。</li>
+      <li><b>刪除帳號</b>：電腦版帳號頁、手機版設定裡的「刪除帳號」，會一起刪掉伺服器上的資料。存了哪些資料看<a href="privacy.html">隱私權政策</a>。</li>
+    </ul>
+  </section>
+</main>
+<script src="assets/sprites.js"></script>
+<script src="assets/site.js"></script>
+<script>document.querySelectorAll('[data-mail]').forEach(n => { n.textContent = window.DESKCAT_SITE.mail; });</script>
+</body>
+</html>
