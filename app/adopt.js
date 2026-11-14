@@ -13,7 +13,7 @@
 //   2026-11-09 改版（使用者「介面不是很友善」→ 選 B）：毛孩兩邊 5 個裝備格＝現在戴的，點一格 → 下面那個部位的圖片格子；
 //   圖＝商店小圖，沒有的（品種專屬）和整套服裝從這隻的圖切出來（cutIcon）；〔還原〕回到打開時的樣子；改過按 ✕ 先問「放棄這次換的？」。
 // 長大換著色本（2026-10-23）：手機建立、電腦還沒接的毛孩長大了（ageKeyOf 變了）→ 背景照同一份外觀重畫、傳上去（checkGrow）。
-(window.DC_BUILD = window.DC_BUILD || {})['adopt.js'] = 104;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['adopt.js'] = 107;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   const SV = window.DCServer, P = window.DCParts, $ = id => document.getElementById(id);

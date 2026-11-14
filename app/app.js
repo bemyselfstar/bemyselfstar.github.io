@@ -2,7 +2,7 @@
 // 斜上往下看的房間（W×H 像素，比螢幕大），整數倍放大（不糊）；拖曳移動鏡頭、兩指縮放。
 // 電腦網頁＝橫版（分頁列在左邊）、手機網頁＝直版（分頁列在下面）（2026-10-14 使用者）。
 // 家具先用程式畫的簡單版（之後換成正式美術）；毛孩用遊戲的側面影格，前後只靠遮擋表現、不縮放。
-(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 104;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 107;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   // 資料：範例（假資料）或伺服器（server.js；登入後 dc_pets_mine 每 10 秒讀一次，見下面「伺服器同步」）。
@@ -194,6 +194,9 @@
     morning: ['#bfe3f2', '#e6f1ea', '#f8e3bd'], day: ['#79bde8', '#93cbee', '#b4dbf2'],
     evening: ['#5b4b8a', '#d9776a', '#f4b267'], night: ['#151a3a', '#1d2350', '#27306a'],
   };
+  const SNOW_SKY = {                        // 聖誕節下雪：白天是陰天（灰藍），不畫太陽、雲；晚上照舊星星月亮
+    morning: ['#a9b8c8', '#b8c6d3', '#c8d3de'], day: ['#9fb2c5', '#afc0d0', '#bfcdda'], evening: ['#7d7896', '#9a8ea6', '#b3a5b5'],
+  };
   function drawWall(tod, t) {
     const wall = { morning: '#efdcc4', day: '#f2e1ca', evening: '#e6c9b0', night: '#cdb8a6' }[tod];
     rect(0, 0, W, WALL_Y, wall);
@@ -202,23 +205,31 @@
     rect(0, WALL_Y - 10, W, 6, '#dcbf9c'); rect(0, WALL_Y - 4, W, 4, '#8f5f40');
     drawWainscot(tod);
     // 窗戶
-    const wx = 196, wy = WALL_Y - 112, ww = 70, wh = 60, sky = SKY[tod];
+    const wx = 196, wy = WALL_Y - 112, ww = 70, wh = 60, sky = (xmas && SNOW_SKY[tod]) || SKY[tod];
     rect(wx - 3, wy - 3, ww + 6, wh + 6, '#7a4f33');
     sky.forEach((c, i) => rect(wx, wy + i * wh / 3, ww, wh / 3, c));
     if (tod === 'night') {
       for (let i = 0; i < 9; i++) if ((Math.floor(t / 600) + i) % 4) rect(wx + (i * 17) % (ww - 3) + 1, wy + (i * 11) % (wh - 4) + 1, 1, 1, '#fff6c8');
       rect(wx + ww - 12, wy + 4, 6, 6, '#f6f0c4'); rect(wx + ww - 10, wy + 3, 5, 5, sky[0]);
-    } else if (tod === 'evening') rect(wx + 8, wy + wh - 9, 9, 7, '#ffd27a');
+    } else if (xmas) { /* 陰天：沒有太陽、雲 */ }
+    else if (tod === 'evening') rect(wx + 8, wy + wh - 9, 9, 7, '#ffd27a');
     else {
       ctx.save(); ctx.beginPath(); ctx.rect(wx, wy, ww, wh); ctx.clip();
       const cx = wx + ((t / 280) % (ww + 24)) - 12;
       rect(cx, wy + 7, 12, 3, '#fff'); rect(cx + 3, wy + 5, 6, 2, '#fff'); ctx.restore();
+    }
+    if (xmas) {                               // 聖誕節：窗外下雪、下面積一層雪
+      ctx.save(); ctx.beginPath(); ctx.rect(wx, wy, ww, wh); ctx.clip();
+      snowFall(wx, wy, ww, wh, t, 26);
+      for (let x = 0; x < ww; x++) rect(wx + x, wy + wh - 3 - Math.round(1 + Math.sin(x / 6) + Math.sin(x / 2.3) * .5), 1, 5, x % 9 ? '#f4f8ff' : '#dfe8f5');
+      ctx.restore();
     }
     rect(wx + ww / 2 - 1, wy, 2, wh, '#7a4f33'); rect(wx, wy + wh / 2 - 1, ww, 2, '#7a4f33');
     rect(wx - 6, wy + wh + 3, ww + 12, 3, '#a8734d');
     rect(wx - 10, wy - 5, 7, wh + 9, '#e8a0a0'); rect(wx + ww + 3, wy - 5, 7, wh + 9, '#e8a0a0');
     drawBoard();
     drawWallDeco(tod);
+    if (xmas) drawXmasBanner();
     // 掛畫（以後：照片變掛畫）
     const px = 394, py = WALL_Y - 100;
     rect(px, py, 30, 22, '#7a4f33'); rect(px + 2, py + 2, 26, 18, '#f4f1e8');
@@ -537,7 +548,7 @@
     fountain: pic('fountain', [17, 14], null, { spot: 'drink' }),
     feeder: pic('feeder', [18, 26], [18, 6], { spot: 'eat' }),
     tv: { hit: [43, 36], fp: [43, 10], spot: 'tv', draw(x, y, flip, f) { put('tv', x, y); if (f && f.on > now) drawTvShow(x, y); } },
-    window: { hit: [49, 48 + WIN_UP], fp: null, spot: 'window', wall: true, draw(x, y) { put('window', x, y - WIN_UP); } },
+    window: { hit: [49, 48 + WIN_UP], fp: null, spot: 'window', wall: true, draw(x, y) { put('window', x, y - WIN_UP); if (xmas) snowOnGlass('window', x, y - WIN_UP); } },
     purifier: pic('purifier', [18, 39], [18, 8]),
     tissue: pic('tissue', [16, 11], null),
     sock: pic('sock', [16, 12], null, { spot: 'carry' }),
@@ -548,6 +559,8 @@
     pen: { hit: [0, 0], fp: null, onTable: true, draw(x, y) { put('pen', x, y - TABLE_TOP); } },
     // 友情盆栽（P72 第 2 期，2026-11-08）：電腦上有才擺（dc_fplant_mine 的 has）；圖照長到哪換（fpLook），點一下澆水（fpTap）
     fplant: { hit: [22, 40], fp: [14, 6], draw(x, y, flip, f) { if (!fpData) return; put(fpLook(fpData).img, x, y); if (f && f.splash > now) fpSplash(x, y, f); } },
+    // 聖誕樹（P99，2026-11-12）：活動期間才擺（下面「聖誕節」那節）；燈泡會一閃一閃
+    xmastree: { hit: [59, 100], fp: [50, 12], draw(x, y) { put('xmastree', x, y); xmasTwinkle(x, y); } },
   };
   // 一打開就先下載全部家具圖（以前畫到才下載：第一眼只看到空地板，2026-10-27）
   ['shelf', 'cattree', 'sofa', 'armchair', 'table', 'lamp', 'plant', 'catbed', 'food', 'water', 'box', 'doghouse', 'ball'].forEach(furnImg);
@@ -661,6 +674,96 @@
       : L.mutated ? '澆好水了 💧 這顆種子好像跟上次不一樣…' : `澆好水了 💧 ${FP_NAMES[L.stage]}・明天再來`);
   }
   const fpHit = (wx, wy) => furn.find(f => f.kind === 'fplant' && Math.abs(wx - f.x) < f.k.hit[0] / 2 && wy <= f.y + 2 && wy >= f.y - f.k.hit[1]);
+  // ---------- 聖誕節（P99 M1＋M2，2026-11-12；docs/跨線需求.md 2026-11-08 📱）----------
+  // 活動期間（DC_SHOP.events.xmas＝電腦 src/events.py 同一份（export_lines 產生，商店的活動價也用它），12/18～12/26、頭尾都算；照這支手機的日期）：
+  //   ① 家裡擺聖誕樹：使用者 11-09「活動開始時送」（跟電腦一樣）→ 不經過錢包；佈置可以搬，位置跟著帳號存（明年擺回原位）。
+  //      **有沒有樹跟電腦一致**（使用者 2026-11-14「跟電腦一致」）：電腦（新版）的家具清單一律帶 xmastree（桌面上擺著＝1、收起來＝0）→ 照它，
+  //      活動結束後電腦還擺著就留著；清單沒有 xmastree（電腦是舊版、還沒連過電腦、只有手機）→ 照活動日期擺（treeWant）
+  //   ② 窗外下雪（牆上的窗戶、買的窗戶都是）③ 窗戶上面掛「聖誕快樂」橫幅（畫在牆上：介面原則不加新的一欄、不蓋住毛孩）：這兩樣照活動日期
+  // 圖：mobile/tools/make_xmas.py（樹＝使用者挑的 FLUX tree_3 照手機比例轉、橫幅程式畫）。
+  // 測試：網址加 &xmas=1（不管日期都當成活動中）／&xmas=0（都當成不是）；假伺服器 &pcxmas=1／0（電腦桌面上擺著／收起來）
+  const XM_EV = window.DC_SHOP && DC_SHOP.events && DC_SHOP.events.xmas;
+  const XM_FORCE = params.has('xmas') ? params.get('xmas') !== '0' : null;
+  const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;   // 減少動態效果：雪、燈停住
+  const XM_AT = [318, 180];                 // 預設位置：窗戶和立燈中間、沙發後面（不擋窗戶的雪、不擋軟木板的明信片）
+  const mdOf = a => a[0] * 100 + a[1];
+  function xmasOn() {
+    if (XM_FORCE !== null) return XM_FORCE;
+    if (!XM_EV) return false;
+    const d = new Date(), md = (d.getMonth() + 1) * 100 + d.getDate();
+    return mdOf(XM_EV.start) <= md && md <= mdOf(XM_EV.end);
+  }
+  let xmas = xmasOn();                      // 現在是不是活動期間（下雪、橫幅）
+  const pcTree = owned => owned && typeof owned.xmastree === 'number' ? owned.xmastree > 0 : null;   // 電腦說的（null＝電腦沒說）
+  function treeWant(owned) {                // 要不要擺聖誕樹：電腦有說就照電腦，沒說照活動日期（&xmas= 測試時一律照它）
+    if (XM_FORCE !== null) return XM_FORCE;
+    const pc = pcTree(owned);
+    return pc !== null ? pc : xmas;
+  }
+  const homeOwned = () => (homeAcct && homeMem ? homeMem.owned : null);
+  const xmFurn = () => ({ kind: 'xmastree', x: XM_AT[0], y: XM_AT[1], k: FURN.xmastree, dx: XM_AT[0], dy: XM_AT[1] });
+  function xmasPlace() {                    // 開著跨過 12/18 或 12/27 的 0 點：下雪、橫幅換；聖誕樹只加、拿掉這一件（其他家具不動）
+    xmas = xmasOn();
+    const want = treeWant(homeOwned()), i = furn.findIndex(f => f.kind === 'xmastree');
+    if (!want && i >= 0) furn.splice(i, 1);
+    if (want && i < 0) {
+      const f = xmFurn(), saved = (homeAcct && homeMem ? homeMem.layout : localLayout()) || [];
+      const s = saved.find(o => o && o.k === 'xmastree');
+      if (s) { f.x = clamp(+s.x || 0, 16, W - 16); f.y = clamp(+s.y || 0, WALL_Y + 6, H - 2); }
+      furn.push(f);
+    }
+  }
+  const XM_LIGHTS = { list: null };         // 樹上的燈泡（圖裡最亮的那幾格，星星以下）：載入好算一次
+  function xmasTwinkle(x, y) {
+    const im = furnImg('xmastree');
+    if (!im.naturalWidth) return;
+    const w = im.naturalWidth, h = im.naturalHeight, x0 = Math.round(x - w / 2), y0 = Math.round(y - h);
+    if (!XM_LIGHTS.list) {
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const g = c.getContext('2d'); g.drawImage(im, 0, 0);
+      const d = g.getImageData(0, 0, w, h).data, list = [];
+      for (let j = 14; j < h * .8; j++) for (let i = 0; i < w; i++) {
+        const k = (j * w + i) * 4;
+        if (d[k + 3] > 200 && d[k] > 225 && d[k + 1] > 200) list.push([i, j]);
+      }
+      XM_LIGHTS.list = list;
+    }
+    const beat = Math.floor((REDUCED ? 0 : now) / 450);
+    XM_LIGHTS.list.forEach(([i, j], n) => { const m = (n * 7 + beat) % 4; if (m === 0) rect(x0 + i, y0 + j, 1, 1, '#fffbe6'); else if (m === 2) rect(x0 + i, y0 + j, 1, 1, '#c9a46a'); });
+  }
+  function snowFall(x0, y0, w, h, t, n, ok) {   // 下雪：n 片，每片自己的速度、左右飄（ok(x, y)＝這格能不能畫）
+    t = REDUCED ? 0 : t;
+    for (let i = 0; i < n; i++) {
+      const sp = 14 + (i % 4) * 6;
+      const py = Math.round(((t / 1000 * sp + i * 37) % (h + 4)) - 2), px = Math.round((i * 53) % w + Math.sin(t / 900 + i) * 1.5);
+      if (px < 0 || px >= w || py < 0 || py >= h || (ok && !ok(px, py))) continue;
+      const big = !ok && i % 5 === 0;
+      rect(x0 + px, y0 + py, big ? 2 : 1, big ? 2 : 1, i % 3 ? '#ffffff' : '#e6eefa');
+    }
+  }
+  const GLASS = {};                         // 買的窗戶：玻璃（天空那三種顏色）在哪幾格
+  function snowOnGlass(name, x, y) {
+    const im = furnImg(name);
+    if (!im.naturalWidth) return;
+    const w = im.naturalWidth, h = im.naturalHeight;
+    if (!GLASS[name]) {
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const g = c.getContext('2d'); g.drawImage(im, 0, 0);
+      const d = g.getImageData(0, 0, w, h).data, m = new Uint8Array(w * h);
+      const sky = ['185,211,223', '217,224,221', '249,231,217'];
+      for (let k = 0; k < w * h; k++) m[k] = d[k * 4 + 3] > 200 && sky.includes(`${d[k * 4]},${d[k * 4 + 1]},${d[k * 4 + 2]}`) ? 1 : 0;
+      GLASS[name] = m;
+    }
+    const m = GLASS[name];
+    snowFall(Math.round(x - w / 2), Math.round(y - h), w, h, now, 16, (i, j) => m[j * w + i]);
+  }
+  function drawXmasBanner() {               // 窗戶上面（窗框 196～266、窗簾桿 y≈33）：兩條繩子從天花板吊下來
+    const im = furnImg('xmas_banner');
+    if (!im.naturalWidth) return;
+    const x0 = 231 - Math.round(im.naturalWidth / 2), y0 = 12;
+    rect(x0 + 6, 8, 1, y0 - 8, '#8a6a4a'); rect(x0 + im.naturalWidth - 7, 8, 1, y0 - 8, '#8a6a4a');
+    ctx.drawImage(im, x0, y0);
+  }
   const FURN_MAX = kind => { const s = window.DC_SHOP && DC_SHOP.furn.find(x => x.key === kind); return s ? s.max : OWNABLE.has(kind) ? 1 : 0; };
   const FIXABLE = new Set(Object.keys((window.DC_SHOP && DC_SHOP.fix) || {}));   // 狗咬壞、手機能修的（sofa catbed rug box slipper sock）
   const furn = [];                          // 每件：{kind, x, y, k: FURN 的畫法, dx/dy: 預設位置, extra: 伴手禮那筆（是伴手禮才有）, broken: 咬壞了}
@@ -681,6 +784,7 @@
     }
     for (const e of ex) if (FURN[e.kind]) list.push({ kind: e.kind, x: e.x, y: e.y, k: FURN[e.kind], dx: e.x, dy: e.y, extra: e });
     if (fpData) list.push(fpFurn());          // 友情盆栽（位置照 applyLayout）
+    if (treeWant(owned)) list.push(xmFurn()); // 聖誕樹（電腦擺著／沒說就照活動期間；位置照 applyLayout）
     furn.splice(0, furn.length, ...list);
     placeOnTable(); careRecount();
   }
@@ -695,6 +799,7 @@
   function ownedFrom(o) {                   // 伺服器的 owned → 手機擺得出來的（數量、<代號>_broken＝咬壞了幾個）
     const out = {};
     for (const [k, v] of Object.entries(o || {})) {
+      if (k === 'xmastree') { out.xmastree = +v > 0 ? 1 : 0; continue; }   // 聖誕樹：電腦桌面上擺著＝1、收起來＝0（0 也要留：跟「電腦沒說」不一樣）
       const base = k.endsWith('_broken') ? k.slice(0, -7) : k, n = Math.floor(+v) || 0;
       if (n > 0 && (OWNABLE.has(base) || CARE_AT[base])) out[k] = Math.min(n, FURN_MAX(base) || n);
     }
@@ -1007,7 +1112,7 @@
   // 送上去的 layout 只有家具（伴手禮在 extras、帶自己的位置）；帳號現在沒有的家具，以前記的位置也留著（之後有了擺回原位）。
   const HOME_KEY = 'deskcat_home_v1';
   const KIND_RE = /^[a-z_]{1,24}$/;
-  const TEMPLATE_KINDS = new Set([...HOME.furniture.map(f => f.kind), ...Object.keys(CARE_AT), 'fplant']);   // 擺法記這些（新家具、友情盆栽也記）
+  const TEMPLATE_KINDS = new Set([...HOME.furniture.map(f => f.kind), ...Object.keys(CARE_AT), 'fplant', 'xmastree']);   // 擺法記這些（新家具、友情盆栽、聖誕樹也記）
   const homeAll = () => { try { const a = JSON.parse(localStorage.getItem(HOME_KEY) || '{}'); return a && typeof a === 'object' && !Array.isArray(a) ? a : {}; } catch (_) { return {}; } };
   const homeGet = id => (id && homeAll()[id]) || null;
   function homePut(id, v) { try { const a = homeAll(); a[id] = v; localStorage.setItem(HOME_KEY, JSON.stringify(a)); } catch (_) { /* 存不了：這次開著還是能用 */ } }
@@ -2494,7 +2599,7 @@
   }
 
   // ---------- 畫面迴圈 ----------
-  let last = performance.now();
+  let last = performance.now(), xmNext = 0;
   // ?raf=timer（開發用）：預覽視窗藏起來時瀏覽器不給畫面更新，用計時器跑（P89 測互動要看動作）；平常照舊用 requestAnimationFrame
   const nextFrame = /[?&]raf=timer/.test(location.search) ? f => setTimeout(() => f(performance.now()), 33) : f => requestAnimationFrame(f);
   function loop(t) {
@@ -2508,6 +2613,7 @@
       drawWall(tod, t); drawFloor(tod);
       pets.forEach(p => p.step(dt)); placeOnTable(); carryTick();
       if (t > socNext) { socNext = t + 1000; socialCheck(); }
+      if (t > xmNext) { xmNext = t + 60e3; xmasPlace(); }
       const things = [
         ...furn.filter(f => !f.hide).map(f => ({ y: f.k.flat ? -1 : f.y, draw: () => { f.k.draw(f.x, f.y - (f.lift || 0), f.flip, f); if (f.broken) drawBroken(f); } })),
         ...furn.filter(f => f.k.back && !f.hide).map(f => ({ y: f.y - .2, draw: () => f.k.back(f.x, f.y, f) })),   // 紙袋的提把、裡面（毛孩鑽進去：畫在牠後面）
@@ -3275,7 +3381,7 @@
     box.hidden = false;
   }
 
-  window.__home = { cam, pets, furn, setZoom, lookAt, stroke, petPet, setEdit, setTime: t => { timeOverride = t; tick(); } };   // 測試用
+  window.__home = { cam, pets, furn, setZoom, lookAt, stroke, petPet, setEdit, setTime: t => { timeOverride = t; tick(); }, xmasOn, xmasPlace, treeWant: () => treeWant(homeOwned()) };   // 測試用（xmasOn：照現在的 Date 算是不是聖誕節；xmasPlace：馬上做一次每分鐘的檢查）
 
   setPhone(isPhone);
   showInstall();
