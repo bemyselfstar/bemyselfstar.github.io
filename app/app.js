@@ -2,7 +2,7 @@
 // 斜上往下看的房間（W×H 像素，比螢幕大），整數倍放大（不糊）；拖曳移動鏡頭、兩指縮放。
 // 電腦網頁＝橫版（分頁列在左邊）、手機網頁＝直版（分頁列在下面）（2026-10-14 使用者）。
 // 家具先用程式畫的簡單版（之後換成正式美術）；毛孩用遊戲的側面影格，前後只靠遮擋表現、不縮放。
-(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 107;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
+(window.DC_BUILD = window.DC_BUILD || {})['app.js'] = 108;   // 版本戳記（mobile/tools/bump.py 一起加 1；不一樣＝手機有舊檔）
 (() => {
   'use strict';
   // 資料：範例（假資料）或伺服器（server.js；登入後 dc_pets_mine 每 10 秒讀一次，見下面「伺服器同步」）。
@@ -2195,7 +2195,7 @@
   // ---------- 吃東西（P88 M4，2026-10-31 使用者「先做吃東西」）----------
   // 跟電腦版同一份食物（window.DC_FOOD：名稱、價格、說明、點心最愛、商店小圖都從 src/ 匯出，export_lines.py）：
   // 罐頭（走去碗那邊吃）、高級點心（一隻在原地吃；最愛的口味愛心多、說最愛的台詞）＝在毛孩的面板選；
-  // 吐司、煎蛋、糰子（全家一起吃）、貓薄荷（全家嗨起來、到處跑）＝買了馬上用（手機商店 P88 M4 叫 feast(key)）。
+  // 吐司、煎蛋、糰子（全家一起吃）、貓薄荷（家裡的貓嗨起來、到處跑；狗沒反應）＝買了馬上用（手機商店 P88 M4 叫 feast(key)）。
   // 飽足、親密由伺服器（電腦開著＝電腦）算，手機只演動作、改剩幾個（server.js foodMine／foodUse；🎮 還沒做時 SV.food＝false 不顯示）。
   const FD = window.DC_FOOD || { items: [], treats: [], fav: {}, icons: {}, pal: {} };
   let FOOD = null;                              // {wet, treats: {口味: 份數}, known: {cid: [口味]}}；null＝伺服器還沒有
@@ -2289,9 +2289,10 @@
       if (love) { pet.set(pet.dog() ? ['sit_wag', 'wag'] : ['knead', 'sit_blink'], 4); pet.until = now + 2500; }   // 電腦：最愛＝呼嚕
     });
   }
-  function feast(key) {                         // 買了馬上用：吐司、煎蛋、糰子＝全家在原地一起吃；貓薄荷＝全家嗨起來（電腦 shop_buy）
+  function feast(key) {                         // 買了馬上用：吐司、煎蛋、糰子＝全家在原地一起吃；貓薄荷＝家裡的貓嗨起來（電腦 shop_buy）
     const it = FD.items.find(x => x.key === key);
-    const list = pets.filter(x => !x.held);
+    // 貓薄荷跳過狗（電腦 shop_buy「狗聞貓薄荷沒反應」，使用者 2026-11-08）；家裡只有狗＝回 0，商店說「沒有貓」
+    const list = pets.filter(x => !x.held && !(key === 'catnip' && x.dog()));
     if (!it || !list.length) return 0;
     if (key === 'catnip') { list.forEach((x, i) => setTimeout(() => catnip(x, i), i * 500)); return list.length; }
     const hearts = { snack: 1, egg: 2, dango: 4 }[key] || 2;
