@@ -351,6 +351,7 @@ section.hero::before {
 /* 手機版畫面截圖（2026-10-23，使用者「也要貼出範例圖 注意 圖文並茂 文字不要太多」）：手機網頁用範例資料拍的真實畫面 */
 .shot { display: block; width: 100%; max-width: 230px; margin: 0 auto 12px; border: 3px solid var(--line); border-radius: 18px; box-shadow: 4px 4px 0 var(--shadow); background: #1e1916; }
 .shot.wide { max-width: 300px; }
+.shot.dlg { max-width: 360px; border-radius: 12px; background: #f6f2ec; }   /* 遊戲視窗截圖（v4.21 毛孩手冊） */
 .pic-card { display: flex; flex-direction: column; }
 .pic-card h3 { margin-top: 4px; }
 .pic-card p { margin: 0; }
